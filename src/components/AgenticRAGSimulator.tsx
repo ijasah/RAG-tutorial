@@ -21,17 +21,21 @@ const AgenticRAGSimulator = () => {
         setSearchResult("");
         setFinalAnswer("");
 
-        const needsSearch = query.toLowerCase().includes("ragas") || query.toLowerCase().includes("latest");
+        const needsSearch = query.toLowerCase().includes("ragas") || query.toLowerCase().includes("latest") || query.toLowerCase().includes("trends");
 
         setTimeout(() => {
             if (needsSearch) {
                 setThought("The user is asking about a specific or recent topic. I should use the search tool to get the latest information.");
                 setTimeout(() => {
                     setAgentState('searching');
-                    setSearchResult(`According to web sources, RAGAS is a framework for evaluating RAG applications, focusing on metrics like faithfulness and answer relevance.`);
+                    setSearchResult(`According to web sources, RAGAS is a framework for evaluating RAG applications, focusing on metrics like faithfulness and answer relevance. The latest AI trends include multimodal models and agentic workflows.`);
                     setTimeout(() => {
                         setAgentState('answering');
-                        setFinalAnswer(`Based on the search results, RAGAS is an evaluation framework for Retrieval-Augmented Generation systems, designed to measure the performance based on metrics like faithfulness and relevance.`);
+                        if (query.toLowerCase().includes("ragas")) {
+                            setFinalAnswer(`Based on the search results, RAGAS is an evaluation framework for Retrieval-Augmented Generation systems, designed to measure the performance based on metrics like faithfulness and relevance.`);
+                        } else {
+                            setFinalAnswer(`Based on recent search results, some of the latest trends in AI include the development of advanced multimodal models that can process text, images, and audio, as well as the rise of sophisticated agentic AI workflows.`);
+                        }
                         setTimeout(() => setAgentState('complete'), 500);
                     }, 2000);
                 }, 1500);
