@@ -2,15 +2,12 @@
 "use client";
 
 import { cn } from '@/lib/utils';
-import { BookOpen, Brain, Target, Settings, AlertTriangle, Shield, Lightbulb } from 'lucide-react';
+import { BookOpen, Puzzle, ShieldCheck } from 'lucide-react';
 
 const sections = [
-  { id: 'introduction', title: 'Introduction', icon: <BookOpen className="w-4 h-4" /> },
-  { id: 'core-concepts', title: 'Core Concepts', icon: <Brain className="w-4 h-4" /> },
-  { id: 'designing-prompts', title: 'Designing Prompts', icon: <Target className="w-4 h-4" /> },
-  { id: 'advanced-techniques', title: 'Advanced Techniques', icon: <Settings className="w-4 h-4" /> },
-  { id: 'risks', title: 'Risks', icon: <AlertTriangle className="w-4 h-4" /> },
-  { id: 'guardrails', title: 'LLM Guardrails', icon: <Shield className="w-4 h-4" /> },
+  { id: 'introduction', title: 'Introduction to RAG', icon: <BookOpen className="w-4 h-4" /> },
+  { id: 'chunking', title: 'Chunking Strategies', icon: <Puzzle className="w-4 h-4" /> },
+  { id: 'evaluation', title: 'RAG Evaluation', icon: <ShieldCheck className="w-4 h-4" /> },
 ];
 
 interface TableOfContentsProps {

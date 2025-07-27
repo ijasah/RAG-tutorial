@@ -4,8 +4,8 @@ import { Toaster } from "@/components/ui/toaster"
 import { ThemeProvider } from "@/components/theme-provider";
 
 export const metadata: Metadata = {
-  title: 'PromptCraft Academy',
-  description: 'An interactive guide to the art and science of prompt engineering.',
+  title: 'RAG Tutorial: An Interactive Guide',
+  description: 'An interactive guide to the art and science of Retrieval-Augmented Generation.',
 };
 
 export default function RootLayout({
@@ -34,5 +34,3 @@ export default function RootLayout({
     </html>
   );
 }
-
-    
