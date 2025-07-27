@@ -9,6 +9,10 @@ import { RAGFlowDiagram } from '@/components/RAGFlowDiagram';
 import { ChunkingSimulator } from '@/components/ChunkingSimulator';
 import { RagasMetricSimulator } from '@/components/RagasMetricSimulator';
 import { AgenticRAGSimulator } from '@/components/AgenticRAGSimulator';
+import { TemperatureDemo } from '@/components/TemperatureDemo';
+import { TopKDemo } from '@/components/TopKDemo';
+import { TopPDemo } from '@/components/TopPDemo';
+
 
 import {
   BookOpen,
@@ -20,6 +24,7 @@ import {
   Puzzle,
   BookCopy,
   Bot,
+  SlidersHorizontal,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -29,6 +34,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 const sections = [
   { id: 'introduction', title: 'Introduction to RAG', icon: <BookOpen className="h-8 w-8 text-primary" /> },
   { id: 'chunking', title: 'RAG Chunking Strategies', icon: <Puzzle className="h-8 w-8 text-primary" /> },
+  { id: 'parameters', title: 'LLM Generation Parameters', icon: <SlidersHorizontal className="h-8 w-8 text-primary" /> },
   { id: 'agentic-rag', title: 'Agentic RAG', icon: <Bot className="h-8 w-8 text-primary" /> },
   { id: 'evaluation', title: 'RAG Evaluation with RAGAS', icon: <ShieldCheck className="h-8 w-8 text-primary" /> },
 ];
@@ -175,6 +181,17 @@ const Index = () => {
                     In RAG systems, effective chunking strategies are vital for optimizing the retrieval and generation process. Chunking helps break down information into manageable segments, which improves context preservation, relevance, and efficiency. Explore different strategies below.
                   </p>
                   <ChunkingSimulator />
+              </div>
+            </Section>
+
+            <Section id="parameters" title="LLM Generation Parameters" icon={<SlidersHorizontal className="h-8 w-8 text-primary" />}>
+              <div className="space-y-8">
+                <p className="text-muted-foreground">
+                  The "generation" in RAG is controlled by several key parameters that influence the output of the Large Language Model. Understanding these parameters is crucial for fine-tuning the model's responses to be more accurate, creative, or constrained as needed. Explore the interactive demos below to see how they work.
+                </p>
+                <TemperatureDemo />
+                <TopKDemo />
+                <TopPDemo />
               </div>
             </Section>
             
