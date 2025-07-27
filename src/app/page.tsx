@@ -8,6 +8,7 @@ import { Section } from '@/components/Section';
 import { RAGFlowDiagram } from '@/components/RAGFlowDiagram';
 import { ChunkingSimulator } from '@/components/ChunkingSimulator';
 import { RagasMetricSimulator } from '@/components/RagasMetricSimulator';
+import { AgenticRAGSimulator } from '@/components/AgenticRAGSimulator';
 
 import {
   BookOpen,
@@ -18,6 +19,7 @@ import {
   ChevronDown,
   Puzzle,
   BookCopy,
+  Bot,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -27,6 +29,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 const sections = [
   { id: 'introduction', title: 'Introduction to RAG', icon: <BookOpen className="h-8 w-8 text-primary" /> },
   { id: 'chunking', title: 'RAG Chunking Strategies', icon: <Puzzle className="h-8 w-8 text-primary" /> },
+  { id: 'agentic-rag', title: 'Agentic RAG', icon: <Bot className="h-8 w-8 text-primary" /> },
   { id: 'evaluation', title: 'RAG Evaluation with RAGAS', icon: <ShieldCheck className="h-8 w-8 text-primary" /> },
 ];
 
@@ -174,6 +177,16 @@ const Index = () => {
                   <ChunkingSimulator />
               </div>
             </Section>
+            
+            <Section id="agentic-rag" title="Agentic RAG" icon={<Bot className="h-8 w-8 text-primary" />}>
+                <div className="space-y-6">
+                    <p className="text-muted-foreground">
+                        Agentic RAG represents the next evolution of information retrieval, where an AI agent actively decides whether it needs to fetch external information to answer a query. Instead of retrieving information for every query, the agent analyzes the request and uses a "search" tool only when its internal knowledge is insufficient.
+                    </p>
+                    <AgenticRAGSimulator />
+                </div>
+            </Section>
+
 
             <Section id="evaluation" title="RAG Evaluation with RAGAS" icon={<ShieldCheck className="h-8 w-8 text-primary" />}>
               <div className="space-y-6">
