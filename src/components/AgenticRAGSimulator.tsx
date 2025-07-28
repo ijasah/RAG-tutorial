@@ -65,7 +65,7 @@ const AgenticRAGSimulator = () => {
                     <Bot /> Agentic RAG Simulator
                 </CardTitle>
                 <CardDescription>
-                    See how an AI agent decides whether to use a search tool to answer a query. Try asking "What is RAGAS?" or "What are the latest AI trends?".
+                    See how an AI agent decides whether to use a search tool to answer a query. Try asking "What is RAGAS?" to see it use a tool, or "What is the capital of France?" to see it use its internal knowledge.
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
