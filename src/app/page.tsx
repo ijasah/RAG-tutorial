@@ -12,6 +12,7 @@ import { AgenticRAGSimulator } from '@/components/AgenticRAGSimulator';
 import { TemperatureDemo } from '@/components/TemperatureDemo';
 import { TopKDemo } from '@/components/TopKDemo';
 import { TopPDemo } from '@/components/TopPDemo';
+import { VectorDBAnimation } from '@/components/VectorDBAnimation';
 
 
 import {
@@ -165,11 +166,7 @@ const Index = () => {
                   <p className="text-muted-foreground mb-4">
                     Vector databases are specialized databases designed to store and manage high-dimensional vectors (embeddings) efficiently. These databases make it easier to perform similarity searches and retrieve relevant information for a given query.
                   </p>
-                  <ul className="list-disc list-inside space-y-2 text-muted-foreground">
-                    <li><strong>Pinecone:</strong> A managed vector database that allows for fast similarity search.</li>
-                    <li><strong>Weaviate:</strong> An open-source vector search engine that integrates ML models.</li>
-                    <li><strong>Milvus:</strong> An open-source vector database for scalable similarity searches.</li>
-                  </ul>
+                  <VectorDBAnimation />
                 </div>
 
               </div>
