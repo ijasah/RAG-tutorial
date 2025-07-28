@@ -23,7 +23,7 @@ const AgenticRAGSimulator = () => {
 
         const lowerCaseQuery = query.toLowerCase();
         // Determine if the query requires an external search.
-        const needsSearch = lowerCaseQuery.includes("ragas") || lowerCaseQuery.includes("latest trends");
+        const needsSearch = lowerCaseQuery.includes("ragas") || lowerCaseQuery.includes("latest ai trends");
 
         setTimeout(() => {
             if (needsSearch) {
@@ -35,7 +35,7 @@ const AgenticRAGSimulator = () => {
                     let resultText = "";
                     if (lowerCaseQuery.includes("ragas")) {
                         resultText = `According to web sources, RAGAS is a framework for evaluating RAG applications, focusing on metrics like faithfulness and answer relevance.`;
-                    } else if (lowerCaseQuery.includes("latest trends")) {
+                    } else if (lowerCaseQuery.includes("latest ai trends")) {
                          resultText = `According to web sources, the latest AI trends include multimodal models and agentic workflows.`;
                     }
                     setSearchResult(resultText);
@@ -46,7 +46,7 @@ const AgenticRAGSimulator = () => {
                         let answerText = "";
                          if (lowerCaseQuery.includes("ragas")) {
                             answerText = `Based on the search results, RAGAS is an evaluation framework for Retrieval-Augmented Generation systems, designed to measure the performance based on metrics like faithfulness and relevance.`;
-                        } else if (lowerCaseQuery.includes("latest trends")) {
+                        } else if (lowerCaseQuery.includes("latest ai trends")) {
                             answerText = `Based on recent search results, some of the latest trends in AI include the development of advanced multimodal models that can process text, images, and audio, as well as the rise of sophisticated agentic AI workflows.`;
                         }
                         setFinalAnswer(answerText);
