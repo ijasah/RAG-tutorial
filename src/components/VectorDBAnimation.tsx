@@ -46,7 +46,7 @@ export const VectorDBAnimation = () => {
     };
 
     useEffect(() => {
-        if (step > 1 && step < 6) {
+        if (step > 1 && step < 6 && processedDocs.length < documents.length) {
             const docId = documents[processedDocs.length].id;
             const timer = setTimeout(() => {
                 setVectors(prev => ({ ...prev, [docId]: initialVectors[docId as keyof typeof initialVectors] }));
