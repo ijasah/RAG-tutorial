@@ -21,25 +21,40 @@ const AgenticRAGSimulator = () => {
         setSearchResult("");
         setFinalAnswer("");
 
-        const needsSearch = query.toLowerCase().includes("ragas") || query.toLowerCase().includes("latest") || query.toLowerCase().includes("trends");
+        const lowerCaseQuery = query.toLowerCase();
+        // Determine if the query requires an external search.
+        const needsSearch = lowerCaseQuery.includes("ragas") || lowerCaseQuery.includes("latest trends");
 
         setTimeout(() => {
             if (needsSearch) {
+                // Path 1: Agent decides to use the search tool.
                 setThought("The user is asking about a specific or recent topic. I should use the search tool to get the latest information.");
                 setTimeout(() => {
                     setAgentState('searching');
-                    setSearchResult(`According to web sources, RAGAS is a framework for evaluating RAG applications, focusing on metrics like faithfulness and answer relevance. The latest AI trends include multimodal models and agentic workflows.`);
+                    // Simulate finding the information.
+                    let resultText = "";
+                    if (lowerCaseQuery.includes("ragas")) {
+                        resultText = `According to web sources, RAGAS is a framework for evaluating RAG applications, focusing on metrics like faithfulness and answer relevance.`;
+                    } else if (lowerCaseQuery.includes("latest trends")) {
+                         resultText = `According to web sources, the latest AI trends include multimodal models and agentic workflows.`;
+                    }
+                    setSearchResult(resultText);
+                    
                     setTimeout(() => {
                         setAgentState('answering');
-                        if (query.toLowerCase().includes("ragas")) {
-                            setFinalAnswer(`Based on the search results, RAGAS is an evaluation framework for Retrieval-Augmented Generation systems, designed to measure the performance based on metrics like faithfulness and relevance.`);
-                        } else {
-                            setFinalAnswer(`Based on recent search results, some of the latest trends in AI include the development of advanced multimodal models that can process text, images, and audio, as well as the rise of sophisticated agentic AI workflows.`);
+                        // Generate the final answer based on the search result.
+                        let answerText = "";
+                         if (lowerCaseQuery.includes("ragas")) {
+                            answerText = `Based on the search results, RAGAS is an evaluation framework for Retrieval-Augmented Generation systems, designed to measure the performance based on metrics like faithfulness and relevance.`;
+                        } else if (lowerCaseQuery.includes("latest trends")) {
+                            answerText = `Based on recent search results, some of the latest trends in AI include the development of advanced multimodal models that can process text, images, and audio, as well as the rise of sophisticated agentic AI workflows.`;
                         }
+                        setFinalAnswer(answerText);
                         setTimeout(() => setAgentState('complete'), 500);
                     }, 2000);
                 }, 1500);
             } else {
+                // Path 2: Agent uses its internal knowledge.
                 setThought("I know the answer to this question based on my internal knowledge. I don't need to use the search tool.");
                 setTimeout(() => {
                     setAgentState('answering');
@@ -65,7 +80,7 @@ const AgenticRAGSimulator = () => {
                     <Bot /> Agentic RAG Simulator
                 </CardTitle>
                 <CardDescription>
-                    See how an AI agent decides whether to use a search tool to answer a query. Try asking "What is RAGAS?" to see it use a tool, or "What is the capital of France?" to see it use its internal knowledge.
+                    See how an AI agent decides whether to use a search tool. Try asking "What is RAGAS?" or "What are the latest AI trends?" to see it use a tool, or "What is the capital of France?" to see it use its internal knowledge.
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
