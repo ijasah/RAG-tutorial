@@ -5,11 +5,17 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Bot, Search, MessageSquare, CornerDownLeft, Sparkles } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Bot, Search, MessageSquare, CornerDownLeft, Sparkles, Play } from 'lucide-react';
+
+const exampleQueries = [
+    { value: "What is the capital of France?", needsSearch: false, label: "What is the capital of France?" },
+    { value: "What is RAGAS?", needsSearch: true, label: "What is RAGAS?" },
+    { value: "What are the latest AI trends?", needsSearch: true, label: "What are the latest AI trends?" },
+];
 
 const AgenticRAGSimulator = () => {
-    const [query, setQuery] = useState("What is the capital of France?");
+    const [selectedQuery, setSelectedQuery] = useState(exampleQueries[0].value);
     const [agentState, setAgentState] = useState<'idle' | 'thinking' | 'searching' | 'answering' | 'complete'>('idle');
     const [thought, setThought] = useState("");
     const [searchResult, setSearchResult] = useState("");
@@ -21,9 +27,11 @@ const AgenticRAGSimulator = () => {
         setSearchResult("");
         setFinalAnswer("");
 
+        const queryData = exampleQueries.find(q => q.value === selectedQuery);
+        if (!queryData) return;
+
+        const { needsSearch, value: query } = queryData;
         const lowerCaseQuery = query.toLowerCase();
-        // Determine if the query requires an external search.
-        const needsSearch = lowerCaseQuery.includes("ragas") || lowerCaseQuery.includes("latest ai trends");
 
         setTimeout(() => {
             if (needsSearch) {
@@ -70,7 +78,7 @@ const AgenticRAGSimulator = () => {
         setThought("");
         setSearchResult("");
         setFinalAnswer("");
-        setQuery("What is the capital of France?");
+        setSelectedQuery(exampleQueries[0].value);
     }
 
     return (
@@ -80,19 +88,23 @@ const AgenticRAGSimulator = () => {
                     <Bot /> Agentic RAG Simulator
                 </CardTitle>
                 <CardDescription>
-                    See how an AI agent decides whether to use a search tool. Try asking "What is RAGAS?" or "What are the latest AI trends?" to see it use a tool, or "What is the capital of France?" to see it use its internal knowledge.
+                    See how an AI agent decides whether to use a search tool. Select a question from the dropdown to see how the agent responds differently based on the query.
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
                 <div className="flex gap-2">
-                    <Input 
-                        value={query}
-                        onChange={(e) => setQuery(e.target.value)}
-                        placeholder="Ask a question..."
-                        disabled={agentState !== 'idle'}
-                    />
+                     <Select onValueChange={setSelectedQuery} defaultValue={selectedQuery} disabled={agentState !== 'idle'}>
+                        <SelectTrigger>
+                            <SelectValue placeholder="Select a question..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {exampleQueries.map((query) => (
+                            <SelectItem key={query.value} value={query.value}>{query.label}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
                     <Button onClick={agentState === 'idle' ? handleSimulate : reset} className="min-w-[120px]">
-                        {agentState === 'idle' ? <><CornerDownLeft className="mr-2" />Ask</> : 'Reset'}
+                        {agentState === 'idle' ? <><Play className="mr-2" />Simulate</> : 'Reset'}
                     </Button>
                 </div>
 
