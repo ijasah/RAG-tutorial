@@ -34,7 +34,7 @@ const magnitude = (v: Vector) => Math.sqrt(v.x * v.x + v.y * v.y);
 const cosineSimilarity = (v1: Vector, v2: Vector) => dotProduct(v1, v2) / (magnitude(v1) * magnitude(v2));
 const euclideanDistance = (v1: Vector, v2: Vector) => Math.sqrt(Math.pow(v1.x - v2.x, 2) + Math.pow(v1.y - v2.y, 2));
 
-const MetricDisplay = ({ title, formula, value, children }: { title: string, formula: string, value: string, children: React.ReactNode }) => (
+const MetricDisplay = ({ title, formula, value, children, description }: { title: string, formula: string, value: string, children: React.ReactNode, description?: React.ReactNode }) => (
     <div className="flex flex-col space-y-2 p-4 border rounded-lg bg-muted/30 h-full">
         <div className="text-center">
             <h3 className="font-semibold text-lg text-primary">{title}</h3>
@@ -44,6 +44,7 @@ const MetricDisplay = ({ title, formula, value, children }: { title: string, for
             {children}
         </div>
         <div className="text-center mt-auto">
+            {description}
             <p className="text-xs uppercase text-muted-foreground">Score</p>
             <p className="text-3xl font-bold text-foreground">{value}</p>
         </div>
@@ -181,23 +182,24 @@ export const SimilarityMetricsSimulator = () => {
                  
                 <Alert className="mt-8 border-primary/30 bg-primary/10">
                     <Orbit className="h-4 w-4" />
-                    <AlertTitle>Why Cosine Similarity is Preferred for RAG</AlertTitle>
+                    <AlertTitle>Understanding Cosine Similarity</AlertTitle>
                      <AlertDescription className="mt-2 space-y-4">
                         <div>
-                            <h4 className="font-semibold text-foreground mb-2">What is it?</h4>
-                            <p>In semantic search, we care more about the <strong>topic</strong> (the vector's direction) than the document's length (the vector's magnitude). Cosine Similarity excels because it measures the cosine of the angle between two vectors, effectively judging their orientation irrespective of their length.</p>
+                            <h4 className="font-semibold text-foreground mb-2">Component 1: The Dot Product (A · B)</h4>
+                            <p>The dot product is the sum of the products of the corresponding components of two vectors. Geometrically, it measures how much one vector points in the direction of another. A larger value means a greater degree of alignment.</p>
+                        </div>
+                         <div>
+                            <h4 className="font-semibold text-foreground mb-2">Component 2: The Norm (Magnitude ||A||)</h4>
+                            <p>The norm (or magnitude) is the length of a vector, calculated using the Pythagorean theorem. In text embeddings, this often corresponds to the length or amount of information in the text. Longer text might have a larger magnitude.</p>
                         </div>
                         <div>
-                            <h4 className="font-semibold text-foreground mb-2">How is it Formulated?</h4>
-                            <div className="space-y-1">
-                                <p><strong className="text-primary">A · B</strong> (the dot product) measures how much one vector goes in the direction of another.</p>
-                                <p><strong className="text-primary">||A|| & ||B||</strong> (the magnitudes) are the lengths of the vectors. Dividing by the magnitudes normalizes the vectors, isolating the angle as the core of the comparison.</p>
-                            </div>
+                            <h4 className="font-semibold text-foreground mb-2">Deriving Cosine Similarity</h4>
+                            <p>The geometric definition of the dot product is <code className="font-mono bg-muted p-1 rounded-md">A · B = ||A|| * ||B|| * cos(θ)</code>, where θ is the angle between the vectors. By rearranging this formula to solve for <code className="font-mono bg-muted p-1 rounded-md">cos(θ)</code>, we get the Cosine Similarity formula. This isolates the angle, making the comparison independent of the vectors' magnitudes. In semantic search, this is crucial because we care about the topic (direction) far more than the document's length (magnitude).</p>
                         </div>
                        <div>
                             <h4 className="font-semibold text-foreground mb-2">Try it yourself:</h4>
                             <p>
-                               Select the other "RAG" document and notice that the two RAG documents have a very high Cosine Similarity score because their vectors point in almost the same direction, even though one sentence is much longer. Euclidean Distance is misled by the difference in magnitude (length). This <strong>scale-invariance</strong> is crucial for finding the best context.
+                               Select the other "RAG" document. Notice that the two RAG documents have a very high Cosine Similarity score because their vectors point in almost the same direction, even though one sentence is much longer. Euclidean Distance is misled by the difference in magnitude (length). This <strong>scale-invariance</strong> is crucial for finding the best context.
                            </p>
                        </div>
                     </AlertDescription>
