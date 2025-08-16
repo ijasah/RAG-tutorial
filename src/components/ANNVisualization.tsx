@@ -192,8 +192,8 @@ export function ANNVisualization() {
                     <div className="relative border rounded-lg bg-background" style={{ width, height }}>
                         <svg width={width} height={height}>
                             <AnimatePresence>
-                                {points.map(p => (
-                                    <motion.circle key={p.id} cx={p.x} cy={p.y} r={2.5} className={cn("fill-muted-foreground/60", {
+                                {points.map((p, i) => (
+                                    <motion.circle key={`${p.id}-${i}`} cx={p.x} cy={p.y} r={2.5} className={cn("fill-muted-foreground/60", {
                                         "fill-primary stroke-primary/50 stroke-2": step >= 8 && finalLeaf?.points.some(lp => lp.id === p.id),
                                     })} />
                                 ))}
