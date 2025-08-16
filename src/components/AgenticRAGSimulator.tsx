@@ -9,83 +9,86 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Bot, Search, MessageSquare, Sparkles, Play, Wand2, Database, HelpCircle } from 'lucide-react';
 
 const exampleQueries = [
-    { value: "What is the capital of France?", type: 'internal', label: "What is the capital of France?" },
-    { value: "What is RAGAS?", type: 'search', label: "What is RAGAS?" },
-    { value: "Who is the CEO of Databricks? (Self-Reflection)", type: 'reflect', label: "Who is the CEO of Databricks? (Self-Reflection)" },
+    { value: "What is the capital of France?", type: 'internal', label: "Simple QA (Internal Knowledge)" },
+    { value: "What is RAGAS?", type: 'search', label: "Simple QA (Web Search)" },
+    { value: "Who is the CEO of Databricks?", type: 'reflect', label: "Single-Step Reflection" },
+    { value: "What was the key finding of the original RAG paper and who were its authors?", type: 'multi_reflect', label: "Multi-Step Reflection" },
 ];
+
+type AgentLog = {
+    type: 'thought' | 'retrieval' | 'verification' | 'answer';
+    title: string;
+    content: string;
+    icon: React.ReactNode;
+}
 
 export const AgenticRAGSimulator = () => {
     const [selectedQuery, setSelectedQuery] = useState(exampleQueries[0].value);
-    const [agentState, setAgentState] = useState<'idle' | 'thinking' | 'retrieving' | 'reflecting' | 'verifying' | 'answering' | 'complete'>('idle');
-    const [thought, setThought] = useState("");
-    const [retrievedChunk, setRetrievedChunk] = useState("");
-    const [reflection, setReflection] = useState("");
-    const [verificationResult, setVerificationResult] = useState("");
-    const [finalAnswer, setFinalAnswer] = useState("");
+    const [isRunning, setIsRunning] = useState(false);
+    const [log, setLog] = useState<AgentLog[]>([]);
 
     const handleSimulate = () => {
-        setAgentState('thinking');
-        setThought("");
-        setRetrievedChunk("");
-        setReflection("");
-        setVerificationResult("");
-        setFinalAnswer("");
+        setIsRunning(true);
+        setLog([]);
 
         const queryData = exampleQueries.find(q => q.value === selectedQuery);
         if (!queryData) return;
 
         const { type } = queryData;
 
-        setTimeout(() => {
-            if (type === 'internal') {
-                setThought("I know the answer to this question based on my internal knowledge. I don't need any tools.");
+        const addLogEntry = (entry: Omit<AgentLog, 'icon'>, delay: number) => {
+             return new Promise(resolve => {
                 setTimeout(() => {
-                    setAgentState('answering');
-                    setFinalAnswer("The capital of France is Paris.");
-                    setTimeout(() => setAgentState('complete'), 100);
-                }, 1500);
-            } else if (type === 'search') {
-                setThought("The user is asking about a specific or recent topic. I should use the search tool to get the latest information.");
-                setTimeout(() => {
-                    setAgentState('verifying');
-                    setVerificationResult("According to web sources, RAGAS is a framework for evaluating RAG applications, focusing on metrics like faithfulness and answer relevance.");
-                    setTimeout(() => {
-                        setAgentState('answering');
-                        setFinalAnswer("Based on the search results, RAGAS is an evaluation framework for Retrieval-Augmented Generation systems.");
-                        setTimeout(() => setAgentState('complete'), 100);
-                    }, 2000);
-                }, 1500);
-            } else if (type === 'reflect') {
-                setThought("I should first check my internal knowledge base to answer this question.");
-                 setTimeout(() => {
-                    setAgentState('retrieving');
-                    setRetrievedChunk("Internal document: Ali Ghodsi is a co-founder of Databricks.");
-                     setTimeout(() => {
-                        setAgentState('reflecting');
-                        setReflection("The retrieved information mentions he is a co-founder, but not explicitly the CEO. This could be outdated. I need to verify this using an external tool to be sure.");
-                        setTimeout(() => {
-                            setAgentState('verifying');
-                            setVerificationResult("Web search result: Ali Ghodsi is the current CEO of Databricks.");
-                            setTimeout(() => {
-                                setAgentState('answering');
-                                setFinalAnswer("Based on verified information, Ali Ghodsi is the CEO of Databricks.");
-                                setTimeout(() => setAgentState('complete'), 100);
-                            }, 2000);
-                        }, 2000);
-                    }, 1500);
-                }, 1000);
-            }
-        }, 1000);
+                    let icon;
+                    switch (entry.type) {
+                        case 'thought': icon = <Sparkles className="text-primary" />; break;
+                        case 'retrieval': icon = <Database className="text-purple-400" />; break;
+                        case 'verification': icon = <Search className="text-blue-400" />; break;
+                        case 'answer': icon = <MessageSquare className="text-primary" />; break;
+                    }
+                    setLog(prev => [...prev, { ...entry, icon }]);
+                    resolve(true);
+                }, delay);
+            });
+        };
+
+        if (type === 'internal') {
+            addLogEntry({ type: 'thought', title: "Agent's Thought Process", content: "I know the answer to this question based on my internal knowledge. I don't need any tools." }, 1000)
+            .then(() => addLogEntry({ type: 'answer', title: "Final Answer", content: "The capital of France is Paris." }, 1500));
+        } else if (type === 'search') {
+            addLogEntry({ type: 'thought', title: "Agent's Thought Process", content: "The user is asking about a specific or recent topic. I should use the search tool to get the latest information." }, 1000)
+            .then(() => addLogEntry({ type: 'verification', title: "Verification Result", content: "According to web sources, RAGAS is a framework for evaluating RAG applications, focusing on metrics like faithfulness and answer relevance." }, 1500))
+            .then(() => addLogEntry({ type: 'answer', title: "Final Answer", content: "Based on the search results, RAGAS is an evaluation framework for Retrieval-Augmented Generation systems." }, 2000));
+        } else if (type === 'reflect') {
+            addLogEntry({ type: 'thought', title: "Agent's Thought Process", content: "I should first check my internal knowledge base to answer this question." }, 1000)
+            .then(() => addLogEntry({ type: 'retrieval', title: "Retrieved from Knowledge Base", content: "Internal document: Ali Ghodsi is a co-founder of Databricks." }, 1500))
+            .then(() => addLogEntry({ type: 'thought', title: "Self-Reflection", content: "The retrieved information mentions he is a co-founder, but not explicitly the CEO. This could be outdated. I need to verify this using an external tool to be sure." }, 2000))
+            .then(() => addLogEntry({ type: 'verification', title: "Verification Result", content: "Web search result: Ali Ghodsi is the current CEO of Databricks." }, 2000))
+            .then(() => addLogEntry({ type: 'answer', title: "Final Answer", content: "Based on verified information, Ali Ghodsi is the CEO of Databricks." }, 2000));
+        } else if (type === 'multi_reflect') {
+            addLogEntry({ type: 'thought', title: "Agent's Thought Process", content: "This is a complex query. I'll break it down. First, I will search for the key finding of the RAG paper." }, 1000)
+            .then(() => addLogEntry({ type: 'verification', title: "Search Result 1", content: "The key finding of the original RAG paper is that it significantly reduces hallucinations and improves factuality in LLMs by grounding them in external knowledge." }, 1500))
+            .then(() => addLogEntry({ type: 'thought', title: "Self-Reflection", content: "Okay, I have the key finding. Now I need to find the authors. I will perform a second search." }, 2000))
+            .then(() => addLogEntry({ type: 'verification', title: "Search Result 2", content: "The original RAG paper, 'Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks', was authored by Patrick Lewis, Ethan Perez, and others at Facebook AI Research." }, 2000))
+            .then(() => addLogEntry({ type: 'thought', title: "Final Synthesis", content: "I have both pieces of information now. I can combine them to form the final answer." }, 1500))
+            .then(() => addLogEntry({ type: 'answer', title: "Final Answer", content: "The key finding of the original RAG paper was that it reduces hallucinations by grounding LLMs in external knowledge. The paper was authored by Patrick Lewis, Ethan Perez, and others at Facebook AI Research." }, 2000));
+        }
     };
 
     const reset = () => {
-        setAgentState('idle');
-        setThought("");
-        setRetrievedChunk("");
-        setReflection("");
-        setVerificationResult("");
-        setFinalAnswer("");
+        setIsRunning(false);
+        setLog([]);
         setSelectedQuery(exampleQueries[0].value);
+    }
+
+    const getCardColor = (type: AgentLog['type']) => {
+        switch (type) {
+            case 'thought': return 'bg-muted/50';
+            case 'retrieval': return 'bg-purple-500/10 border-purple-500/30';
+            case 'verification': return 'bg-blue-500/10 border-blue-500/30';
+            case 'answer': return 'bg-primary/10 border-primary/30';
+            default: return 'bg-card';
+        }
     }
 
     return (
@@ -95,12 +98,12 @@ export const AgenticRAGSimulator = () => {
                     <Bot /> Agentic RAG Simulator
                 </CardTitle>
                 <CardDescription>
-                    See how an AI agent decides which tools to use. It can use internal knowledge, perform a direct search, or even reflect on retrieved information and verify it.
+                    See how an AI agent decides which tools to use. It can use internal knowledge, perform searches, or even reflect on retrieved information and perform more actions.
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
                 <div className="flex gap-2">
-                     <Select onValueChange={setSelectedQuery} defaultValue={selectedQuery} disabled={agentState !== 'idle'}>
+                     <Select onValueChange={setSelectedQuery} defaultValue={selectedQuery} disabled={isRunning}>
                         <SelectTrigger>
                             <SelectValue placeholder="Select a question..." />
                         </SelectTrigger>
@@ -110,55 +113,27 @@ export const AgenticRAGSimulator = () => {
                             ))}
                         </SelectContent>
                     </Select>
-                    <Button onClick={agentState === 'idle' ? handleSimulate : reset} className="min-w-[120px]">
-                        {agentState === 'idle' ? <><Play className="mr-2" />Simulate</> : 'Reset'}
+                    <Button onClick={!isRunning ? handleSimulate : reset} className="min-w-[120px]">
+                        {!isRunning ? <><Play className="mr-2" />Simulate</> : 'Reset'}
                     </Button>
                 </div>
 
                 <div className="space-y-4 min-h-[350px]">
                      <AnimatePresence>
-                        {thought && selectedQuery !== "Who is the CEO of Databricks? (Self-Reflection)" && (
-                            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-4 bg-muted/50 rounded-lg border">
-                                <h4 className="font-semibold text-sm mb-2 flex items-center gap-2"><Sparkles className="text-primary" /> Agent's Thought Process</h4>
-                                <p className="text-sm text-muted-foreground italic">{thought}</p>
+                        {log.map((entry, index) => (
+                            <motion.div
+                                key={index}
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                layout
+                                className={`p-4 rounded-lg border ${getCardColor(entry.type)}`}
+                            >
+                                <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
+                                   {entry.icon} {entry.title}
+                                </h4>
+                                <p className="text-sm text-muted-foreground">{entry.content}</p>
                             </motion.div>
-                        )}
-                    </AnimatePresence>
-
-                    <AnimatePresence>
-                        {reflection && (
-                             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-4 bg-muted/50 rounded-lg border">
-                                <h4 className="font-semibold text-sm mb-2 flex items-center gap-2"><Sparkles className="text-primary" /> Agent's Thought Process</h4>
-                                <p className="text-sm text-muted-foreground italic">{reflection}</p>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-
-                    <AnimatePresence>
-                        {retrievedChunk && (
-                            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-4 bg-purple-500/10 rounded-lg border border-purple-500/30">
-                                <h4 className="font-semibold text-sm mb-2 flex items-center gap-2"><Database className="text-purple-400" /> Retrieved from Knowledge Base</h4>
-                                <p className="text-sm text-muted-foreground">{retrievedChunk}</p>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-                    
-                    <AnimatePresence>
-                        {verificationResult && (
-                            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-4 bg-blue-500/10 rounded-lg border border-blue-500/30">
-                                <h4 className="font-semibold text-sm mb-2 flex items-center gap-2"><Search className="text-blue-400" /> Verification Result</h4>
-                                <p className="text-sm text-muted-foreground">{verificationResult}</p>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-
-                    <AnimatePresence>
-                         {finalAnswer && (
-                            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-4 bg-primary/10 rounded-lg border border-primary/30">
-                                <h4 className="font-semibold text-sm mb-2 flex items-center gap-2"><MessageSquare className="text-primary" /> Final Answer</h4>
-                                <p className="text-sm text-foreground">{finalAnswer}</p>
-                            </motion.div>
-                        )}
+                        ))}
                     </AnimatePresence>
                 </div>
             </CardContent>
