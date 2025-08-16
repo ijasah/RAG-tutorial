@@ -132,18 +132,29 @@ export const HybridRetrieveSimulator = () => {
                     </div>
 
                     {/* Arrows pointing down to search */}
-                    <div className="grid grid-cols-2 gap-4">
-                        <FlowArrow step={2} currentStep={step} direction="up" />
-                        <FlowArrow step={2} currentStep={step} direction="up" />
+                    <div className="flex justify-center">
+                        <FlowArrow step={2} currentStep={step} direction="down" />
                     </div>
 
                      {/* Middle Row: Parallel Search */}
-                    <div className="grid grid-cols-2 gap-4">
-                        <FlowNode icon={<Database />} title="Vector Search" status={getStatus(2)} step={2} currentStep={step}>
-                             <p>Finds chunks based on semantic meaning.</p>
-                        </FlowNode>
-                        <FlowNode icon={<Search />} title="BM25 Search" status={getStatus(2)} step={2} currentStep={step}>
-                            <p>Finds chunks based on keywords.</p>
+                    <div className="grid grid-cols-1">
+                        <FlowNode icon={<Combine />} title="Parallel Retrieval" status={getStatus(2)} step={2} currentStep={step} className="!p-0">
+                           <div className="grid grid-cols-2 gap-px bg-border rounded-b-lg overflow-hidden">
+                                <div className="p-3 bg-muted/40">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <Database className="w-4 h-4 text-primary" />
+                                        <h5 className="font-semibold text-xs">Vector Search</h5>
+                                    </div>
+                                    <p className="pl-6 text-xs">Finds chunks based on semantic meaning.</p>
+                                </div>
+                                <div className="p-3 bg-muted/40">
+                                     <div className="flex items-center gap-2 mb-2">
+                                        <Search className="w-4 h-4 text-primary" />
+                                        <h5 className="font-semibold text-xs">BM25 Search</h5>
+                                    </div>
+                                    <p className="pl-6 text-xs">Finds chunks based on keywords.</p>
+                                </div>
+                           </div>
                         </FlowNode>
                     </div>
 
@@ -160,7 +171,7 @@ export const HybridRetrieveSimulator = () => {
                     </div>
                     
                     {/* Arrow for merging */}
-                    <div className="grid grid-cols-[1fr_auto_1fr] items-center">
+                    <div className="grid grid-cols-[1fr,auto,1fr] items-center">
                          <FlowArrow step={4} currentStep={step} className="rotate-45 -translate-x-1/4"/>
                          <div></div>
                          <FlowArrow step={4} currentStep={step} className="-rotate-45 translate-x-1/4"/>
