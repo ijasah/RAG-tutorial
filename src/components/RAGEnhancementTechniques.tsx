@@ -11,6 +11,7 @@ import { StepbackPromptSimulator } from './StepbackPromptSimulator';
 import { HierarchicalIndexSimulator } from './HierarchicalIndexSimulator';
 import { HybridRetrieveSimulator } from './HybridRetrieveSimulator';
 import { SentenceWindowSimulator } from './SentenceWindowSimulator';
+import { MetadataFilteringSimulator } from './MetadataFilteringSimulator';
 
 
 const techniqueCategories = [
@@ -81,6 +82,11 @@ const retrieverEnhancementMethods = [
         title: "Sentence Window Retrieval",
         value: "sentence-window",
         component: <SentenceWindowSimulator />
+    },
+    {
+        title: "Meta-data Filtering",
+        value: "metadata-filtering",
+        component: <MetadataFilteringSimulator />
     }
 ];
 
