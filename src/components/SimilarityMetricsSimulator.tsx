@@ -1,19 +1,20 @@
 // src/components/SimilarityMetricsSimulator.tsx
 "use client";
 import React, { useState, useMemo } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calculator, Orbit } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 type Vector = { x: number; y: number; label: string; };
 
 const documents: Vector[] = [
-    { x: 1, y: 5, label: 'The sky is blue.' },
-    { x: 4, y: 3, label: 'RAG is a technique.' },
-    { x: 8, y: 6, label: 'RAG is a powerful technique for LLMs.' },
-    { x: 3.5, y: 4, label: 'Chunking splits text.' },
+    { x: 1, y: 5, label: "The sky is blue." },
+    { x: 4, y: 3, label: "RAG is a technique." },
+    { x: 8, y: 6, label: "RAG is a powerful technique for LLMs." },
+    { x: 3.5, y: 4, label: "Chunking splits text." },
 ];
 
 const queryVector: Vector = { x: 5, y: 3.75, label: 'What is RAG?' };
@@ -34,16 +35,22 @@ const magnitude = (v: Vector) => Math.sqrt(v.x * v.x + v.y * v.y);
 const cosineSimilarity = (v1: Vector, v2: Vector) => dotProduct(v1, v2) / (magnitude(v1) * magnitude(v2));
 const euclideanDistance = (v1: Vector, v2: Vector) => Math.sqrt(Math.pow(v1.x - v2.x, 2) + Math.pow(v1.y - v2.y, 2));
 
-const MetricDisplay = ({ title, formula, value, children }: { title: string, formula: string, value: string, children: React.ReactNode }) => (
-    <div className="flex flex-col items-center space-y-3 p-4 border rounded-lg bg-muted/20 h-full">
-        <h3 className="font-semibold text-lg text-primary">{title}</h3>
-        <p className="font-mono text-xs text-muted-foreground h-8">{formula}</p>
+const MetricDisplay = ({ title, formula, value, children, metric }: { title: string, formula: string, value: string, children: React.ReactNode, metric: 'cosine' | 'euclidean' }) => (
+    <div className="flex flex-col space-y-3 p-4 border rounded-lg bg-muted/20 h-full">
+        <h3 className="font-semibold text-lg text-primary text-center">{title}</h3>
+        <p className="font-mono text-xs text-muted-foreground h-8 text-center">{formula}</p>
         <div className="relative w-full h-[300px] rounded-lg bg-muted/30 overflow-hidden">
             {children}
         </div>
-        <div className="text-center">
+        <div className="text-center mt-auto">
             <p className="text-xs uppercase text-muted-foreground">Score</p>
             <p className="text-3xl font-bold text-foreground">{value}</p>
+             <p className="text-xs text-muted-foreground mt-1 h-10">
+                {metric === 'cosine'
+                    ? 'Closer to 1 is more similar.'
+                    : 'Closer to 0 is more similar.'
+                }
+            </p>
         </div>
     </div>
 );
@@ -51,28 +58,14 @@ const MetricDisplay = ({ title, formula, value, children }: { title: string, for
 
 const VectorVisualization = ({ selectedVec, metric }: { selectedVec: Vector, metric: 'cosine' | 'euclidean' }) => {
     
-    const cosSim = cosineSimilarity(queryVector, selectedVec);
     const queryAngle = Math.atan2(queryVector.y, queryVector.x);
     const selectedAngle = Math.atan2(selectedVec.y, selectedVec.x);
 
     const angleDiff = Math.abs(queryAngle - selectedAngle);
     const arcRadius = 40;
-
-    const startAngle = Math.min(queryAngle, selectedAngle);
-    const endAngle = Math.max(queryAngle, selectedAngle);
     
-    const startPoint = {
-        x: origin.x + arcRadius * Math.cos(startAngle),
-        y: origin.y - arcRadius * Math.sin(startAngle)
-    };
-    const endPoint = {
-        x: origin.x + arcRadius * Math.cos(endAngle),
-        y: origin.y - arcRadius * Math.sin(endAngle)
-    };
-
     const largeArcFlag = angleDiff > Math.PI ? 1 : 0;
     
-    // Correct way to draw an arc between two angles
     const startPointArc = {
         x: origin.x + arcRadius * Math.cos(queryAngle),
         y: origin.y - arcRadius * Math.sin(queryAngle)
@@ -82,7 +75,7 @@ const VectorVisualization = ({ selectedVec, metric }: { selectedVec: Vector, met
         y: origin.y - arcRadius * Math.sin(selectedAngle)
     }
 
-    const arcPath = `M ${startPointArc.x} ${startPointArc.y} A ${arcRadius} ${arcRadius} 0 ${largeArcFlag} ${queryAngle > selectedAngle ? 1 : 0} ${endPointArc.x} ${endPointArc.y}`;
+    const arcPath = `M ${startPointArc.x} ${startPointArc.y} A ${arcRadius} ${arcRadius} 0 ${largeArcFlag} ${queryAngle > selectedAngle ? 0 : 1} ${endPointArc.x} ${endPointArc.y}`;
 
 
     return (
@@ -94,14 +87,14 @@ const VectorVisualization = ({ selectedVec, metric }: { selectedVec: Vector, met
             <g>
                <motion.line x1={origin.x} y1={origin.y} x2={getCoords(queryVector).x} y2={getCoords(queryVector).y} stroke="hsl(var(--primary))" strokeWidth="2.5" initial={{pathLength: 0}} animate={{pathLength: 1}} transition={{duration: 0.5}} />
                <motion.circle cx={getCoords(queryVector).x} cy={getCoords(queryVector).y} r="4" fill="hsl(var(--primary))" initial={{scale: 0}} animate={{scale: 1}} transition={{delay: 0.5}}/>
-               <text x={getCoords(queryVector).x + 5} y={getCoords(queryVector).y - 10} fontWeight="bold" fill="hsl(var(--primary))">{queryVector.label}</text>
+               <text x={getCoords(queryVector).x} y={getCoords(queryVector).y} dy="-10" textAnchor="middle" fontWeight="bold" fill="hsl(var(--primary))">{queryVector.label}</text>
             </g>
 
             {/* Selected Vector */}
             <g>
                <motion.line x1={origin.x} y1={origin.y} x2={getCoords(selectedVec).x} y2={getCoords(selectedVec).y} stroke="hsl(var(--foreground))" strokeWidth="2" opacity="0.8" initial={{pathLength: 0}} animate={{pathLength: 1}} transition={{duration: 0.5}} />
                 <motion.circle cx={getCoords(selectedVec).x} cy={getCoords(selectedVec).y} r="4" fill="hsl(var(--foreground))"  opacity="0.8" initial={{scale: 0}} animate={{scale: 1}} transition={{delay: 0.5}}/>
-               <text x={getCoords(selectedVec).x + 5} y={getCoords(selectedVec).y + 5} fontWeight="bold" fill="hsl(var(--foreground))" opacity="0.8" >{selectedVec.label}</text>
+               <text x={getCoords(selectedVec).x} y={getCoords(selectedVec).y} dy="15" textAnchor="middle" fontWeight="bold" fill="hsl(var(--foreground))" opacity="0.8" >{selectedVec.label}</text>
             </g>
 
             {metric === 'cosine' && (
@@ -156,7 +149,7 @@ export const SimilarityMetricsSimulator = () => {
             </CardHeader>
             <CardContent className="space-y-6">
                 <div className="p-4 rounded-lg bg-muted/40">
-                    <p className="text-sm font-semibold mb-2 text-center">Compare Query: "{queryVector.label}"</p>
+                    <p className="text-sm font-semibold mb-3 text-center">Compare Query: "{queryVector.label}"</p>
                     <div className="flex gap-2 flex-wrap justify-center">
                         {documents.map((v, i) => (
                             <Button key={i} onClick={() => setSelectedIndex(i)} variant={selectedIndex === i ? 'default' : 'outline'} size="sm" className="text-xs h-auto py-1.5 px-3">
@@ -167,10 +160,10 @@ export const SimilarityMetricsSimulator = () => {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
-                    <MetricDisplay title="Cosine Similarity" formula="cos(θ) = (A · B) / (||A|| * ||B||)" value={cosSim.toFixed(3)}>
+                    <MetricDisplay title="Cosine Similarity" formula="cos(θ) = (A · B) / (||A|| * ||B||)" value={cosSim.toFixed(3)} metric="cosine">
                         <VectorVisualization selectedVec={selectedVector} metric="cosine" />
                     </MetricDisplay>
-                    <MetricDisplay title="Euclidean Distance" formula="√((x₂-x₁)² + (y₂-y₁)²)" value={eucDist.toFixed(2)}>
+                    <MetricDisplay title="Euclidean Distance" formula="√((x₂-x₁)² + (y₂-y₁)²)" value={eucDist.toFixed(2)} metric="euclidean">
                         <VectorVisualization selectedVec={selectedVector} metric="euclidean" />
                     </MetricDisplay>
                 </div>
