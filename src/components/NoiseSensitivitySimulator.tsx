@@ -117,6 +117,7 @@ export const NoiseSensitivitySimulator = () => {
     const incorrectClaims = evaluatedClaims.filter(i => !exampleData.claims[i].correct).length;
     const totalClaims = exampleData.claims.length;
     const score = totalClaims > 0 ? incorrectClaims / totalClaims : 0;
+    const isEvaluating = step === 3 && evaluatedClaims.length < totalClaims;
 
     return (
         <Card className="bg-card/50 transition-all hover:shadow-lg hover:-translate-y-1">
@@ -184,8 +185,8 @@ export const NoiseSensitivitySimulator = () => {
                      <Button onClick={handleReset} variant="outline" size="sm" disabled={step === 0}>
                          <RefreshCw className="mr-2 h-4 w-4" /> Reset
                      </Button>
-                     <Button onClick={handleNext} size="sm" className="ml-4 w-28" disabled={step >= maxSteps || (step === 3 && evaluatedClaims.length < totalClaims)}>
-                         {step > 0 ? 'Next' : 'Start'} <ArrowRight className="ml-2 h-4 w-4" />
+                     <Button onClick={handleNext} size="sm" className="ml-4 w-32" disabled={step >= maxSteps || isEvaluating}>
+                         {step > 0 ? (isEvaluating ? 'Evaluating...' : 'Next') : 'Start Simulation'} <ArrowRight className="ml-2 h-4 w-4" />
                      </Button>
                 </div>
             </CardContent>
