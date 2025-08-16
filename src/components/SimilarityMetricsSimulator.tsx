@@ -11,16 +11,16 @@ import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 type Vector = { x: number; y: number; label: string; };
 
 const vectors: Vector[] = [
-    { x: 4, y: 1, label: 'King' },
-    { x: 8, y: 2, label: 'King (scaled)' }, // Same direction, larger magnitude
-    { x: 3.5, y: 1.5, label: 'Queen' },
-    { x: 1, y: 4, label: 'Apple' },
+    { x: 4, y: 3, label: 'RAG is a technique.' },
+    { x: 8, y: 6, label: 'RAG is a powerful technique for LLMs.' }, // Same direction, larger magnitude
+    { x: 3.5, y: 4, label: 'Chunking splits text.' },
+    { x: 1, y: 5, label: 'The sky is blue.' },
 ];
 
-const queryVector: Vector = { x: 4, y: 0.5, label: 'Man' };
+const queryVector: Vector = { x: 5, y: 3.75, label: 'What is RAG?' };
 const width = 500;
 const height = 300;
-const scale = 30; // Adjusted scale for larger vectors
+const scale = 25; 
 const origin = { x: 40, y: height - 40 };
 
 const getCoords = (vec: Vector) => ({
@@ -64,7 +64,7 @@ const SimilarityMetricsSimulator = () => {
             <CardHeader>
                 <CardTitle className="flex items-center gap-2"><Calculator /> Similarity Metrics</CardTitle>
                 <CardDescription>
-                    Explore how different metrics measure the "closeness" of vectors. Compare the query 'Man' to other concepts and see why Cosine Similarity is preferred for RAG.
+                    Explore how different metrics measure the "closeness" of vectors. Compare the query to different documents and see why Cosine Similarity is preferred for RAG.
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -76,11 +76,11 @@ const SimilarityMetricsSimulator = () => {
                                 <TabsTrigger value="euclidean">Euclidean Distance</TabsTrigger>
                             </TabsList>
                         </Tabs>
-                        <p className="text-sm text-muted-foreground">Compare <span className="font-bold text-primary">'{queryVector.label}'</span> to:</p>
+                        <p className="text-sm text-muted-foreground">Compare query <span className="font-bold text-primary">'{queryVector.label}'</span> to:</p>
                         <div className="flex gap-2 flex-wrap">
                             {vectors.map((v, i) => (
-                                <Button key={v.label} onClick={() => setSelectedIndex(i)} variant={selectedIndex === i ? 'default' : 'outline'}>
-                                    {v.label}
+                                <Button key={v.label} onClick={() => setSelectedIndex(i)} variant={selectedIndex === i ? 'default' : 'outline'} className="text-xs h-auto py-1.5">
+                                    "{v.label}"
                                 </Button>
                             ))}
                         </div>
@@ -91,9 +91,11 @@ const SimilarityMetricsSimulator = () => {
                         </Alert>
                          <Alert className="border-primary/30 bg-primary/10">
                             <Info className="h-4 w-4" />
-                            <AlertTitle>Why Cosine Similarity?</AlertTitle>
-                            <AlertDescription className="text-xs">
-                                In text analysis, we care more about the *topic* (the vector's direction) than document length (the vector's magnitude). Cosine Similarity is **scale-invariant**; it only measures the angle. Notice 'King' and 'King (scaled)' have the same high cosine score because their direction is identical. This is ideal for finding semantically related content.
+                            <AlertTitle>Why is Cosine Similarity Preferred?</AlertTitle>
+                            <AlertDescription className="text-xs space-y-2">
+                                <p>In text analysis, we care more about the **topic** (the vector's direction) than document length (the vector's magnitude). LLM embeddings encode semantic meaning in **direction**.</p>
+                                <p>Notice that the two "RAG" documents have a perfect cosine score of **1.000**. Their directions are identical, even though one is longer. Euclidean distance, however, gives them very different scores because it's sensitive to magnitude (length), which can be misleading.</p>
+                                <p>This **scale-invariance** is crucial in high-dimensional spaces, where angles remain meaningful while distances become less interpretable.</p>
                             </AlertDescription>
                         </Alert>
                         <div className="text-center font-bold text-xl">{result}</div>
@@ -109,7 +111,7 @@ const SimilarityMetricsSimulator = () => {
 
                             {/* Selected Vector */}
                             <motion.line key={`selected-${selectedIndex}`} initial={{pathLength: 0}} animate={{pathLength: 1}} x1={origin.x} y1={origin.y} x2={getCoords(selectedVector).x} y2={getCoords(selectedVector).y} stroke="hsl(var(--foreground))" strokeWidth="2" />
-                            <text x={getCoords(selectedVector).x + 5} y={getCoords(selectedVector).y} fill="hsl(var(--foreground))">{selectedVector.label}</text>
+                            <text x={getCoords(selectedVector).x + 5} y={getCoords(selectedVector).y} fill="hsl(var(--foreground))" className="max-w-[100px]">{selectedVector.label}</text>
 
                              {/* Other Vectors */}
                              {vectors.map((v, i) => i !== selectedIndex && (
