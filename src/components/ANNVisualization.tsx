@@ -1,39 +1,40 @@
-
 // src/components/ANNVisualization.tsx
 "use client";
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Play, RefreshCw, ArrowRight, ArrowLeft, ListTree, Sparkles, Search, CheckCircle } from 'lucide-react';
+import { ListTree, Sparkles, Search, CheckCircle, RefreshCw, Users, Binary, HelpCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Slider } from './ui/slider';
 import { Badge } from './ui/badge';
+import { Alert, AlertDescription, AlertTitle } from './ui/alert';
+
 
 // --- Data and Types ---
 type Point = { id: string; x: number; y: number; };
-type Split = { p1: Point; p2: Point; midX: number; midY: number; angle: number; };
 type TreeNode = {
     id: string;
     points: Point[];
-    split?: Split;
+    isLeaf: boolean;
     children?: [TreeNode, TreeNode];
-    bounds: { minX: number; minY: number; maxX: number; maxY: number; };
+    split?: { p1: Point; p2: Point; midX: number; midY: number; angle: number; };
 };
+type Forest = TreeNode[];
 
-// --- Helper Functions ---
-const generatePoints = (num: number, width: number, height: number): Point[] => 
+const generatePoints = (num: number, width: number, height: number): Point[] =>
     Array.from({ length: num }, (_, i) => ({
         id: `p${i}`,
-        x: Math.random() * (width - 40) + 20,
-        y: Math.random() * (height - 40) + 20,
+        x: Math.random() * (width - 60) + 30,
+        y: Math.random() * (height - 60) + 30,
     }));
 
-const createTree = (points: Point[], bounds: any, depth = 0, maxDepth = 4): TreeNode => {
-    const id = `n${depth}-${Math.random()}`;
-    if (depth >= maxDepth || points.length < 2) {
-        return { id, points, bounds };
+const createTree = (points: Point[], maxItemsInLeaf = 10, depth = 0): TreeNode => {
+    const id = `n-${depth}-${Math.random().toString(36).substring(2, 7)}`;
+    if (points.length <= maxItemsInLeaf) {
+        return { id, points, isLeaf: true };
     }
-    
+
     const p1Index = Math.floor(Math.random() * points.length);
     let p2Index = Math.floor(Math.random() * points.length);
     while (p1Index === p2Index) {
@@ -51,60 +52,70 @@ const createTree = (points: Point[], bounds: any, depth = 0, maxDepth = 4): Tree
 
     points.forEach(p => {
         const val = (p.x - midX) * Math.cos(angle) + (p.y - midY) * Math.sin(angle);
-        if (val < 0) leftPoints.push(p);
-        else rightPoints.push(p);
+        (val < 0 ? leftPoints : rightPoints).push(p);
     });
-
-    const leftBounds = { ...bounds };
-    const rightBounds = { ...bounds };
 
     return {
         id,
         points,
+        isLeaf: false,
         split: { p1, p2, midX, midY, angle },
         children: [
-            createTree(leftPoints, leftBounds, depth + 1, maxDepth),
-            createTree(rightPoints, rightBounds, depth + 1, maxDepth),
+            createTree(leftPoints, maxItemsInLeaf, depth + 1),
+            createTree(rightPoints, maxItemsInLeaf, depth + 1),
         ],
-        bounds,
     };
 };
 
-const getSplitsAtDepth = (node: TreeNode, depth: number, currentDepth = 0): Split[] => {
-    if (!node.split || currentDepth > depth) return [];
-    if (currentDepth === depth) return [node.split];
-    if (!node.children) return [];
-    return [...getSplitsAtDepth(node.children[0], depth, currentDepth + 1), ...getSplitsAtDepth(node.children[1], depth, currentDepth + 1)];
+const findLeafNodes = (node: TreeNode, queryPoint: Point, searchK: number): TreeNode[] => {
+    const pq: [TreeNode, number][] = [[node, 0]];
+    const leaves: TreeNode[] = [];
+    
+    while(pq.length > 0 && leaves.length < searchK) {
+        pq.sort((a,b) => a[1] - b[1]); // Sort by distance to keep it a priority queue
+        const [currentNode] = pq.shift()!;
+
+        if(currentNode.isLeaf) {
+            leaves.push(currentNode);
+            continue;
+        }
+
+        const { split, children } = currentNode;
+        if (!split || !children) continue;
+
+        const distanceToHyperplane = (queryPoint.x - split.midX) * Math.cos(split.angle) + (queryPoint.y - split.midY) * Math.sin(split.angle);
+
+        // Add both children to the priority queue with their "wrong side" distance
+        pq.push([children[0], Math.max(0, -distanceToHyperplane)]);
+        pq.push([children[1], Math.max(0, distanceToHyperplane)]);
+    }
+    
+    return leaves;
 };
 
-const findPath = (node: TreeNode, query: Point): TreeNode[] => {
-    const path = [node];
-    let currentNode = node;
-    while (currentNode.children) {
-        const split = currentNode.split!;
-        const val = (query.x - split.midX) * Math.cos(split.angle) + (query.y - split.midY) * Math.sin(split.angle);
-        currentNode = val < 0 ? currentNode.children[0] : currentNode.children[1];
-        path.push(currentNode);
-    }
-    return path;
-};
+
+const distance = (p1: Point, p2: Point) => Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2));
 
 
 export function ANNVisualization() {
     const width = 550;
     const height = 400;
-    const [points, setPoints] = useState<Point[]>([]);
-    const [tree, setTree] = useState<TreeNode | null>(null);
-    const [step, setStep] = useState(0);
-    
-    const queryPoint = useMemo(() => ({ id: 'query', x: width / 2, y: height * 0.6 }), []);
 
-    const regenerate = useCallback(() => {
-        const newPoints = generatePoints(100, width, height);
-        setPoints(newPoints);
-        setTree(createTree(newPoints, { minX: 0, minY: 0, maxX: width, maxY: height }));
-    }, [width, height]);
+    const [numTrees, setNumTrees] = useState(3);
+    const [searchK, setSearchK] = useState(5);
+    const [step, setStep] = useState(0);
+    const [points, setPoints] = useState<Point[]>([]);
+    const [forest, setForest] = useState<Forest>([]);
     
+    const queryPoint = useMemo(() => ({ id: 'query', x: width / 2, y: height / 2 }), [width, height]);
+    
+    const regenerate = useCallback(() => {
+        const newPoints = generatePoints(150, width, height);
+        setPoints(newPoints);
+        const newForest = Array.from({ length: numTrees }, () => createTree(newPoints, 15));
+        setForest(newForest);
+    }, [numTrees, width, height]);
+
     useEffect(() => {
         regenerate();
     }, [regenerate]);
@@ -114,75 +125,37 @@ export function ANNVisualization() {
         regenerate();
     };
     
-    const searchPath = useMemo(() => tree ? findPath(tree, queryPoint) : [], [tree, queryPoint]);
-    const finalLeaf = searchPath[searchPath.length - 1];
+    const { leaves, candidates, topK } = useMemo(() => {
+        if (step < 2) return { leaves: [], candidates: new Set(), topK: [] };
+        
+        const allLeaves = forest.flatMap(tree => findLeafNodes(tree, queryPoint, searchK));
+        const candidateSet = new Set<Point>();
+        allLeaves.forEach(leaf => leaf.points.forEach(p => candidateSet.add(p)));
+        
+        if (step < 3) return { leaves: allLeaves, candidates: candidateSet, topK: [] };
+
+        const sortedCandidates = [...candidateSet].sort((a, b) => distance(queryPoint, a) - distance(queryPoint, b));
+        return { leaves: allLeaves, candidates: candidateSet, topK: sortedCandidates.slice(0, 10) };
+
+    }, [forest, queryPoint, searchK, step]);
 
     const getStepDescription = () => {
         const descriptions = [
-            "Start with a set of points. The goal is to find nearest neighbors efficiently.",
-            "1. Randomly pick two points and create a hyperplane equidistant to them. This splits the space in two.",
-            "2. Recursively split each resulting subspace with new random hyperplanes.",
-            "3. Continue splitting... This process builds a binary tree structure.",
-            "4. ...until each 'leaf' node in the tree contains a small number of points (e.g., K items). The space is now fully partitioned.",
-            "5. To find neighbors for a new query point (red X), traverse the tree from the root.",
-            "6. At each split, decide which side the query point falls on and follow that path down the tree.",
-            "7. This leads to a single leaf node containing a small set of candidate points.",
-            "8. Finally, compute the exact distance to these candidates, sort them, and return the top K. This is far faster than checking all 100 points.",
-            "This is an *Approximate* method. The true nearest neighbor might be just across a split boundary. Annoy uses multiple trees (a forest) and a priority queue to search more smartly and improve accuracy."
+            "1. Annoy builds a forest of random binary trees to index the data points.",
+            "2. For each query, it searches the trees to find a pool of candidate neighbors.",
+            "3. Finally, it calculates the exact distance to these candidates and returns the top K.",
+            "4. The true nearest neighbor might be missed (it's approximate!), but this is much faster than checking every point."
         ];
         return descriptions[step];
-    };
-
-    const splits = useMemo(() => {
-        if (!tree) return [];
-        const maxDepth = 4;
-        let allSplits: Split[] = [];
-        for (let i = 0; i < maxDepth; i++) {
-            if (step > i) {
-                allSplits = [...allSplits, ...getSplitsAtDepth(tree, i)];
-            }
-        }
-        return allSplits;
-    }, [tree, step]);
-
-    const renderTree = (node: TreeNode | undefined, pathIds: Set<string>): React.ReactNode => {
-        if (!node) return null;
-        const onPath = pathIds.has(node.id);
-        
-        return (
-            <div key={node.id} className="flex flex-col items-center relative">
-                <motion.div 
-                    className={cn("w-4 h-4 rounded-sm border-2", onPath ? "bg-red-500/50 border-red-500" : "bg-muted border-foreground/30")}
-                    initial={{opacity:0, scale: 0.5}}
-                    animate={{opacity:1, scale: 1}}
-                    transition={{delay: 0.2}}
-                />
-                {node.children && (
-                     <div className="absolute top-4 h-6 w-px bg-border" />
-                )}
-                 {node.children && (
-                    <div className="absolute top-10 flex w-full justify-center">
-                        <div className="w-1/2 border-t-2"></div>
-                        <div className="w-1/2 border-t-2"></div>
-                    </div>
-                )}
-                {node.children && (
-                    <div className="flex w-full justify-around mt-12">
-                       <div className="w-1/2 flex justify-center"> {renderTree(node.children[0], pathIds)}</div>
-                       <div className="w-1/2 flex justify-center"> {renderTree(node.children[1], pathIds)}</div>
-                    </div>
-                )}
-            </div>
-        )
-    };
-
+    }
+    
 
     return (
         <Card className="bg-card/50 mt-6">
             <CardHeader>
-                <CardTitle className="flex items-center gap-2"><ListTree /> Annoy Simulation: Recursive Splitting</CardTitle>
+                <CardTitle className="flex items-center gap-2"><ListTree /> Annoy: A Forest of Random Trees</CardTitle>
                 <CardDescription>
-                    A visual guide to how Annoy builds a binary tree index to perform approximate nearest neighbor searches.
+                    A simulation of how Annoy uses multiple binary trees to perform Approximate Nearest Neighbor (ANN) search.
                 </CardDescription>
             </CardHeader>
             <CardContent className="grid grid-cols-1 lg:grid-cols-5 gap-6">
@@ -190,79 +163,89 @@ export function ANNVisualization() {
                     <div className="relative border rounded-lg bg-background" style={{ width, height }}>
                         <svg width={width} height={height}>
                             <AnimatePresence>
-                                {points.map((p, i) => (
-                                    <motion.circle key={`point-${p.id}-${i}`} cx={p.x} cy={p.y} r={2.5} className={cn("fill-muted-foreground/60", {
-                                        "fill-primary stroke-primary/50 stroke-2": step >= 8 && finalLeaf?.points.some(lp => lp.id === p.id),
-                                    })} />
+                                {/* Data Points */}
+                                {points.map(p => (
+                                    <motion.circle 
+                                        key={p.id} 
+                                        cx={p.x} cy={p.y} r="2" 
+                                        className={cn("fill-muted-foreground/60", {
+                                            "fill-amber-400": step >=2 && candidates.has(p),
+                                            "fill-green-400 stroke-green-300 stroke-2": step >= 3 && topK.some(tk => tk.id === p.id),
+                                        })}
+                                        initial={{opacity: 0}}
+                                        animate={{opacity: 1}}
+                                    />
                                 ))}
-                                
-                                {splits.map((split, i) => {
-                                    const length = width * 2;
-                                    const lineX1 = split.midX - length/2 * Math.sin(split.angle);
-                                    const lineY1 = split.midY + length/2 * Math.cos(split.angle);
-                                    const lineX2 = split.midX + length/2 * Math.sin(split.angle);
-                                    const lineY2 = split.midY - length/2 * Math.cos(split.angle);
-                                    
-                                    return (
-                                        <motion.g key={`split-${split.p1.id}-${split.p2.id}-${i}`}>
-                                            <motion.line
-                                                x1={lineX1} y1={lineY1}
-                                                x2={lineX2} y2={lineY2}
-                                                stroke="hsl(var(--foreground))" strokeWidth="1"
-                                                initial={{ pathLength: 0 }}
-                                                animate={{ pathLength: 1 }}
-                                                transition={{ duration: 0.5, delay: i * 0.1 }}
-                                            />
-                                        </motion.g>
-                                    );
-                                })}
 
-                                {step >= 5 && <motion.path key="query-x" d="M10 10 L-10 -10 M-10 10 L10 -10" stroke="hsl(var(--destructive))" strokeWidth={2} initial={{scale:0}} animate={{scale:1}} transform={`translate(${queryPoint.x} ${queryPoint.y})`} />}
+                                {/* Query Point */}
+                                {step >= 1 && <motion.path key="query-x" d="M8 8 L-8 -8 M-8 8 L8 -8" stroke="hsl(var(--destructive))" strokeWidth={2} initial={{scale:0}} animate={{scale:1}} transform={`translate(${queryPoint.x} ${queryPoint.y})`} />}
                             
-                                {step >= 7 && finalLeaf && (
-                                     <motion.polygon 
-                                        key="final-leaf-polygon"
-                                        points={`${finalLeaf.bounds.minX},${finalLeaf.bounds.minY} ${finalLeaf.bounds.maxX},${finalLeaf.bounds.minY} ${finalLeaf.bounds.maxX},${finalLeaf.bounds.maxY} ${finalLeaf.bounds.minX},${finalLeaf.bounds.maxY}`}
-                                        className="fill-primary/10 stroke-primary/50"
-                                        strokeWidth={2}
-                                        initial={{opacity:0}}
-                                        animate={{opacity:1}}
-                                     />
-                                )}
                             </AnimatePresence>
                         </svg>
+                         <AnimatePresence>
+                            {step > 0 && (
+                                <motion.div 
+                                    className="absolute inset-0 flex flex-wrap items-center justify-center gap-1 p-2 overflow-hidden pointer-events-none"
+                                    initial={{opacity: 0}}
+                                    animate={{opacity: 1}}
+                                >
+                                    {forest.map((tree, i) => (
+                                        <div key={i} className="relative w-12 h-12 rounded-full bg-primary/5 flex items-center justify-center">
+                                            <Binary className="w-5 h-5 text-primary/50"/>
+                                        </div>
+                                    ))}
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                     </div>
                 </div>
 
                 <div className="lg:col-span-2 flex flex-col justify-between">
-                    <div>
-                        <h4 className="font-semibold text-foreground mb-2">Simulation Steps</h4>
-                        <div className="p-3 bg-muted/40 border rounded-md min-h-[100px] text-sm text-muted-foreground flex items-center justify-center text-center">
-                           <AnimatePresence mode="wait">
-                                <motion.p
-                                    key={step}
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: -10 }}
-                                    transition={{ duration: 0.2 }}
-                                >
-                                    {getStepDescription()}
-                                </motion.p>
-                           </AnimatePresence>
+                    <div className="space-y-4">
+                        <div>
+                             <h4 className="font-semibold text-foreground mb-2">Configuration</h4>
+                             <div className="space-y-3 p-3 bg-muted/40 border rounded-md">
+                                 <div>
+                                     <label className="text-xs font-medium">Number of Trees ({numTrees})</label>
+                                     <Slider disabled={step > 0} min={1} max={10} step={1} value={[numTrees]} onValueChange={(v) => setNumTrees(v[0])} />
+                                     <p className="text-xs text-muted-foreground mt-1">More trees improve accuracy at the cost of memory.</p>
+                                 </div>
+                                 <div>
+                                     <label className="text-xs font-medium">Search-K ({searchK})</label>
+                                     <Slider disabled={step > 0} min={1} max={20} step={1} value={[searchK]} onValueChange={(v) => setSearchK(v[0])} />
+                                     <p className="text-xs text-muted-foreground mt-1">Inspects more leaf nodes for better accuracy but is slower.</p>
+                                 </div>
+                             </div>
                         </div>
-                        <div className="mt-4">
-                            <h4 className="font-semibold text-foreground mb-2">Resulting Binary Tree</h4>
-                            <div className="p-4 bg-muted/40 border rounded-md min-h-[150px] flex items-start justify-center overflow-auto">
-                               {tree && step > 0 && renderTree(step >= 5 ? searchPath[0] : tree, new Set(searchPath.map(n => n.id)))}
-                            </div>
-                        </div>
+
+                        <Alert>
+                            <HelpCircle className="h-4 w-4" />
+                            <AlertTitle className="flex items-center justify-between">
+                                <span>Step {step + 1}</span>
+                                {step === 1 && <Badge variant="outline">{leaves.length} Leaves Searched</Badge>}
+                                {step === 2 && <Badge variant="outline">{candidates.size} Candidates Found</Badge>}
+                                {step === 3 && <Badge variant="destructive">{topK.length} Neighbors Returned</Badge>}
+                            </AlertTitle>
+                            <AlertDescription>
+                                <AnimatePresence mode="wait">
+                                    <motion.p
+                                        key={step}
+                                        initial={{ opacity: 0, y: 5 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: -5 }}
+                                        transition={{ duration: 0.2 }}
+                                    >
+                                        {getStepDescription()}
+                                    </motion.p>
+                                </AnimatePresence>
+                            </AlertDescription>
+                        </Alert>
                     </div>
                     
                     <div className="flex flex-col gap-2 mt-4">
-                        <div className="flex justify-between items-center">
-                             <Button variant="outline" size="icon" onClick={() => setStep(s => Math.max(s - 1, 0))} disabled={step === 0}><ArrowLeft/></Button>
-                             <span className="text-sm text-muted-foreground">{step + 1} / 10</span>
-                             <Button variant="outline" size="icon" onClick={() => setStep(s => Math.min(s + 1, 9))} disabled={step === 9}><ArrowRight/></Button>
+                         <div className="flex justify-between items-center gap-2">
+                             <Button className="w-full" variant="outline" onClick={() => setStep(s => Math.max(s - 1, 0))} disabled={step === 0}>Previous</Button>
+                             <Button className="w-full" variant="outline" onClick={() => setStep(s => Math.min(s + 1, 3))} disabled={step === 3}>Next</Button>
                         </div>
                          <Button onClick={reset}><RefreshCw className="mr-2"/>Reset Simulation</Button>
                     </div>
