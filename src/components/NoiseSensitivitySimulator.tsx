@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
-import { HelpCircle, FileText, Bot, Search, RefreshCw, ArrowRight, MessageSquare, Sparkles, GitMerge, BrainCircuit, Waves, CheckCircle, XCircle } from 'lucide-react';
+import { HelpCircle, FileText, Bot, Search, RefreshCw, ArrowRight, MessageSquare, Sparkles, GitMerge, BrainCircuit, Waves, CheckCircle, XCircle, ClipboardCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from './ui/badge';
 import { CodeBlock } from './ui/code-block';
