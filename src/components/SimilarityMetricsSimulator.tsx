@@ -77,7 +77,7 @@ const VectorVisualization = ({ selectedVec, metric }: { selectedVec: Vector, met
     
     const getTextPosition = (vec: Vector, isQuery: boolean) => {
         const coords = getCoords(vec);
-        const yOffset = isQuery ? -15 : 15;
+        const yOffset = isQuery ? -20 : 20; // Increase y-offset to avoid overlap
         const xOffset = isQuery ? 15 : 0;
 
         return {
@@ -188,9 +188,21 @@ export const SimilarityMetricsSimulator = () => {
                             <h4 className="font-semibold text-foreground mb-2">Component 1: The Dot Product (A · B)</h4>
                             <p>The dot product is the sum of the products of the corresponding components of two vectors. Geometrically, it measures how much one vector points in the direction of another. A larger value means a greater degree of alignment.</p>
                         </div>
-                         <div>
-                            <h4 className="font-semibold text-foreground mb-2">Component 2: The Norm (Magnitude ||A||)</h4>
-                            <p>The norm (or magnitude) is the length of a vector, calculated using the Pythagorean theorem. In text embeddings, this often corresponds to the length or amount of information in the text. Longer text might have a larger magnitude.</p>
+                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+                            <div>
+                                <h4 className="font-semibold text-foreground mb-2">Component 2: The L2 Norm (Magnitude ||v||)</h4>
+                                <p>The norm (or magnitude) is the length of a vector, calculated using the Pythagorean theorem: <code className="font-mono bg-muted p-1 rounded-md">||v|| = √(x² + y²)</code>. In text embeddings, this often corresponds to the length or amount of information in the text. Longer text might have a larger magnitude.</p>
+                            </div>
+                            <div className="w-full max-w-[200px] mx-auto">
+                                <svg viewBox="0 0 100 100">
+                                    <path d="M 10 90 H 80" stroke="currentColor" stroke-dasharray="2 2" />
+                                    <path d="M 80 90 V 20" stroke="currentColor" stroke-dasharray="2 2" />
+                                    <path d="M 10 90 L 80 20" stroke="hsl(var(--primary))" stroke-width="2" />
+                                    <text x="45" y="95" text-anchor="middle" font-size="8">x</text>
+                                    <text x="85" y="55" text-anchor="middle" font-size="8">y</text>
+                                    <text x="35" y="50" fill="hsl(var(--primary))" font-size="8" transform="rotate(-35, 40, 50)">||v||</text>
+                                </svg>
+                            </div>
                         </div>
                         <div>
                             <h4 className="font-semibold text-foreground mb-2">Deriving Cosine Similarity</h4>
