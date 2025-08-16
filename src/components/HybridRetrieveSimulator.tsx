@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './ui/card';
-import { HelpCircle, FileText, Search, RefreshCw, ArrowRight, MessageSquare, Sparkles, Database, GitMerge, Combine, SortAsc } from 'lucide-react';
+import { HelpCircle, FileText, Search, RefreshCw, ArrowRight, MessageSquare, Sparkles, Database, GitMerge, Combine, SortAsc, ArrowDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from './ui/badge';
 
@@ -19,14 +19,15 @@ const documents = [
 const rerankedChunks = [documents[0], documents[2]];
 const finalAnswer = "Semantic chunking is a method of dividing text into meaningful pieces using NLP techniques, which is more context-aware than fixed-size chunking."
 
-const FlowNode = ({ icon, title, children, status, step, currentStep }: { icon: React.ReactNode, title: string, children: React.ReactNode, status: 'inactive' | 'active' | 'complete', step: number, currentStep: number }) => (
+const FlowNode = ({ icon, title, children, status, step, currentStep, className }: { icon: React.ReactNode, title: string, children: React.ReactNode, status: 'inactive' | 'active' | 'complete', step: number, currentStep: number, className?: string }) => (
     <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: currentStep >= step ? 1 : 0.3, y: currentStep >= step ? 0 : 10 }}
         transition={{ duration: 0.4, delay: (step * 0.1) }}
         className={cn(
             "relative p-3 border rounded-lg transition-all duration-300 w-full text-left flex flex-col items-start justify-start h-full",
-             status === 'active' ? 'border-primary bg-primary/10' : 'border-border bg-muted/40'
+             status === 'active' ? 'border-primary bg-primary/10' : 'border-border bg-muted/40',
+             className
         )}
     >
         <div className="flex items-center gap-2 mb-2">
@@ -39,16 +40,20 @@ const FlowNode = ({ icon, title, children, status, step, currentStep }: { icon: 
     </motion.div>
 );
 
-const FlowArrow = ({ step, currentStep }: { step: number, currentStep: number }) => (
+const FlowArrow = ({ step, currentStep, className, direction = 'right' }: { step: number, currentStep: number, className?: string, direction?: 'right' | 'down' | 'up' }) => (
      <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: currentStep >= step ? 1 : 0.2 }}
         transition={{ duration: 0.3, delay: (step * 0.1) + 0.1 }}
-        className="flex justify-center items-center text-muted-foreground/60 h-full"
+        className={cn("flex justify-center items-center text-muted-foreground/60 h-full", className)}
     >
-       <ArrowRight className="w-5 h-5" />
+       {direction === 'right' && <ArrowRight className="w-5 h-5" />}
+       {direction === 'down' && <ArrowDown className="w-5 h-5" />}
+       {direction === 'up' && <ArrowUp className="w-5 h-5" />}
     </motion.div>
 );
+
+const ArrowUp = (props: any) => <ArrowDown {...props} className={cn(props.className, "rotate-180")} />
 
 const ChunkDisplay = ({id, text, score, type, step, currentStep}: {id: string, text: string, score: number, type: string, step: number, currentStep: number}) => {
     const isVector = type === 'vector';
@@ -103,11 +108,11 @@ export const HybridRetrieveSimulator = () => {
                 </CardDescription>
             </CardHeader>
             <CardContent className="p-4 pt-0 space-y-4">
-                <div className="grid grid-cols-[1fr,auto,1fr] gap-x-4 items-center justify-center">
-                    {/* Column 1: Query & Docs */}
-                    <div className="flex flex-col h-full items-center justify-center">
-                         <AnimatePresence>
-                         {step >= 1 && (
+                <div className="space-y-4">
+                    {/* Top Row: Docs & Query */}
+                    <div className="grid grid-cols-2 gap-4">
+                        <AnimatePresence>
+                        {step >= 1 && (
                             <motion.div initial={{opacity:0}} animate={{opacity:1}} className="w-full">
                                 <FlowNode icon={<FileText />} title="1. Documents" status={getStatus(1)} step={1} currentStep={step}>
                                     <p>Documents are indexed into a vector store (for semantic search) and a BM25 index (for keyword search).</p>
@@ -115,11 +120,6 @@ export const HybridRetrieveSimulator = () => {
                             </motion.div>
                          )}
                          </AnimatePresence>
-                    </div>
-
-                    <div/>
-                    
-                    <div className="flex flex-col h-full items-center justify-center">
                          <AnimatePresence>
                          {step >= 2 && (
                             <motion.div initial={{opacity:0}} animate={{opacity:1}} className="w-full">
@@ -131,119 +131,64 @@ export const HybridRetrieveSimulator = () => {
                          </AnimatePresence>
                     </div>
 
+                    {/* Arrows pointing down to search */}
+                    <div className="grid grid-cols-2 gap-4">
+                        <FlowArrow step={2} currentStep={step} direction="up" />
+                        <FlowArrow step={2} currentStep={step} direction="up" />
+                    </div>
+
+                     {/* Middle Row: Parallel Search */}
+                    <div className="grid grid-cols-2 gap-4">
+                        <FlowNode icon={<Database />} title="Vector Search" status={getStatus(2)} step={2} currentStep={step}>
+                             <p>Finds chunks based on semantic meaning.</p>
+                        </FlowNode>
+                        <FlowNode icon={<Search />} title="BM25 Search" status={getStatus(2)} step={2} currentStep={step}>
+                            <p>Finds chunks based on keywords.</p>
+                        </FlowNode>
+                    </div>
+
+                    {/* Middle Row: Parallel Results */}
+                    <div className="grid grid-cols-2 gap-4">
+                        <FlowNode icon={<SortAsc />} title="3. Top Vector Chunks" status={getStatus(3)} step={3} currentStep={step}>
+                             <ChunkDisplay {...documents[0]} step={3} currentStep={step} />
+                             <ChunkDisplay {...documents[1]} step={3} currentStep={step} />
+                        </FlowNode>
+                         <FlowNode icon={<SortAsc />} title="3. Top BM25 Chunks" status={getStatus(3)} step={3} currentStep={step}>
+                            <ChunkDisplay {...documents[2]} step={3} currentStep={step} />
+                            <ChunkDisplay {...documents[3]} step={3} currentStep={step} />
+                        </FlowNode>
+                    </div>
+                    
+                    {/* Arrow for merging */}
+                    <div className="grid grid-cols-[1fr_auto_1fr] items-center">
+                         <FlowArrow step={4} currentStep={step} className="rotate-45 -translate-x-1/4"/>
+                         <div></div>
+                         <FlowArrow step={4} currentStep={step} className="-rotate-45 translate-x-1/4"/>
+                    </div>
                 </div>
 
-                {/* Arrows pointing down */}
-                 <AnimatePresence>
-                 {step >= 2 && (
-                    <motion.div 
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1, transition: {delay: 0.3} }}
-                        className="grid grid-cols-[1fr,auto,1fr] gap-x-4 items-start"
-                    >
-                        <div className="flex justify-center"><ArrowRight className="w-5 h-5 -rotate-90 text-muted-foreground/50"/></div>
-                        <div/>
-                        <div className="flex justify-center"><ArrowRight className="w-5 h-5 -rotate-90 text-muted-foreground/50"/></div>
-                    </motion.div>
-                 )}
-                </AnimatePresence>
-
-                {/* Main Flow */}
-                <div className="grid grid-cols-[1fr,auto,1fr,auto,1fr,auto,1fr] gap-4 items-start">
-                    {/* Vector Search Path */}
+                <div className="grid grid-cols-[1fr,auto,1fr] gap-4 items-start">
+                    {/* Rerank and Final Context */}
                     <div className="flex flex-col gap-4">
-                         <AnimatePresence>
-                         {step >= 2 && (
-                             <motion.div initial={{opacity:0}} animate={{opacity:1}}>
-                                <FlowNode icon={<Database />} title="Vector Search" status={getStatus(2)} step={2} currentStep={step}>
-                                     <p>Finds chunks based on semantic meaning.</p>
-                                </FlowNode>
-                             </motion.div>
-                         )}
-                         </AnimatePresence>
-                         <AnimatePresence>
-                         {step >= 3 && (
-                             <motion.div initial={{opacity:0}} animate={{opacity:1, transition: {delay: 0.2}}}>
-                                <FlowNode icon={<SortAsc />} title="3. Top Vector Chunks" status={getStatus(3)} step={3} currentStep={step}>
-                                     <ChunkDisplay {...documents[0]} step={3} currentStep={step} />
-                                     <ChunkDisplay {...documents[1]} step={3} currentStep={step} />
-                                </FlowNode>
-                             </motion.div>
-                         )}
-                         </AnimatePresence>
+                        <FlowNode icon={<Combine />} title="4. Rerank" status={getStatus(4)} step={4} currentStep={step}>
+                            <p>A model re-evaluates the combined results for relevance.</p>
+                        </FlowNode>
+                        <FlowNode icon={<GitMerge />} title="5. Final Context" status={getStatus(5)} step={5} currentStep={step}>
+                            <ChunkDisplay {...rerankedChunks[0]} step={5} currentStep={step} />
+                            <ChunkDisplay {...rerankedChunks[1]} step={5} currentStep={step} />
+                        </FlowNode>
                     </div>
-                    
-                    <FlowArrow step={4} currentStep={step} />
 
-                     {/* BM25 Search Path */}
-                    <div className="flex flex-col gap-4">
-                        <AnimatePresence>
-                         {step >= 2 && (
-                             <motion.div initial={{opacity:0}} animate={{opacity:1}}>
-                                <FlowNode icon={<Search />} title="BM25 Search" status={getStatus(2)} step={2} currentStep={step}>
-                                    <p>Finds chunks based on keywords.</p>
-                                </FlowNode>
-                             </motion.div>
-                         )}
-                         </AnimatePresence>
-                         <AnimatePresence>
-                         {step >= 3 && (
-                              <motion.div initial={{opacity:0}} animate={{opacity:1, transition: {delay: 0.2}}}>
-                                <FlowNode icon={<SortAsc />} title="3. Top BM25 Chunks" status={getStatus(3)} step={3} currentStep={step}>
-                                    <ChunkDisplay {...documents[2]} step={3} currentStep={step} />
-                                    <ChunkDisplay {...documents[3]} step={3} currentStep={step} />
-                                </FlowNode>
-                              </motion.div>
-                         )}
-                         </AnimatePresence>
-                    </div>
-                    
-                    <FlowArrow step={4} currentStep={step} />
-
-                    {/* Rerank & Generate */}
-                    <div className="flex flex-col gap-4">
-                         <AnimatePresence>
-                         {step >= 4 && (
-                            <motion.div initial={{opacity:0}} animate={{opacity:1}}>
-                                <FlowNode icon={<Combine />} title="4. Rerank" status={getStatus(4)} step={4} currentStep={step}>
-                                    <p>A model re-evaluates the combined results for relevance.</p>
-                                </FlowNode>
-                            </motion.div>
-                         )}
-                         </AnimatePresence>
-                        <AnimatePresence>
-                         {step >= 5 && (
-                             <motion.div initial={{opacity:0}} animate={{opacity:1, transition: {delay: 0.2}}}>
-                                <FlowNode icon={<GitMerge />} title="5. Final Context" status={getStatus(5)} step={5} currentStep={step}>
-                                    <ChunkDisplay {...rerankedChunks[0]} step={5} currentStep={step} />
-                                    <ChunkDisplay {...rerankedChunks[1]} step={5} currentStep={step} />
-                                </FlowNode>
-                             </motion.div>
-                         )}
-                         </AnimatePresence>
-                    </div>
-                    
                     <FlowArrow step={6} currentStep={step} />
 
+                    {/* Generate and Answer */}
                     <div className="flex flex-col gap-4">
-                        <AnimatePresence>
-                         {step >= 6 && (
-                            <motion.div initial={{opacity:0}} animate={{opacity:1}}>
-                                <FlowNode icon={<Sparkles />} title="6. Generate" status={getStatus(6)} step={6} currentStep={step}>
-                                    <p>LLM generates answer from best context.</p>
-                                </FlowNode>
-                            </motion.div>
-                         )}
-                         </AnimatePresence>
-                         <AnimatePresence>
-                         {step >= 7 && (
-                             <motion.div initial={{opacity:0}} animate={{opacity:1, transition: {delay: 0.2}}}>
-                                <FlowNode icon={<MessageSquare />} title="7. Answer" status={getStatus(7)} step={7} currentStep={step}>
-                                    <p>{finalAnswer}</p>
-                                </FlowNode>
-                             </motion.div>
-                         )}
-                         </AnimatePresence>
+                        <FlowNode icon={<Sparkles />} title="6. Generate" status={getStatus(6)} step={6} currentStep={step}>
+                            <p>LLM generates answer from best context.</p>
+                        </FlowNode>
+                        <FlowNode icon={<MessageSquare />} title="7. Answer" status={getStatus(7)} step={7} currentStep={step}>
+                            <p>{finalAnswer}</p>
+                        </FlowNode>
                     </div>
                 </div>
                 
