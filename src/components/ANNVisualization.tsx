@@ -79,7 +79,7 @@ export function ANNVisualization() {
                 { source: l1_neighbor_1, target: l1_neighbor_2 },
                 { source: l1_neighbor_2, target: layer1Candidates[45] },
             ].filter(conn => conn.source && conn.target),
-            layer0Connections: points.flatMap((p) => {
+            layer0Connections: points.flatMap((p, i) => {
                 const close = points.filter(other => p.id !== other.id && getEuclideanDistance(p, other) < 50).slice(0,1);
                 return close.map(c => ({ source: p, target: c }));
             }),
@@ -113,7 +113,7 @@ export function ANNVisualization() {
             "Layer 1, the 'highway', is built. These are long-range links that connect distant points, allowing a search to quickly jump to the right region of the graph.",
             "Layer 0, the 'local streets', is built. These are short-range links connecting nearby points, used for fine-grained searching within a region.",
             "Now, a query (purple) enters. Instead of checking all points, the search starts at the graph's entry point.",
-            "The search follows the fast 'highway' links to traverse to the most promising region of the graph.",
+            "The search uses the fast highway links to quickly jump to the most promising region of the graph.",
             "Once in the right neighborhood, the search switches to the dense local links to find the exact nearest neighbors.",
             "Success! The nearest neighbors (highlighted) are found after visiting only a fraction of the total points."
         ];
