@@ -78,13 +78,22 @@ const VectorVisualization = ({ selectedVec, metric }: { selectedVec: Vector, met
     
     const getTextPosition = (vec: Vector, isQuery: boolean) => {
         const coords = getCoords(vec);
-        const yOffset = isQuery ? -20 : 20;
-        const xOffset = isQuery ? 15 : 0;
+        let yOffset, xOffset, textAnchor;
+        
+        if (isQuery) {
+            yOffset = 15;
+            xOffset = 0;
+            textAnchor = "end";
+        } else {
+            yOffset = -10;
+            xOffset = 0;
+            textAnchor = "start";
+        }
 
         return {
             x: coords.x + xOffset,
             y: coords.y + yOffset,
-            textAnchor: isQuery ? "start" : "middle",
+            textAnchor: textAnchor,
         }
     }
     
@@ -167,23 +176,35 @@ const derivationSteps = [
         content: () => (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
                 <div>
-                    <p>Consider a triangle formed by vectors <strong>a</strong> and <strong>b</strong>. The third side is the vector <strong>a - b</strong>. The Law of Cosines states:</p>
+                    <p>You are correct, the triangle formed by vectors **a** and **b** is generally **not** a right-angled triangle. The Law of Cosines is a generalization of the Pythagorean theorem for any triangle.</p>
+                    <p className="mt-2 text-muted-foreground">To derive it, we can drop a perpendicular from the tip of **b** to the line of **a**, creating two right triangles.</p>
                     <Formula>||a - b||² = ||a||² + ||b||² - 2||a||||b||cos(θ)</Formula>
-                    <p>This relates the lengths of the sides of a triangle to the cosine of one of its angles.</p>
                 </div>
                  <div className="w-full max-w-[250px] mx-auto">
-                    <svg viewBox="0 0 100 100">
-                        <path d="M 10 90 L 80 70" stroke="hsl(var(--primary))" strokeWidth="2" markerEnd="url(#arrow-primary)" />
-                        <text x="85" y="70" fill="hsl(var(--primary))" fontWeight="bold">a</text>
-                        <path d="M 10 90 L 70 20" stroke="hsl(var(--foreground))" strokeWidth="2" markerEnd="url(#arrow-secondary)" />
-                        <text x="75" y="20" fill="hsl(var(--foreground))" fontWeight="bold">b</text>
-                        <path d="M 70 20 L 80 70" stroke="hsl(var(--destructive))" strokeDasharray="3 3" strokeWidth="1.5" />
-                        <text x="80" y="45" fill="hsl(var(--destructive))" fontWeight="bold">a-b</text>
-                        <path d="M 25 82 A 15 15 0 0 1 30 70" stroke="currentColor" fill="none" />
-                        <text x="35" y="80">θ</text>
+                    <svg viewBox="0 0 120 120">
+                         {/* Axis */}
+                        <path d="M 10 110 L 110 110" stroke="hsl(var(--border))" strokeWidth="1" markerEnd="url(#arrow-axis)" />
+                        <path d="M 10 110 L 10 10" stroke="hsl(var(--border))" strokeWidth="1" markerEnd="url(#arrow-axis)" />
+                        
+                        {/* Vector a */}
+                        <path d="M 10 110 L 90 110" stroke="hsl(var(--primary))" strokeWidth="2" markerEnd="url(#arrow-primary)" />
+                        <text x="95" y="115" fill="hsl(var(--primary))" fontWeight="bold">a</text>
+                        
+                        {/* Vector b */}
+                        <path d="M 10 110 L 60 40" stroke="hsl(var(--foreground))" strokeWidth="2" markerEnd="url(#arrow-secondary)" />
+                        <text x="65" y="40" fill="hsl(var(--foreground))" fontWeight="bold">b</text>
+
+                        {/* Vector a-b */}
+                        <path d="M 90 110 L 60 40" stroke="hsl(var(--destructive))" strokeDasharray="3 3" strokeWidth="1.5" />
+                        <text x="80" y="75" fill="hsl(var(--destructive))" fontWeight="bold">a-b</text>
+                        
+                        {/* Angle Theta */}
+                        <path d="M 30 110 A 20 20 0 0 1 27 92" stroke="currentColor" fill="none" />
+                        <text x="35" y="100">θ</text>
                         <defs>
                             <marker id="arrow-primary" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="hsl(var(--primary))" /></marker>
                             <marker id="arrow-secondary" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="hsl(var(--foreground))" /></marker>
+                            <marker id="arrow-axis" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="4" markerHeight="4" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="hsl(var(--border))" /></marker>
                         </defs>
                     </svg>
                 </div>
