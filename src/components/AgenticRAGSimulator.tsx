@@ -11,12 +11,12 @@ import { Bot, Search, MessageSquare, Sparkles, Play, Wand2, Database } from 'luc
 const exampleQueries = [
     { value: "What is the capital of France?", type: 'internal', label: "What is the capital of France?" },
     { value: "What is RAGAS?", type: 'search', label: "What is RAGAS?" },
-    { value: "Who is the CEO of Databricks?", type: 'reflect', label: "Who is the CEO of Databricks?" },
+    { value: "Who is the CEO of Databricks?", type: 'reflect', label: "Who is the CEO of Databricks? (Self-Reflection)" },
 ];
 
 export const AgenticRAGSimulator = () => {
     const [selectedQuery, setSelectedQuery] = useState(exampleQueries[0].value);
-    const [agentState, setAgentState] = useState<'idle' | 'thinking' | 'retrieving' | 'reflecting' | 'verifying' | 'answering'>('idle');
+    const [agentState, setAgentState] = useState<'idle' | 'thinking' | 'retrieving' | 'reflecting' | 'verifying' | 'answering'| 'complete'>('idle');
     const [thought, setThought] = useState("");
     const [retrievedChunk, setRetrievedChunk] = useState("");
     const [verificationResult, setVerificationResult] = useState("");
@@ -65,6 +65,7 @@ export const AgenticRAGSimulator = () => {
                             setTimeout(() => {
                                 setAgentState('answering');
                                 setFinalAnswer("Based on verified information, Ali Ghodsi is the CEO of Databricks.");
+                                setTimeout(() => setAgentState('complete'), 100);
                             }, 2000);
                         }, 2000);
                     }, 1500);
@@ -82,7 +83,7 @@ export const AgenticRAGSimulator = () => {
         setSelectedQuery(exampleQueries[0].value);
     }
 
-    const isSelfReflectQuery = selectedQuery === "Who is the CEO of Databricks?";
+    const isSelfReflectQuery = selectedQuery === "Who is the CEO of Databricks? (Self-Reflection)";
 
     return (
         <Card className="bg-card/50">
@@ -113,7 +114,7 @@ export const AgenticRAGSimulator = () => {
 
                 <div className="space-y-4 min-h-[350px]">
                     <AnimatePresence>
-                        {thought && (
+                        {thought && (agentState !== 'retrieving' || !isSelfReflectQuery) && (
                             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-4 bg-muted/50 rounded-lg border">
                                 <h4 className="font-semibold text-sm mb-2 flex items-center gap-2"><Sparkles className="text-primary" /> Agent's Thought Process</h4>
                                 <p className="text-sm text-muted-foreground italic">{thought}</p>
@@ -130,11 +131,11 @@ export const AgenticRAGSimulator = () => {
                         )}
                     </AnimatePresence>
                     
-                    <AnimatePresence>
-                        {agentState === 'reflecting' && isSelfReflectQuery && (
-                             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-4 bg-amber-500/10 rounded-lg border border-amber-500/30 flex items-center gap-2">
-                                <Wand2 className="w-5 h-5 text-amber-400" />
-                                <p className="text-sm text-amber-300">Reflecting on retrieved information...</p>
+                     <AnimatePresence>
+                        {thought && (agentState === 'reflecting' || agentState === 'verifying' || agentState === 'answering' || agentState === 'complete') && isSelfReflectQuery && (
+                            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-4 bg-muted/50 rounded-lg border">
+                                <h4 className="font-semibold text-sm mb-2 flex items-center gap-2"><Sparkles className="text-primary" /> Agent's Thought Process</h4>
+                                <p className="text-sm text-muted-foreground italic">The retrieved information mentions he is a co-founder, but not explicitly the CEO. This could be outdated. I need to verify this using an external tool to be sure.</p>
                             </motion.div>
                         )}
                     </AnimatePresence>
