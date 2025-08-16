@@ -27,6 +27,7 @@ import {
   BookCopy,
   Bot,
   SlidersHorizontal,
+  Database,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -35,6 +36,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 
 const sections = [
   { id: 'introduction', title: 'Introduction to RAG', icon: <BookOpen className="h-8 w-8 text-primary" /> },
+  { id: 'vector-dbs', title: 'Vector Databases & Similarity', icon: <Database className="h-8 w-8 text-primary" /> },
   { id: 'chunking', title: 'RAG Chunking Strategies', icon: <Puzzle className="h-8 w-8 text-primary" /> },
   { id: 'parameters', title: 'LLM Generation Parameters', icon: <SlidersHorizontal className="h-8 w-8 text-primary" /> },
   { id: 'agentic-rag', title: 'Agentic RAG', icon: <Bot className="h-8 w-8 text-primary" /> },
@@ -161,17 +163,17 @@ const Index = () => {
                     </Card>
                   </div>
                 </div>
-
-                <div>
-                  <h3 className="text-xl font-semibold mb-3 text-foreground">Vector Databases</h3>
-                  <p className="text-muted-foreground mb-4">
+              </div>
+            </Section>
+            
+            <Section id="vector-dbs" title="Vector Databases & Similarity" icon={<Database className="h-8 w-8 text-primary" />}>
+               <div className="space-y-6">
+                 <p className="text-muted-foreground mb-4">
                     Vector databases are specialized databases designed to store and manage high-dimensional vectors (embeddings) efficiently. These databases make it easier to perform similarity searches and retrieve relevant information for a given query.
                   </p>
                   <VectorDBAnimation />
                   <SimilarityMetricsSimulator />
-                </div>
-
-              </div>
+               </div>
             </Section>
 
             <Section id="chunking" title="RAG Chunking Strategies" icon={<Puzzle className="h-8 w-8 text-primary" />}>

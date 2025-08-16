@@ -2,10 +2,11 @@
 "use client";
 
 import { cn } from '@/lib/utils';
-import { BookOpen, Puzzle, ShieldCheck, Bot, SlidersHorizontal } from 'lucide-react';
+import { BookOpen, Puzzle, ShieldCheck, Bot, SlidersHorizontal, Database } from 'lucide-react';
 
 const sections = [
   { id: 'introduction', title: 'Introduction to RAG', icon: <BookOpen className="w-4 h-4" /> },
+  { id: 'vector-dbs', title: 'Vector DBs & Similarity', icon: <Database className="w-4 h-4" /> },
   { id: 'chunking', title: 'Chunking Strategies', icon: <Puzzle className="w-4 h-4" /> },
   { id: 'parameters', title: 'Generation Parameters', icon: <SlidersHorizontal className="w-4 h-4" /> },
   { id: 'agentic-rag', title: 'Agentic RAG', icon: <Bot className="w-4 h-4" /> },
