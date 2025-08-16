@@ -8,14 +8,15 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './ui/
 import { HelpCircle, FileText, RefreshCw, ArrowRight, MessageSquare, GitMerge, BrainCircuit, ArrowDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-const FlowNode = ({ icon, title, children, status, step, currentStep }: { icon: React.ReactNode, title: string, children: React.ReactNode, status: 'inactive' | 'active' | 'complete', step: number, currentStep: number }) => (
+const FlowNode = ({ icon, title, children, status, step, currentStep, className }: { icon: React.ReactNode, title: string, children: React.ReactNode, status: 'inactive' | 'active' | 'complete', step: number, currentStep: number, className?: string }) => (
     <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: currentStep >= step ? 1 : 0.3, y: currentStep >= step ? 0 : 10 }}
         transition={{ duration: 0.4 }}
         className={cn(
-            "relative p-3 border rounded-lg transition-all duration-300 w-full text-center flex flex-col items-center justify-start h-full",
-            status === 'active' ? 'border-primary bg-primary/10' : 'border-border bg-muted/40'
+            "relative p-3 border rounded-lg transition-all duration-300 w-full text-left flex flex-col items-start justify-start h-full",
+            status === 'active' ? 'border-primary bg-primary/10' : 'border-border bg-muted/40',
+            className
         )}
     >
         <div className="flex items-center gap-2 mb-2">
@@ -24,14 +25,8 @@ const FlowNode = ({ icon, title, children, status, step, currentStep }: { icon: 
             </span>
             <h4 className="font-semibold text-sm">{title}</h4>
         </div>
-        <div className="text-xs text-muted-foreground">{children}</div>
+        <div className="text-xs text-muted-foreground w-full pl-7">{children}</div>
     </motion.div>
-);
-
-const FlowArrow = ({ vertical = false }: { vertical?: boolean }) => (
-     <div className="flex justify-center items-center h-full">
-        {vertical ? <ArrowDown className="w-5 h-5 text-muted-foreground/50" /> : <ArrowRight className="w-5 h-5 text-muted-foreground/50" />}
-    </div>
 );
 
 const originalQuery = "What are the differences in features between Milvus and Zilliz Cloud?";
@@ -54,7 +49,7 @@ export const SubQuerySimulator = () => {
         if (step === s) return 'active';
         return 'complete';
     };
-
+    
     const getStepDescription = () => {
         const descriptions = [
             "Click 'Start' to see how Sub-Query Generation works.",
@@ -71,115 +66,104 @@ export const SubQuerySimulator = () => {
         <Card className="bg-card/60 border-primary/20">
             <CardHeader>
                 <CardTitle className="text-base">Method: Sub-Query Generation</CardTitle>
-                <CardDescription className="pt-2 h-12 flex items-center justify-center text-center">
+                 <CardDescription className="pt-2 h-12 flex items-center justify-center text-center">
                     {getStepDescription()}
                 </CardDescription>
             </CardHeader>
             <CardContent className="p-4 pt-0 space-y-4">
-                 <div className="grid grid-cols-1 md:grid-cols-[1fr,auto,1fr] gap-4 items-center">
-                    {/* Col 1: Empty or Final Answer */}
-                    <div className="flex justify-center">
+                 <div className="grid grid-cols-1 md:grid-cols-[1fr,auto,1fr] gap-4 items-center min-h-[350px]">
+                    {/* Left Column */}
+                    <div className="flex flex-col justify-center h-full">
                          <AnimatePresence>
-                         {step >= 5 && (
-                            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="w-full">
-                                <FlowNode icon={<MessageSquare />} title="Final Answer" status={getStatus(5)} step={5} currentStep={step}>
-                                    <p className="p-2 bg-background rounded border">{finalAnswer}</p>
-                                </FlowNode>
-                            </motion.div>
-                        )}
-                        </AnimatePresence>
-                    </div>
-
-                    {/* Col 2: Arrows */}
-                     <div className="flex flex-col items-center justify-around h-full">
-                        <AnimatePresence>
-                        {step >= 2 && <motion.div initial={{opacity:0}} animate={{opacity:1}}><FlowArrow vertical /></motion.div>}
-                        </AnimatePresence>
-                        
-                        <AnimatePresence>
-                        {step >= 4 && <motion.div initial={{opacity:0}} animate={{opacity:1}}><FlowArrow vertical /></motion.div>}
-                        </AnimatePresence>
-                    </div>
-
-                    {/* Col 3: Empty */}
-                    <div></div>
-                </div>
-
-                {/* Main Flow */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                     {/* Query & Synthesis */}
-                     <div className="flex flex-col justify-between items-center gap-4">
-                        <AnimatePresence>
-                        {step >= 1 && (
-                            <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="w-full">
-                                <FlowNode icon={<HelpCircle />} title="User Query" status={getStatus(1)} step={1} currentStep={step}>
+                         {step >= 1 && (
+                            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+                               <FlowNode icon={<HelpCircle />} title="User Query" status={getStatus(1)} step={1} currentStep={step}>
                                     <p className="p-2 bg-background rounded border text-xs">{originalQuery}</p>
                                 </FlowNode>
                             </motion.div>
-                        )}
-                        </AnimatePresence>
-                        
-                        <AnimatePresence>
-                        {step >= 4 && (
-                            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="w-full">
-                                <FlowNode icon={<GitMerge />} title="LLM Synthesizes" status={getStatus(4)} step={4} currentStep={step}>
-                                    <p className="p-2 bg-background rounded border text-xs">Retrieved docs are combined to form a single answer.</p>
-                                </FlowNode>
-                            </motion.div>
-                        )}
-                        </AnimatePresence>
+                         )}
+                         </AnimatePresence>
                     </div>
 
-                    {/* Decomposition */}
-                    <div className="flex flex-col justify-center items-center">
+                    {/* Middle Column */}
+                    <div className="flex flex-col items-center justify-center h-full">
                          <AnimatePresence>
-                            {step >= 2 && (
-                                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1}} className="flex flex-col items-center">
-                                    <div className="flex items-center gap-2 text-sm font-semibold my-2 text-primary">
-                                        <BrainCircuit /> LLM Decomposes
-                                    </div>
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
+                         {step >= 2 && (
+                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1}}>
+                                <BrainCircuit className="w-6 h-6 text-primary" />
+                                <p className="text-xs font-semibold text-primary mt-1">LLM Decomposes</p>
+                            </motion.div>
+                         )}
+                         </AnimatePresence>
                     </div>
-
-                    {/* Sub-Queries */}
-                    <div className="flex flex-col justify-around gap-4">
-                        <AnimatePresence>
-                        {step >= 2 && (
-                            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-2">
+                    
+                    {/* Right Column */}
+                    <div className="flex flex-col justify-center gap-4 h-full">
+                         <AnimatePresence>
+                         {step >= 2 && (
+                             <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }}>
                                 <FlowNode icon={<HelpCircle />} title="Sub Query 1" status={getStatus(2)} step={2} currentStep={step}>
-                                    <p className="p-2 bg-background rounded border text-xs">{subQueries[0]}</p>
+                                     <p className="p-2 bg-background rounded border text-xs">{subQueries[0]}</p>
                                 </FlowNode>
-                                {step >= 3 && (
-                                    <motion.div initial={{opacity:0}} animate={{opacity:1}}>
-                                        <FlowNode icon={<FileText />} title="Retrieved" status={getStatus(3)} step={3} currentStep={step}>
-                                            <p className="p-2 bg-background rounded border text-xs">{retrieved.q1}</p>
-                                        </FlowNode>
-                                    </motion.div>
-                                )}
                             </motion.div>
-                        )}
-                        </AnimatePresence>
-                        <AnimatePresence>
-                        {step >= 2 && (
-                            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0, transition: {delay: 0.2} }} className="space-y-2">
+                         )}
+                         </AnimatePresence>
+                         <AnimatePresence>
+                         {step >= 3 && (
+                            <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0, transition: {delay: 0.2} }}>
+                                <FlowNode icon={<FileText />} title="Retrieved" status={getStatus(3)} step={3} currentStep={step}>
+                                     <p className="p-2 bg-background rounded border text-xs">{retrieved.q1}</p>
+                                </FlowNode>
+                            </motion.div>
+                         )}
+                         </AnimatePresence>
+
+                          <AnimatePresence>
+                         {step >= 2 && (
+                             <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0, transition: {delay: 0.4} }}>
                                 <FlowNode icon={<HelpCircle />} title="Sub Query 2" status={getStatus(2)} step={2} currentStep={step}>
-                                    <p className="p-2 bg-background rounded border text-xs">{subQueries[1]}</p>
+                                     <p className="p-2 bg-background rounded border text-xs">{subQueries[1]}</p>
                                 </FlowNode>
-                                 {step >= 3 && (
-                                     <motion.div initial={{opacity:0}} animate={{opacity:1}}>
-                                        <FlowNode icon={<FileText />} title="Retrieved" status={getStatus(3)} step={3} currentStep={step}>
-                                            <p className="p-2 bg-background rounded border text-xs">{retrieved.q2}</p>
-                                        </FlowNode>
-                                     </motion.div>
-                                 )}
-                            </motion.div>
-                        )}
-                        </AnimatePresence>
+                             </motion.div>
+                         )}
+                         </AnimatePresence>
+                         <AnimatePresence>
+                         {step >= 3 && (
+                             <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0, transition: {delay: 0.6} }}>
+                                 <FlowNode icon={<FileText />} title="Retrieved" status={getStatus(3)} step={3} currentStep={step}>
+                                      <p className="p-2 bg-background rounded border text-xs">{retrieved.q2}</p>
+                                 </FlowNode>
+                             </motion.div>
+                         )}
+                         </AnimatePresence>
                     </div>
                 </div>
 
+                <AnimatePresence>
+                {step >= 4 && (
+                     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+                        <div className="flex flex-col items-center my-2">
+                             <ArrowDown className="w-5 h-5 text-muted-foreground/50" />
+                        </div>
+                        <FlowNode icon={<GitMerge />} title="LLM Synthesizes" status={getStatus(4)} step={4} currentStep={step} className="text-center items-center">
+                            <p className="text-xs text-muted-foreground">Original query and all retrieved documents are combined.</p>
+                        </FlowNode>
+                    </motion.div>
+                )}
+                </AnimatePresence>
+                 <AnimatePresence>
+                {step >= 5 && (
+                     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+                         <div className="flex flex-col items-center my-2">
+                             <ArrowDown className="w-5 h-5 text-muted-foreground/50" />
+                        </div>
+                        <FlowNode icon={<MessageSquare />} title="Final Answer" status={getStatus(5)} step={5} currentStep={step} className="text-center items-center">
+                             <p className="p-2 bg-background rounded border text-xs">{finalAnswer}</p>
+                        </FlowNode>
+                    </motion.div>
+                )}
+                </AnimatePresence>
+                
                 <div className="flex justify-center items-center mt-6 pt-4 border-t">
                     <Button onClick={handleReset} variant="outline" size="sm" disabled={step === 0}>
                         <RefreshCw className="mr-2 h-4 w-4" /> Reset

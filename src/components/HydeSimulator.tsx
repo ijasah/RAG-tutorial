@@ -11,28 +11,33 @@ import { cn } from '@/lib/utils';
 
 const FlowNode = ({ icon, title, children, status, step, currentStep }: { icon: React.ReactNode, title: string, children: React.ReactNode, status: 'inactive' | 'active' | 'complete', step: number, currentStep: number }) => (
     <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: currentStep >= step ? 1 : 0.3, y: currentStep >= step ? 0 : 10 }}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: currentStep >= step ? 1 : 0.3, y: currentStep >= step ? 0 : 20 }}
         transition={{ duration: 0.4 }}
         className={cn(
-            "relative p-3 border rounded-lg transition-all duration-300 w-full text-center flex flex-col items-center justify-start h-full",
+            "relative p-4 border rounded-lg transition-all duration-300 w-full flex flex-col items-center justify-start h-full",
             status === 'active' ? 'border-primary bg-primary/10' : 'border-border bg-muted/40'
         )}
     >
-        <div className="flex items-center gap-2 mb-2">
-            <span className={cn("flex items-center justify-center w-5 h-5 rounded-full text-xs font-bold transition-all duration-300 shrink-0", status === 'inactive' ? 'bg-muted border' : 'bg-primary text-primary-foreground')}>
-                {step}
-            </span>
+        <div className="flex flex-col items-center gap-2 mb-2 text-center">
+            <div className={cn("flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold transition-all duration-300 shrink-0", status === 'inactive' ? 'bg-muted border' : 'bg-primary text-primary-foreground')}>
+                {icon}
+            </div>
             <h4 className="font-semibold text-sm">{title}</h4>
         </div>
-        <div className="text-xs text-muted-foreground text-left w-full">{children}</div>
+        <div className="text-xs text-muted-foreground text-center w-full">{children}</div>
     </motion.div>
 );
 
-const FlowArrow = () => (
-    <div className="flex justify-center items-center h-full">
+const FlowArrow = ({ currentStep, step }: { currentStep: number, step: number }) => (
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: currentStep >= step ? 1 : 0.3 }}
+      transition={{ duration: 0.4 }}
+      className="flex justify-center items-center h-full"
+    >
         <ArrowRight className="w-6 h-6 text-muted-foreground/50" />
-    </div>
+    </motion.div>
 );
 
 
@@ -71,9 +76,9 @@ export const HydeSimulator = () => {
                 </CardDescription>
             </CardHeader>
             <CardContent className="p-4 pt-0">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 min-h-[320px]">
+                <div className="grid grid-cols-[1fr,auto,1fr,auto,1fr] gap-4 items-stretch min-h-[360px]">
                     {/* Column 1 */}
-                    <div className="flex flex-col gap-4">
+                    <div className="flex flex-col gap-4 justify-around">
                         <AnimatePresence>
                         {step >= 1 && (
                             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1, transition: {delay: 0.1} }}>
@@ -84,22 +89,51 @@ export const HydeSimulator = () => {
                         )}
                         </AnimatePresence>
                         <AnimatePresence>
-                        {step >= 2 && (
-                             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1, transition: {delay: 0.2} }}>
-                                <FlowNode icon={<Bot />} title="Generate Fake Answer" status={getStatus(2)} step={2} currentStep={step}>
-                                    <p className="p-2 border rounded bg-background text-xs">"RAG offers several benefits, including improved accuracy by grounding responses..."</p>
+                        {step >= 6 && (
+                             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1, transition: {delay: 0.6} }}>
+                                <FlowNode icon={<Sparkles />} title="Final Answer" status={getStatus(6)} step={6} currentStep={step}>
+                                    <p className="p-2 border rounded bg-background text-xs">The main benefits of RAG are improved accuracy...</p>
                                 </FlowNode>
                             </motion.div>
                         )}
                         </AnimatePresence>
                     </div>
+
+                    {/* Arrow 1 */}
+                    <FlowArrow currentStep={step} step={2}/>
+
                     {/* Column 2 */}
-                    <div className="flex flex-col gap-4">
+                    <div className="flex flex-col gap-4 justify-around">
                         <AnimatePresence>
+                        {step >= 2 && (
+                             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1, transition: {delay: 0.2} }}>
+                                <FlowNode icon={<Bot />} title="Generate Fake Answer" status={getStatus(2)} step={2} currentStep={step}>
+                                    <p className="p-2 border rounded bg-background text-xs">"RAG offers several benefits, including improved accuracy..."</p>
+                                </FlowNode>
+                            </motion.div>
+                        )}
+                        </AnimatePresence>
+                         <AnimatePresence>
+                        {step >= 5 && (
+                             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1, transition: {delay: 0.5} }}>
+                                <FlowNode icon={<GitMerge />} title="Combine & Augment" status={getStatus(5)} step={5} currentStep={step}>
+                                    <p className="p-2 border rounded bg-background text-xs">Original query + retrieved chunks are combined.</p>
+                                </FlowNode>
+                            </motion.div>
+                        )}
+                        </AnimatePresence>
+                    </div>
+                    
+                    {/* Arrow 2 */}
+                    <FlowArrow currentStep={step} step={3}/>
+
+                    {/* Column 3 */}
+                    <div className="flex flex-col gap-4 justify-around">
+                         <AnimatePresence>
                          {step >= 3 && (
                             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1, transition: {delay: 0.3} }}>
                                 <FlowNode icon={<Search />} title="Doc-to-Doc Search" status={getStatus(3)} step={3} currentStep={step}>
-                                    <p className="p-2 border rounded bg-background text-xs">The fake answer's embedding is used to find similar real documents.</p>
+                                    <p className="p-2 border rounded bg-background text-xs">Fake answer embedding is used to find similar real documents.</p>
                                 </FlowNode>
                             </motion.div>
                          )}
@@ -116,27 +150,6 @@ export const HydeSimulator = () => {
                             </motion.div>
                          )}
                          </AnimatePresence>
-                    </div>
-                    {/* Column 3 */}
-                    <div className="flex flex-col gap-4">
-                        <AnimatePresence>
-                        {step >= 5 && (
-                             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1, transition: {delay: 0.5} }}>
-                                <FlowNode icon={<GitMerge />} title="Combine & Augment" status={getStatus(5)} step={5} currentStep={step}>
-                                    <p className="p-2 border rounded bg-background text-xs">The original query + retrieved chunks are combined into a final prompt.</p>
-                                </FlowNode>
-                            </motion.div>
-                        )}
-                        </AnimatePresence>
-                        <AnimatePresence>
-                        {step >= 6 && (
-                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1, transition: {delay: 0.6} }}>
-                                <FlowNode icon={<Sparkles />} title="Final Answer" status={getStatus(6)} step={6} currentStep={step}>
-                                    <p className="p-2 border rounded bg-background text-xs">The main benefits of RAG are improved accuracy and a reduction in hallucinations...</p>
-                                </FlowNode>
-                            </motion.div>
-                        )}
-                        </AnimatePresence>
                     </div>
                 </div>
                 <div className="flex justify-center items-center mt-6 pt-4 border-t">

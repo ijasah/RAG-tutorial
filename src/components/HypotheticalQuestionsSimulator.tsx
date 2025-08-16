@@ -25,11 +25,13 @@ const userQuery = "Why is RAG better than just using an LLM?";
 
 const FlowCard = ({ title, icon, children, highlighted, className }: { title: string, icon: React.ReactNode, children: React.ReactNode, highlighted?: boolean, className?: string }) => (
     <Card className={cn("transition-all h-full", highlighted ? "border-primary bg-primary/10" : "", className)}>
-        <CardContent className="p-3">
-            <div className="flex items-center gap-2 mb-2">
+        <CardHeader className="p-3">
+             <CardTitle className="flex items-center gap-2 text-sm">
                 {icon}
-                <h4 className="font-semibold text-sm">{title}</h4>
-            </div>
+                <h4 className="font-semibold">{title}</h4>
+             </CardTitle>
+        </CardHeader>
+        <CardContent className="p-3 pt-0">
             <div className="text-xs text-muted-foreground space-y-1.5">
                 {children}
             </div>
@@ -38,9 +40,12 @@ const FlowCard = ({ title, icon, children, highlighted, className }: { title: st
 );
 
 const Arrow = ({vertical = false}) => (
-    <div className="flex justify-center items-center my-auto">
+    <motion.div 
+        initial={{opacity:0}} animate={{opacity:1}} transition={{delay: 0.5}}
+        className="flex justify-center items-center my-auto"
+    >
        {vertical ? <ArrowDown className="w-5 h-5 text-muted-foreground/50" /> : <ChevronRight className="w-6 h-6 text-muted-foreground/50" />}
-    </div>
+    </motion.div>
 );
 
 export const HypotheticalQuestionsSimulator = () => {
@@ -81,6 +86,10 @@ export const HypotheticalQuestionsSimulator = () => {
         setPhase(newPhase);
         setStep(0);
     }
+    
+    const renderNode = (s: number, children: React.ReactNode) => {
+        return <AnimatePresence>{step >= s && <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0, transition: {delay: (s-1) * 0.2} }}>{children}</motion.div>}</AnimatePresence>
+    }
 
     return (
         <Card className="bg-card/60 border-primary/20">
@@ -106,94 +115,70 @@ export const HypotheticalQuestionsSimulator = () => {
                             </CardDescription>
                             
                             {isIndexing && (
-                                <div className="p-2 grid grid-cols-1 md:grid-cols-[1fr,auto,1fr] lg:grid-cols-[1fr,auto,1fr,auto,1fr] gap-4 items-stretch">
-                                    <AnimatePresence>
-                                        {step >= 1 && (
-                                             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-                                                <FlowCard title="Document Chunks" icon={<FileText className="w-5 h-5 text-primary"/>}>
-                                                    <p className="p-2 border rounded bg-background">{initialChunks['chunk-1']}</p>
-                                                    <p className="p-2 border rounded bg-background">{initialChunks['chunk-2']}</p>
-                                                </FlowCard>
-                                            </motion.div>
-                                        )}
-                                    </AnimatePresence>
-                                   
-                                    {step >= 2 && <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}><Arrow /></motion.div>}
-                                    
-                                    <AnimatePresence>
-                                        {step >= 2 && (
-                                            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-                                                <FlowCard title="Generated Questions" icon={<BrainCircuit className="w-5 h-5 text-primary"/>}>
-                                                    <p className="p-2 border rounded bg-background">{hypotheticalQuestions['chunk-1']}</p>
-                                                    <p className="p-2 border rounded bg-background">{hypotheticalQuestions['chunk-2']}</p>
-                                                </FlowCard>
-                                            </motion.div>
-                                        )}
-                                    </AnimatePresence>
-
-                                    {step >= 3 && <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}><Arrow /></motion.div>}
-
-                                    <AnimatePresence>
-                                    {step >= 3 && (
-                                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-                                            <FlowCard title="Indexed Store" icon={<Database className="w-5 h-5 text-primary"/>}>
-                                                <div>
-                                                    <Badge>Ref: chunk-1</Badge>
-                                                    <p className="p-1 mt-1 border rounded bg-background">{hypotheticalQuestions['chunk-1']}</p>
-                                                </div>
-                                                 <div>
-                                                    <Badge>Ref: chunk-2</Badge>
-                                                    <p className="p-1 mt-1 border rounded bg-background">{hypotheticalQuestions['chunk-2']}</p>
-                                                </div>
-                                            </FlowCard>
-                                        </motion.div>
+                                <div className="p-2 grid grid-cols-[1fr,auto,1fr,auto,1fr] gap-4 items-stretch min-h-[220px]">
+                                    {renderNode(1, 
+                                        <FlowCard title="Document Chunks" icon={<FileText className="w-5 h-5 text-primary"/>}>
+                                            <p className="p-2 border rounded bg-background">{initialChunks['chunk-1']}</p>
+                                            <p className="p-2 border rounded bg-background">{initialChunks['chunk-2']}</p>
+                                        </FlowCard>
                                     )}
-                                    </AnimatePresence>
+                                   
+                                    {step >= 2 && <Arrow />}
+                                    
+                                    {renderNode(2,
+                                        <FlowCard title="Generated Questions" icon={<BrainCircuit className="w-5 h-5 text-primary"/>}>
+                                            <p className="p-2 border rounded bg-background">{hypotheticalQuestions['chunk-1']}</p>
+                                            <p className="p-2 border rounded bg-background">{hypotheticalQuestions['chunk-2']}</p>
+                                        </FlowCard>
+                                    )}
+
+                                    {step >= 3 && <Arrow />}
+
+                                    {renderNode(3,
+                                        <FlowCard title="Indexed Store" icon={<Database className="w-5 h-5 text-primary"/>}>
+                                            <div>
+                                                <Badge>Ref: chunk-1</Badge>
+                                                <p className="p-1 mt-1 border rounded bg-background">{hypotheticalQuestions['chunk-1']}</p>
+                                            </div>
+                                             <div>
+                                                <Badge>Ref: chunk-2</Badge>
+                                                <p className="p-1 mt-1 border rounded bg-background">{hypotheticalQuestions['chunk-2']}</p>
+                                            </div>
+                                        </FlowCard>
+                                    )}
                                 </div>
                             )}
 
                             {isRetrieval && (
-                                 <div className="p-2 grid grid-cols-1 md:grid-cols-[1fr,auto,1fr] lg:grid-cols-[1fr,auto,1fr,auto,1fr] gap-4 items-stretch">
-                                     <AnimatePresence>
-                                     {step >= 1 && (
-                                         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-                                            <FlowCard title="User Query" icon={<HelpCircle className="w-5 h-5 text-primary" />}>
-                                                <p className="p-2 border rounded bg-background">{userQuery}</p>
-                                            </FlowCard>
-                                         </motion.div>
+                                 <div className="p-2 grid grid-cols-[1fr,auto,1fr,auto,1fr] gap-4 items-stretch min-h-[220px]">
+                                     {renderNode(1,
+                                        <FlowCard title="User Query" icon={<HelpCircle className="w-5 h-5 text-primary" />}>
+                                            <p className="p-2 border rounded bg-background">{userQuery}</p>
+                                        </FlowCard>
                                      )}
-                                     </AnimatePresence>
                                      
-                                     {step >= 2 && <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}><Arrow /></motion.div>}
+                                     {step >= 2 && <Arrow />}
 
-                                     <AnimatePresence>
-                                     {step >= 2 && (
-                                         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-                                            <FlowCard title="Similarity Search" icon={<Search className="w-5 h-5 text-primary"/>} highlighted={step >=3}>
-                                                 <div>
-                                                    <p className="p-2 border rounded bg-background">{hypotheticalQuestions['chunk-1']}</p>
-                                                    <div className="text-right pr-2 mt-1">{step >= 3 && <Badge variant={step >= 3 ? "default" : "secondary"}>Similarity: 0.91</Badge>}</div>
-                                                </div>
-                                                 <div>
-                                                    <p className="p-2 border rounded bg-background">{hypotheticalQuestions['chunk-2']}</p>
-                                                    <div className="text-right pr-2 mt-1">{step >= 3 && <Badge variant="secondary">Similarity: 0.62</Badge>}</div>
-                                                </div>
-                                            </FlowCard>
-                                         </motion.div>
+                                     {renderNode(2,
+                                        <FlowCard title="Similarity Search" icon={<Search className="w-5 h-5 text-primary"/>} highlighted={step >=3}>
+                                             <div>
+                                                <p className="p-2 border rounded bg-background">{hypotheticalQuestions['chunk-1']}</p>
+                                                <div className="text-right pr-2 mt-1">{step >= 3 && <Badge variant={step >= 3 ? "default" : "secondary"}>Similarity: 0.91</Badge>}</div>
+                                            </div>
+                                             <div>
+                                                <p className="p-2 border rounded bg-background">{hypotheticalQuestions['chunk-2']}</p>
+                                                <div className="text-right pr-2 mt-1">{step >= 3 && <Badge variant="secondary">Similarity: 0.62</Badge>}</div>
+                                            </div>
+                                        </FlowCard>
                                      )}
-                                     </AnimatePresence>
                                      
-                                      {step >= 4 && <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}><Arrow /></motion.div>}
+                                      {step >= 4 && <Arrow />}
                                      
-                                     <AnimatePresence>
-                                     {step >= 4 && (
-                                         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-                                            <FlowCard title="Retrieved Chunk" icon={<FileText className="w-5 h-5 text-primary"/>}>
-                                                <p className="p-2 border rounded bg-background">{initialChunks['chunk-1']}</p>
-                                            </FlowCard>
-                                         </motion.div>
+                                     {renderNode(4,
+                                        <FlowCard title="Retrieved Chunk" icon={<FileText className="w-5 h-5 text-primary"/>}>
+                                            <p className="p-2 border rounded bg-background">{initialChunks['chunk-1']}</p>
+                                        </FlowCard>
                                      )}
-                                     </AnimatePresence>
                                  </div>
                             )}
 
