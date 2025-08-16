@@ -15,6 +15,7 @@ import { TopPDemo } from '@/components/TopPDemo';
 import { VectorDBAnimation } from '@/components/VectorDBAnimation';
 import { SimilarityMetricsSimulator } from '@/components/SimilarityMetricsSimulator';
 import { LLMToRAGTimeline } from '@/components/LLMToRAGTimeline';
+import { RAGEnhancementTechniques } from '@/components/RAGEnhancementTechniques';
 
 
 import {
@@ -30,6 +31,7 @@ import {
   SlidersHorizontal,
   Database,
   Route,
+  Sparkles,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -43,6 +45,7 @@ const sections = [
   { id: 'chunking', title: 'RAG Chunking Strategies', icon: <Puzzle className="h-8 w-8 text-primary" /> },
   { id: 'parameters', title: 'LLM Generation Parameters', icon: <SlidersHorizontal className="h-8 w-8 text-primary" /> },
   { id: 'agentic-rag', title: 'Agentic RAG', icon: <Bot className="h-8 w-8 text-primary" /> },
+  { id: 'enhancements', title: 'RAG Enhancement Techniques', icon: <Sparkles className="h-8 w-8 text-primary" /> },
   { id: 'evaluation', title: 'RAG Evaluation with RAGAS', icon: <ShieldCheck className="h-8 w-8 text-primary" /> },
 ];
 
@@ -214,6 +217,15 @@ const Index = () => {
                         Agentic RAG represents the next evolution of information retrieval, where an AI agent actively decides whether it needs to fetch external information to answer a query. Instead of retrieving information for every query, the agent analyzes the request and uses a "search" tool only when its internal knowledge is insufficient.
                     </p>
                     <AgenticRAGSimulator />
+                </div>
+            </Section>
+
+            <Section id="enhancements" title="RAG Enhancement Techniques" icon={<Sparkles className="h-8 w-8 text-primary" />}>
+                <div className="space-y-6">
+                    <p className="text-muted-foreground">
+                        Standard RAG is powerful, but there are many advanced techniques to enhance its performance. These strategies address weaknesses in each stage of the RAG pipeline, from understanding the user's query to generating the final answer.
+                    </p>
+                    <RAGEnhancementTechniques />
                 </div>
             </Section>
 

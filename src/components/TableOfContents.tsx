@@ -2,7 +2,7 @@
 "use client";
 
 import { cn } from '@/lib/utils';
-import { BookOpen, Puzzle, ShieldCheck, Bot, SlidersHorizontal, Database, Route } from 'lucide-react';
+import { BookOpen, Puzzle, ShieldCheck, Bot, SlidersHorizontal, Database, Route, Sparkles } from 'lucide-react';
 
 const sections = [
   { id: 'llm-to-rag', title: 'The Journey to RAG', icon: <Route className="w-4 h-4" /> },
@@ -11,6 +11,7 @@ const sections = [
   { id: 'chunking', title: 'Chunking Strategies', icon: <Puzzle className="w-4 h-4" /> },
   { id: 'parameters', title: 'Generation Parameters', icon: <SlidersHorizontal className="w-4 h-4" /> },
   { id: 'agentic-rag', title: 'Agentic RAG', icon: <Bot className="w-4 h-4" /> },
+  { id: 'enhancements', title: 'Enhancement Techniques', icon: <Sparkles className="w-4 h-4" /> },
   { id: 'evaluation', title: 'RAG Evaluation', icon: <ShieldCheck className="w-4 h-4" /> },
 ];
 
