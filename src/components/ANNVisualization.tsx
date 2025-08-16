@@ -73,7 +73,8 @@ const createTree = (points: Point[], bounds: any, depth = 0, maxDepth = 4): Tree
 const getSplitsAtDepth = (node: TreeNode, depth: number, currentDepth = 0): Split[] => {
     if (!node.split || currentDepth > depth) return [];
     if (currentDepth === depth) return [node.split];
-    return [...getSplitsAtDepth(node.children![0], depth, currentDepth + 1), ...getSplitsAtDepth(node.children![1], depth, currentDepth + 1)];
+    if (!node.children) return [];
+    return [...getSplitsAtDepth(node.children[0], depth, currentDepth + 1), ...getSplitsAtDepth(node.children[1], depth, currentDepth + 1)];
 };
 
 const findPath = (node: TreeNode, query: Point): TreeNode[] => {
@@ -149,7 +150,7 @@ export function ANNVisualization() {
         const onPath = pathIds.has(node.id);
         
         return (
-            <div key={node.id} className="flex flex-col items-center">
+            <div key={node.id} className="flex flex-col items-center relative">
                 <motion.div 
                     className={cn("w-4 h-4 rounded-sm border-2", onPath ? "bg-red-500/50 border-red-500" : "bg-muted border-foreground/30")}
                     initial={{opacity:0, scale: 0.5}}
@@ -157,19 +158,16 @@ export function ANNVisualization() {
                     transition={{delay: 0.2}}
                 />
                 {node.children && (
-                     <div className="flex w-full">
-                        <div className="w-1/2 border-r-2 h-6">&nbsp;</div>
-                        <div className="w-1/2 h-6">&nbsp;</div>
-                    </div>
+                     <div className="absolute top-4 h-6 w-px bg-border" />
                 )}
                  {node.children && (
-                    <div className="flex w-full -mt-4">
-                        <div className="w-1/2 border-t-2">&nbsp;</div>
-                        <div className="w-1/2 border-t-2">&nbsp;</div>
+                    <div className="absolute top-10 flex w-full justify-center">
+                        <div className="w-1/2 border-t-2"></div>
+                        <div className="w-1/2 border-t-2"></div>
                     </div>
                 )}
                 {node.children && (
-                    <div className="flex w-full justify-around -mt-4">
+                    <div className="flex w-full justify-around mt-12">
                        <div className="w-1/2 flex justify-center"> {renderTree(node.children[0], pathIds)}</div>
                        <div className="w-1/2 flex justify-center"> {renderTree(node.children[1], pathIds)}</div>
                     </div>
@@ -253,7 +251,7 @@ export function ANNVisualization() {
                         </div>
                         <div className="mt-4">
                             <h4 className="font-semibold text-foreground mb-2">Resulting Binary Tree</h4>
-                            <div className="p-2 bg-muted/40 border rounded-md min-h-[150px] flex items-start justify-center">
+                            <div className="p-4 bg-muted/40 border rounded-md min-h-[150px] flex items-start justify-center overflow-auto">
                                {tree && step > 0 && renderTree(step >= 5 ? searchPath[0] : tree, new Set(searchPath.map(n => n.id)))}
                             </div>
                         </div>
