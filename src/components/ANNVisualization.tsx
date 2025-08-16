@@ -37,26 +37,27 @@ const initialPoints: Point[] = [
 const queryPoint = { id: 0, x: 1.5, y: 0.5 };
 
 const splitSequence: (Split & { path: string })[] = [
-  { path: 'R', p1Id: 1, p2Id: 9 },   // Root split
-  { path: 'RL', p1Id: 1, p2Id: 4 },   // Left child of root
-  { path: 'RR', p1Id: 3, p2Id: 6 },   // Right child of root
-  { path: 'RLR', p1Id: 2, p2Id: 15 }, // Right child of 'RL'
-  { path: 'RRR', p1Id: 7, p2Id: 14 }, // Right child of 'RR'
+  { path: 'R', p1Id: 1, p2Id: 9 },
+  { path: 'RL', p1Id: 1, p2Id: 4 },
+  { path: 'RR', p1Id: 6, p2Id: 12 },
+  { path: 'RLR', p1Id: 2, p2Id: 15 },
+  { path: 'RRR', p1Id: 7, p2Id: 14 },
 ];
 
+// --- COORDINATE SCALING ---
 const getCoords = (p: { x: number; y: number }) => ({
   x: PADDING + (p.x / 10) * (WIDTH - PADDING * 2),
   y: PADDING + (1 - (p.y / 10)) * (HEIGHT - PADDING * 2),
 });
 
+// --- CORE ALGORITHMIC LOGIC ---
 const isLeftOfHyperplane = (p: Point, p1: Point, p2: Point) => {
-    // Using the perpendicular bisector logic
+    // Check which point (p1 or p2) the query point p is closer to.
     const d1 = Math.pow(p.x - p1.x, 2) + Math.pow(p.y - p1.y, 2);
     const d2 = Math.pow(p.x - p2.x, 2) + Math.pow(p.y - p2.y, 2);
     return d1 < d2;
 };
 
-// --- CORE LOGIC: TREE CREATION ---
 function createTreeFromSequence(sequence: typeof splitSequence): TreeNode {
     const root: TreeNode = {
         path: 'R',
@@ -83,6 +84,7 @@ function createTreeFromSequence(sequence: typeof splitSequence): TreeNode {
         const leftPoints: Point[] = [];
         const rightPoints: Point[] = [];
 
+        // Partition points within the CURRENT node's region
         for (const point of currentNode.points) {
             if (isLeftOfHyperplane(point, p1, p2)) {
                 leftPoints.push(point);
@@ -111,7 +113,6 @@ function createTreeFromSequence(sequence: typeof splitSequence): TreeNode {
         nodesToProcess.push(leftChild, rightChild);
     }
     
-    // Assign colors to leaf nodes for visualization
     const colors = ['hsla(347, 84%, 61%, 0.15)', 'hsla(217, 91%, 60%, 0.15)', 'hsla(150, 75%, 42%, 0.15)', 'hsla(39, 91%, 55%, 0.15)', 'hsla(300, 76%, 59%, 0.15)', 'hsla(262, 84%, 58%, 0.2)'];
     leafNodes.forEach((node, i) => node.regionColor = colors[i % colors.length]);
 
@@ -119,7 +120,7 @@ function createTreeFromSequence(sequence: typeof splitSequence): TreeNode {
 }
 
 
-// --- GEOMETRY HELPERS ---
+// --- GEOMETRY & CLIPPING HELPERS ---
 const getIntersection = (a1: {x:number, y:number}, a2: {x:number, y:number}, b1: {x:number, y:number}, b2: {x:number, y:number}) => {
     const dax = (a1.x - a2.x), dbx = (b1.x - b2.x);
     const day = (a1.y - a2.y), dby = (b1.y - b2.y);
@@ -133,6 +134,12 @@ const getIntersection = (a1: {x:number, y:number}, a2: {x:number, y:number}, b1:
     const ix = (a * dbx - dax * b) / den;
     const iy = (a * dby - day * b) / den;
 
+    // Ensure the intersection point lies on both line segments
+    if (ix < Math.min(a1.x, a2.x) - 1e-9 || ix > Math.max(a1.x, a2.x) + 1e-9) return null;
+    if (iy < Math.min(a1.y, a2.y) - 1e-9 || iy > Math.max(a1.y, a2.y) + 1e-9) return null;
+    if (ix < Math.min(b1.x, b2.x) - 1e-9 || ix > Math.max(b1.x, b2.x) + 1e-9) return null;
+    if (iy < Math.min(b1.y, b2.y) - 1e-9 || iy > Math.max(b1.y, b2.y) + 1e-9) return null;
+
     return { x: ix, y: iy };
 };
 
@@ -143,41 +150,57 @@ const getRegionBoundaries = (bounds: {x:number, y:number}[], p1: Point, p2: Poin
     const dx = p2.x - p1.x;
     const dy = p2.y - p1.y;
 
-    // A point on the hyperplane and its normal vector
+    // Define a point on the hyperplane and its normal vector
     const hp_point = { x: midX, y: midY };
     const hp_normal = { x: dx, y: dy };
     
-    const isInside = (p: {x: number, y: number}) => {
-        return (hp_normal.x * (p.x - hp_point.x) + hp_normal.y * (p.y - hp_point.y)) < 0;
-    };
+    // Sutherland-Hodgman algorithm for clipping a polygon
+    const clipPolygon = (subjectPolygon: {x:number, y:number}[], isLeft: boolean) => {
+        let outputList = subjectPolygon;
+        const clipperPolygon = [
+          {x: midX - dy * 100, y: midY + dx * 100},
+          {x: midX + dy * 100, y: midY - dx * 100},
+          isLeft ? {x: midX + dx*100 - dy*100, y: midY + dy*100 + dx*100} : {x: midX - dx*100 - dy*100, y: midY - dy*100 + dx*100},
+        ]
+        
+        const clip = (clipPolygon: {x:number, y:number}[], subjectPolygon: {x:number, y:number}[]) => {
+          let new_points: {x:number, y:number}[] = []
+          for (let i = 0; i < clipPolygon.length; i++) {
+              let k = (i + 1) % clipPolygon.length
+              let p1 = clipPolygon[i]
+              let p2 = clipPolygon[k]
 
-    const clip = (polygon: {x:number, y:number}[], isLeft: boolean) => {
-        const outputList = [];
-        let prevPoint = polygon[polygon.length - 1];
-        let prevInside = isLeft ? isInside(prevPoint) : !isInside(prevPoint);
+              let inside_points: {x:number, y:number}[] = []
+              for (let j = 0; j < subjectPolygon.length; j++) {
+                  let l = (j + 1) % subjectPolygon.length
+                  let q1 = subjectPolygon[j]
+                  let q2 = subjectPolygon[l]
 
-        for (const currentPoint of polygon) {
-            const currentInside = isLeft ? isInside(currentPoint) : !isInside(currentPoint);
-            if (currentInside !== prevInside) {
-                // This is the line segment of the hyperplane itself for clipping.
-                // We create a long line segment to ensure it intersects the polygon bounds.
-                const lineP1 = {x: midX - dy * 100, y: midY + dx * 100};
-                const lineP2 = {x: midX + dy * 100, y: midY - dx * 100};
-                const intersection = getIntersection(prevPoint, currentPoint, lineP1, lineP2);
-                if (intersection) {
-                    outputList.push(intersection);
-                }
-            }
-            if (currentInside) {
-                outputList.push(currentPoint);
-            }
-            prevPoint = currentPoint;
-            prevInside = currentInside;
+                  let p_is_inside = (p: {x:number, y:number}) => (p2.x - p1.x) * (p.y - p1.y) - (p2.y - p1.y) * (p.x - p1.x) <= 0
+                  
+                  let q1_is_inside = p_is_inside(q1)
+                  let q2_is_inside = p_is_inside(q2)
+
+                  if (q1_is_inside && q2_is_inside) {
+                      inside_points.push(q2)
+                  } else if (q1_is_inside && !q2_is_inside) {
+                      let intersection = getIntersection(p1, p2, q1, q2)
+                      if(intersection) inside_points.push(intersection)
+                  } else if (!q1_is_inside && q2_is_inside) {
+                      let intersection = getIntersection(p1, p2, q1, q2)
+                      if(intersection) inside_points.push(intersection)
+                      inside_points.push(q2)
+                  }
+              }
+              subjectPolygon = inside_points
+          }
+          return subjectPolygon
         }
-        return outputList;
+        
+        return clip(clipperPolygon, outputList);
     };
     
-    return { leftBounds: clip(bounds, true), rightBounds: clip(bounds, false) };
+    return { leftBounds: clipPolygon(bounds, true), rightBounds: clipPolygon(bounds, false) };
 };
 
 // --- REACT COMPONENT ---
@@ -212,7 +235,7 @@ export function ANNVisualization() {
             const dx = p2.x - p1.x;
             const dy = p2.y - p1.y;
 
-            // Get two points on the line far away for clipping
+            // Create two points on the infinite perpendicular bisector
             const lineP1 = {x: midX - dy * 100, y: midY + dx * 100};
             const lineP2 = {x: midX + dy * 100, y: midY - dx * 100};
 
@@ -222,15 +245,12 @@ export function ANNVisualization() {
                 const boundP1 = parentNode.bounds[j];
                 const boundP2 = parentNode.bounds[(j + 1) % parentNode.bounds.length];
                 const intersect = getIntersection(lineP1, lineP2, boundP1, boundP2);
-                if (intersect &&
-                    intersect.x >= Math.min(boundP1.x, boundP2.x) - 1e-9 &&
-                    intersect.x <= Math.max(boundP1.x, boundP2.x) + 1e-9 &&
-                    intersect.y >= Math.min(boundP1.y, boundP2.y) - 1e-9 &&
-                    intersect.y <= Math.max(boundP1.y, boundP2.y) + 1e-9) {
+                if (intersect) {
                      intersections.push(intersect);
                 }
             }
-
+            
+            // Return the clipped line segment
             if (intersections.length >= 2) {
                  return { id: `split-${i}`, p1: intersections[0], p2: intersections[1] };
             }
@@ -242,7 +262,7 @@ export function ANNVisualization() {
     const queryPath = useMemo(() => {
         if (step < splitSequence.length + 1) return [];
         let currentNode = tree;
-        const path = ['R'];
+        const path = [currentNode.path];
         while(currentNode.children){
             const split = currentNode.split!;
             const p1 = initialPoints.find(p => p.id === split.p1Id)!;
@@ -280,6 +300,25 @@ export function ANNVisualization() {
         return "";
     };
     
+    const getVisibleLeafNodes = () => {
+        if (step <= splitSequence.length) {
+          const visibleNodePaths: string[] = ['R'];
+          for(let i=0; i<step; i++) {
+            const currentPath = splitSequence[i].path;
+            const parentPath = currentPath.slice(0, -1);
+            // remove parent path and add children paths
+            const index = visibleNodePaths.indexOf(parentPath);
+            if(index > -1) {
+              visibleNodePaths.splice(index, 1);
+              visibleNodePaths.push(parentPath + 'L', parentPath + 'R');
+            }
+          }
+          return allNodes.filter(n => visibleNodePaths.includes(n.path) && !n.children);
+        }
+        // After all splits, show all leaf nodes
+        return allNodes.filter(n => !n.children);
+    }
+    
     // --- RENDER ---
     return (
         <Card className="bg-card/50 mt-6">
@@ -290,15 +329,11 @@ export function ANNVisualization() {
             <CardContent className="space-y-6">
                  <div className="lg:grid lg:grid-cols-5 gap-6">
                     <div className="lg:col-span-3 space-y-4">
-                        <div className="relative border rounded-lg bg-background" style={{ width: WIDTH, height: HEIGHT }}>
+                        <div className="relative border-2 border-border rounded-lg bg-background" style={{ width: WIDTH, height: HEIGHT }}>
                             <svg width={WIDTH} height={HEIGHT}>
-                                <defs>
-                                    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="currentColor" /></marker>
-                                </defs>
-
                                 {/* Region Fills */}
                                 <AnimatePresence>
-                                {step > splitSequence.length && allNodes.filter(n => !n.children).map((node, i) => (
+                                {getVisibleLeafNodes().map((node) => (
                                     <motion.path
                                         key={`region-${node.path}`}
                                         d={`M ${node.bounds.map(p => `${getCoords(p).x},${getCoords(p).y}`).join(' L ')} Z`}
@@ -329,7 +364,7 @@ export function ANNVisualization() {
                                             key={line.id}
                                             x1={getCoords(line.p1).x} y1={getCoords(line.p1).y}
                                             x2={getCoords(line.p2).x} y2={getCoords(line.p2).y}
-                                            stroke={'hsl(var(--border))'} strokeWidth="1.5"
+                                            stroke={'hsl(var(--foreground))'} strokeWidth="1.5"
                                             initial={{ pathLength: 0 }}
                                             animate={{ pathLength: 1 }}
                                             transition={{ duration: 0.5 }}
@@ -400,54 +435,43 @@ export function ANNVisualization() {
                                     <svg viewBox="0 0 250 150" className="w-full h-full">
                                         {/* Render Nodes and Edges */}
                                         {allNodes.filter(n => n.split && step >= splitSequence.findIndex(s => s.path === n.path) + 1).map(node => {
-                                            const parentPath = node.path.slice(0, -1);
-                                            const parent = allNodes.find(p => p.path === parentPath);
-                                            const isLeftChild = node.path.endsWith('L');
-
                                             const getPos = (path: string) => {
                                                  const level = path.length - 1;
                                                  let pos = 0;
-                                                 for(let i = 1; i < path.length; i++){
-                                                    if(path[i] === 'R') pos += 1 << (3 - i);
+                                                 if (path.length > 1) {
+                                                     // Simplified positioning logic
+                                                     const pathBits = path.substring(1).split('');
+                                                     pos = pathBits.reduce((acc, val, idx) => acc + (val === 'R' ? 1 : -1) * (1 / Math.pow(2, idx + 1)), 0);
                                                  }
-                                                 if (level === 1) pos *= 2;
-                                                 if (level === 2 && path.endsWith('R')) pos -= 1;
-                                                 if (level === 3 && path.endsWith('R')) pos -= 0.5;
 
-
-                                                const x = 125 + (pos - 3.5) * 30;
+                                                const x = 125 + pos * 110;
                                                 const y = 20 + level * 35;
                                                 return {x, y};
                                             }
                                             
                                             const myPos = getPos(node.path);
-                                            const parentPos = parent ? getPos(parent.path) : null;
                                             const isInQueryPath = queryPath.includes(node.path);
-                                            
-                                            const leafChildren = !node.children?.left.children && !node.children?.right.children;
                                             
                                             return (
                                                 <g key={`tree-node-${node.path}`}>
-                                                  {parentPos && <line x1={parentPos.x} y1={parentPos.y} x2={myPos.x} y2={myPos.y} stroke="hsl(var(--border))" />}
+                                                  {node.children && <line x1={myPos.x} y1={myPos.y} x2={getPos(node.children.left.path).x} y2={getPos(node.children.left.path).y} stroke="hsl(var(--border))" />}
+                                                  {node.children && <line x1={myPos.x} y1={myPos.y} x2={getPos(node.children.right.path).x} y2={getPos(node.children.right.path).y} stroke="hsl(var(--border))" />}
+
                                                   <rect x={myPos.x - 12} y={myPos.y-8} width="24" height="16" rx="4" fill={isInQueryPath ? "hsl(var(--primary))" : "hsl(var(--muted))"} stroke="hsl(var(--border))" />
                                                   <text x={myPos.x} y={myPos.y + 3} textAnchor="middle" fontSize="8" fill={isInQueryPath ? "hsl(var(--primary-foreground))" : "hsl(var(--foreground))"}>
-                                                    ({node.split?.p1Id}, {node.split?.p2Id})
+                                                    ({node.split?.p1Id},{node.split?.p2Id})
                                                   </text>
                                                     
                                                   {/* Leaf Nodes */}
-                                                  {step > splitSequence.length && node.children && allNodes.filter(n => !n.children && n.path.startsWith(node.path)).map(leaf => {
-                                                     const leafPos = getPos(leaf.path);
-                                                     const isFinalQueryLeaf = queryPath.includes(leaf.path);
-                                                     return (
-                                                      <g key={`leaf-${leaf.path}`}>
-                                                        <line x1={myPos.x} y1={myPos.y} x2={leafPos.x} y2={leafPos.y} stroke="hsl(var(--border))" />
-                                                        <rect x={leafPos.x - 12} y={leafPos.y-8} width="24" height="16" rx="4" fill={isFinalQueryLeaf ? "hsl(var(--primary))" : "hsl(var(--muted))"} stroke="hsl(var(--border))" />
-                                                        <text x={leafPos.x} y={leafPos.y + 3} textAnchor="middle" fontSize="6" fill={isFinalQueryLeaf ? "hsl(var(--primary-foreground))" : "hsl(var(--foreground))"}>
-                                                         {leaf.points.map(p=>p.id).join(',')}
+                                                  {step > splitSequence.length && !node.children && (
+                                                     (allNodes.find(p => p.children?.left === node || p.children?.right === node)) &&
+                                                      <g key={`leaf-${node.path}`}>
+                                                        <rect x={myPos.x - 18} y={myPos.y-8} width="36" height="16" rx="4" fill={isInQueryPath ? "hsl(var(--primary))" : "hsl(var(--muted))"} stroke="hsl(var(--border))" />
+                                                        <text x={myPos.x} y={myPos.y + 3} textAnchor="middle" fontSize="6" fill={isInQueryPath ? "hsl(var(--primary-foreground))" : "hsl(var(--foreground))"}>
+                                                         {node.points.map(p=>p.id).join(',')}
                                                         </text>
                                                       </g>
-                                                     )
-                                                  })}
+                                                  )}
                                                 </g>
                                             )
                                         })}
@@ -481,3 +505,5 @@ export function ANNVisualization() {
         </Card>
     );
 };
+
+    
