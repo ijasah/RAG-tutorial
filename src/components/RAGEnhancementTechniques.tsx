@@ -4,12 +4,13 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { GitBranch, Lightbulb, Search, Database, Brain, Sparkles, Wand2, BrainCircuit } from 'lucide-react';
+import { HypotheticalQuestionsSimulator } from './HypotheticalQuestionsSimulator';
 
 const divideAndConquerTechniques = [
     {
         icon: <Search className="h-5 w-5 text-blue-400" />,
         title: "Query Enhancement",
-        content: "Improves the user's query before it hits the retrieval system. This can involve expanding the query with synonyms, correcting typos, or breaking down a complex question into several sub-questions.",
+        content: "Improves the user's query before it hits the retrieval system. This can involve expanding the query with synonyms, correcting typos, or using advanced techniques like generating hypothetical documents or questions that the query might be asking.",
     },
     {
         icon: <Database className="h-5 w-5 text-green-400" />,
@@ -49,8 +50,22 @@ export const RAGEnhancementTechniques = () => {
                         These techniques break down the RAG process into smaller parts and optimize each one individually.
                     </p>
                     <Accordion type="single" collapsible className="w-full" defaultValue="item-0">
-                        {divideAndConquerTechniques.map((item, index) => (
-                            <AccordionItem key={index} value={`item-${index}`}>
+                        <AccordionItem value="item-0">
+                            <AccordionTrigger>
+                                <div className="flex items-center gap-3">
+                                    <Search className="h-5 w-5 text-blue-400" />
+                                    <span className="font-medium">Query Enhancement</span>
+                                </div>
+                            </AccordionTrigger>
+                            <AccordionContent className="pl-10 text-muted-foreground space-y-4">
+                                <p>
+                                    Improves the user's query before it hits the retrieval system. This can involve expanding the query with synonyms, correcting typos, or using advanced techniques like generating hypothetical questions that the query might be asking. Explore the simulator for one such technique below.
+                                </p>
+                                <HypotheticalQuestionsSimulator />
+                            </AccordionContent>
+                        </AccordionItem>
+                        {divideAndConquerTechniques.slice(1).map((item, index) => (
+                            <AccordionItem key={index} value={`item-${index+1}`}>
                                 <AccordionTrigger>
                                     <div className="flex items-center gap-3">
                                         {item.icon}
