@@ -1,7 +1,7 @@
 // src/components/SimilarityMetricsSimulator.tsx
 "use client";
 import React, { useState, useMemo } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calculator, Orbit } from 'lucide-react';
@@ -10,10 +10,10 @@ import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 type Vector = { x: number; y: number; label: string; };
 
 const documents: Vector[] = [
+    { x: 1, y: 5, label: 'The sky is blue.' },
     { x: 4, y: 3, label: 'RAG is a technique.' },
     { x: 8, y: 6, label: 'RAG is a powerful technique for LLMs.' },
     { x: 3.5, y: 4, label: 'Chunking splits text.' },
-    { x: 1, y: 5, label: 'The sky is blue.' },
 ];
 
 const queryVector: Vector = { x: 5, y: 3.75, label: 'What is RAG?' };
@@ -72,7 +72,7 @@ const VectorVisualization = ({ selectedVec, metric }: { selectedVec: Vector, met
 
     const largeArcFlag = angleDiff > Math.PI ? 1 : 0;
     
-    const arcPath = `M ${startPoint.x} ${startPoint.y} A ${arcRadius} ${arcRadius} 0 ${largeArcFlag} 1 ${endPoint.x} ${endPoint.y}`;
+    const arcPath = `M ${startPoint.x} ${startPoint.y} A ${arcRadius} ${arcRadius} 0 ${largeArcFlag} 0 ${endPoint.x} ${endPoint.y}`;
 
     return (
          <svg viewBox={`0 0 ${width} ${height - 50}`} className="w-full h-full" style={{ fontSize: '12px' }}>
@@ -81,19 +81,18 @@ const VectorVisualization = ({ selectedVec, metric }: { selectedVec: Vector, met
             
             {/* Query Vector */}
             <g>
-               <line x1={origin.x} y1={origin.y} x2={getCoords(queryVector).x} y2={getCoords(queryVector).y} stroke="hsl(var(--primary))" strokeWidth="2.5" />
-               <circle cx={getCoords(queryVector).x} cy={getCoords(queryVector).y} r="4" fill="hsl(var(--primary))" />
+               <motion.line x1={origin.x} y1={origin.y} x2={getCoords(queryVector).x} y2={getCoords(queryVector).y} stroke="hsl(var(--primary))" strokeWidth="2.5" initial={{pathLength: 0}} animate={{pathLength: 1}} transition={{duration: 0.5}} />
+               <motion.circle cx={getCoords(queryVector).x} cy={getCoords(queryVector).y} r="4" fill="hsl(var(--primary))" initial={{scale: 0}} animate={{scale: 1}} transition={{delay: 0.5}}/>
                <text x={getCoords(queryVector).x + 5} y={getCoords(queryVector).y - 10} fontWeight="bold" fill="hsl(var(--primary))">{queryVector.label}</text>
             </g>
 
             {/* Selected Vector */}
             <g>
-               <line x1={origin.x} y1={origin.y} x2={getCoords(selectedVec).x} y2={getCoords(selectedVec).y} stroke="hsl(var(--foreground))" strokeWidth="2" opacity="0.8" />
-                <circle cx={getCoords(selectedVec).x} cy={getCoords(selectedVec).y} r="4" fill="hsl(var(--foreground))"  opacity="0.8"/>
+               <motion.line x1={origin.x} y1={origin.y} x2={getCoords(selectedVec).x} y2={getCoords(selectedVec).y} stroke="hsl(var(--foreground))" strokeWidth="2" opacity="0.8" initial={{pathLength: 0}} animate={{pathLength: 1}} transition={{duration: 0.5}} />
+                <motion.circle cx={getCoords(selectedVec).x} cy={getCoords(selectedVec).y} r="4" fill="hsl(var(--foreground))"  opacity="0.8" initial={{scale: 0}} animate={{scale: 1}} transition={{delay: 0.5}}/>
                <text x={getCoords(selectedVec).x + 5} y={getCoords(selectedVec).y + 5} fontWeight="bold" fill="hsl(var(--foreground))" opacity="0.8" >{selectedVec.label}</text>
             </g>
 
-            <AnimatePresence>
             {metric === 'cosine' && (
                 <motion.path
                     key={`arc-${selectedVec.label}`}
@@ -105,7 +104,7 @@ const VectorVisualization = ({ selectedVec, metric }: { selectedVec: Vector, met
                     initial={{ pathLength: 0, opacity: 0 }}
                     animate={{ pathLength: 1, opacity: 1 }}
                     exit={{ pathLength: 0, opacity: 0 }}
-                    transition={{duration: 0.5}}
+                    transition={{duration: 0.5, delay: 0.2}}
                 />
             )}
             {metric === 'euclidean' && (
@@ -121,10 +120,9 @@ const VectorVisualization = ({ selectedVec, metric }: { selectedVec: Vector, met
                     initial={{ pathLength: 0, opacity: 0 }}
                     animate={{ pathLength: 1, opacity: 1 }}
                     exit={{ pathLength: 0, opacity: 0 }}
-                    transition={{duration: 0.5}}
+                    transition={{duration: 0.5, delay: 0.2}}
                 />
             )}
-            </AnimatePresence>
         </svg>
     );
 }
@@ -169,11 +167,11 @@ export const SimilarityMetricsSimulator = () => {
                 <Alert className="mt-8 border-primary/30 bg-primary/10">
                     <Orbit className="h-4 w-4" />
                     <AlertTitle>Why Cosine Similarity is Preferred for RAG</AlertTitle>
-                     <AlertDescription className="mt-2">
+                     <AlertDescription className="mt-2 space-y-2">
                        <p>
                            In semantic search, we care more about the <strong>topic</strong> (the vector's direction) than the document's length (the vector's magnitude). LLM embeddings encode meaning in <strong>direction</strong>.
                        </p>
-                       <p className="mt-2">
+                       <p>
                            Notice that the two "RAG" documents have a very high Cosine Similarity score (~1.0) because their vectors point in almost the same direction, even though one sentence is much longer. Euclidean Distance gives them very different scores because it is misled by the difference in magnitude (length). This <strong>scale-invariance</strong> is crucial for finding the best context.
                        </p>
                     </AlertDescription>
