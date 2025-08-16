@@ -33,6 +33,10 @@ import {
   Database,
   Route,
   Sparkles,
+  FileQuestion,
+  Search,
+  MessageSquare,
+  ClipboardCheck,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -239,6 +243,48 @@ const Index = () => {
                 <p className="text-muted-foreground">
                   A crucial step in building a RAG system is evaluating its performance. How do we know if the retrieved context is useful or if the final answer is correct? We use evaluation metrics to quantify the quality of our RAG pipeline.
                 </p>
+
+                <div>
+                  <h3 className="text-xl font-semibold mb-3 text-foreground">Key Evaluation Terms</h3>
+                   <p className="text-muted-foreground mb-4">
+                    Before diving into the metrics, let's define the core components we'll be evaluating.
+                  </p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2 text-base"><FileQuestion className="text-primary"/>Query</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-sm text-muted-foreground">The user's original question or prompt.</p>
+                      </CardContent>
+                    </Card>
+                     <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2 text-base"><Search className="text-primary"/>Retrieved Context</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                         <p className="text-sm text-muted-foreground">The information chunks pulled from the vector database based on the query.</p>
+                      </CardContent>
+                    </Card>
+                     <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2 text-base"><MessageSquare className="text-primary"/>Generated Answer</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                         <p className="text-sm text-muted-foreground">The final response produced by the LLM after being augmented with the context.</p>
+                      </CardContent>
+                    </Card>
+                     <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2 text-base"><ClipboardCheck className="text-primary"/>Ground Truth</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                         <p className="text-sm text-muted-foreground">The manually verified, "perfect" answer or context used as a benchmark for evaluation.</p>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </div>
+
                  <h3 className="text-xl font-semibold mb-3 mt-8 text-foreground">Context Precision</h3>
                  <p className="text-muted-foreground -mt-4">
                   Context Precision measures the signal-to-noise ratio of the retrieved context. It answers the question: "Is the retrieved information relevant to the query?" High precision means the context is focused and useful.
