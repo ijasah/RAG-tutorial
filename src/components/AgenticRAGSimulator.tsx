@@ -86,6 +86,7 @@ export const AgenticRAGSimulator = () => {
     }
 
     const isRunning = agentState !== 'idle' && agentState !== 'complete';
+    const isSelfReflectQuery = selectedQuery === "Who is the CEO of Databricks?";
 
     return (
         <Card className="bg-card/50">
@@ -116,7 +117,7 @@ export const AgenticRAGSimulator = () => {
 
                 <div className="space-y-4 min-h-[350px]">
                     <AnimatePresence>
-                        {thought && (
+                        {(thought && (!isSelfReflectQuery || (isSelfReflectQuery && agentState !== 'thinking' && agentState !== 'retrieving'))) && (
                             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-4 bg-muted/50 rounded-lg border">
                                 <h4 className="font-semibold text-sm mb-2 flex items-center gap-2"><Sparkles className="text-primary" /> Agent's Thought Process</h4>
                                 <p className="text-sm text-muted-foreground italic">{thought}</p>
