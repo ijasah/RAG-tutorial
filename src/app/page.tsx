@@ -18,6 +18,7 @@ import { SimilarityMetricsSimulator } from '@/components/SimilarityMetricsSimula
 import { LLMToRAGTimeline } from '@/components/LLMToRAGTimeline';
 import { RAGEnhancementTechniques } from '@/components/RAGEnhancementTechniques';
 import { ContextRecallSimulator } from '@/components/ContextRecallSimulator';
+import { NoiseSensitivitySimulator } from '@/components/NoiseSensitivitySimulator';
 
 import {
   BookOpen,
@@ -303,9 +304,18 @@ const Index = () => {
                 </p>
                 <ContextRecallSimulator />
 
+                <h3 className="text-xl font-semibold mb-3 mt-8 text-foreground">Noise Sensitivity</h3>
+                  <p className="text-muted-foreground -mt-4 font-semibold text-lg italic text-center py-4">
+                    "How much does the LLM's answer get thrown off by irrelevant information?"
+                  </p>
+                 <p className="text-muted-foreground -mt-4">
+                  Noise Sensitivity measures how robust an LLM is to handling irrelevant or distracting information in its context. A lower score is better, indicating the model can ignore the "noise" and produce a factual answer.
+                </p>
+                <NoiseSensitivitySimulator />
+
                 <div>
                     <h3 className="text-xl font-semibold mb-3 mt-8 text-foreground">Conclusion</h3>
-                    <p className="text-muted-foreground">Incorporating robust evaluation into the RAG workflow is crucial for building reliable and accurate AI systems. By using metrics like Context Precision and Context Recall, we can quantify the performance of our retrieval system and ensure that the final answers are grounded in high-quality, relevant information.</p>
+                    <p className="text-muted-foreground">Incorporating robust evaluation into the RAG workflow is crucial for building reliable and accurate AI systems. By using metrics like Context Precision, Context Recall, and Noise Sensitivity, we can quantify the performance of our pipeline and ensure the final answers are grounded in high-quality, relevant information.</p>
                 </div>
               </div>
             </Section>
