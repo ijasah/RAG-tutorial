@@ -113,7 +113,7 @@ const AgenticRAGSimulator = () => {
                 </div>
 
                 <AnimatePresence>
-                    <div className="space-y-4 min-h-[200px]">
+                    <div className="space-y-4 min-h-[250px]">
                         {agentState !== 'idle' && (
                             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-4 bg-muted/50 rounded-lg border">
                                 <h4 className="font-semibold text-sm mb-2 flex items-center gap-2"><Sparkles className="text-primary" /> Agent's Thought Process</h4>
