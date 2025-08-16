@@ -25,7 +25,6 @@ const scenarios = {
             claims: [
                 { text: "Patrick Lewis is the lead author.", supported: true, reason: "The first context mentions Patrick Lewis as an author." },
                 { text: "He worked at Facebook AI Research.", supported: true, reason: "The first context explicitly states he worked at Facebook AI Research." },
-                { text: "The paper discusses vector databases.", supported: false, reason: "This claim is not in the reference answer, even though it's in the context." },
             ],
             analysis: [
                  { claim: 0, supported: true, reason: "The first context mentions Patrick Lewis as an author." },
@@ -125,13 +124,18 @@ export const ContextRecallSimulator = () => {
   const activeScenario = scenarios[activeTab];
   
   const score = useMemo(() => {
-    if (evaluatedItems.length === 0) return 0;
-    if(activeTab === 'llm_based') {
+    if (activeTab === 'llm_based') {
+        if (evaluatedItems.length === 0 && activeScenario.data.analysis.length > 0) return 0;
         const supportedCount = evaluatedItems.map(i => activeScenario.data.analysis[i]).filter(a => a.supported).length;
-        return supportedCount / activeScenario.data.analysis.length;
+        const totalClaims = activeScenario.data.analysis.length;
+        if(totalClaims === 0) return 0;
+        return supportedCount / totalClaims;
     } else {
+        if (evaluatedItems.length === 0 && activeScenario.data.analysis.length > 0) return 0;
         const retrievedCount = evaluatedItems.map(i => activeScenario.data.analysis[i]).filter(a => a.retrieved).length;
-        return retrievedCount / activeScenario.data.analysis.length;
+        const totalContexts = activeScenario.data.analysis.length;
+         if(totalContexts === 0) return 0;
+        return retrievedCount / totalContexts;
     }
   }, [evaluatedItems, activeScenario, activeTab]);
 
@@ -161,7 +165,7 @@ export const ContextRecallSimulator = () => {
   }
 
   const formula = activeTab === 'llm_based' 
-    ? `score = (Attributed Claims) / (Total Claims in Reference) = ${activeScenario.data.analysis.filter((a,i) => evaluatedItems.includes(i) && a.supported).length} / ${activeScenario.data.analysis.length} = ${score.toFixed(2)}`
+    ? `score = (Attributed Claims) / (Total Claims) = ${activeScenario.data.analysis.filter((a,i) => evaluatedItems.includes(i) && a.supported).length} / ${activeScenario.data.analysis.length} = ${score.toFixed(2)}`
     : `score = (Retrieved Reference Contexts) / (Total Reference Contexts) = ${activeScenario.data.analysis.filter((a,i) => evaluatedItems.includes(i) && a.retrieved).length} / ${activeScenario.data.analysis.length} = ${score.toFixed(2)}`;
 
   return (
@@ -202,6 +206,15 @@ export const ContextRecallSimulator = () => {
                             </CardHeader>
                             <CardContent className="space-y-2">
                                {(activeScenario.data.retrieved_contexts as string[]).map((c, i) => <p key={i} className="p-2 bg-muted/50 rounded-md border text-sm">{c}</p>)}
+                            </CardContent>
+                        </Card>
+                        <Card>
+                             <CardHeader>
+                                <CardTitle className="text-base flex items-center gap-2"><FileText className="text-primary"/>Ground Truth</CardTitle>
+                            </CardHeader>
+                             <CardContent>
+                                {activeTab === 'llm_based' && <p className="text-sm">{(activeScenario.data as any).reference_answer}</p>}
+                                {activeTab === 'non_llm_based' && <div className="space-y-2">{(activeScenario.data as any).reference_contexts.map((c: string, i: number) => (<p key={i} className="p-2 bg-muted/50 rounded-md border text-sm">{c}</p>))}</div>}
                             </CardContent>
                         </Card>
                     </div>
