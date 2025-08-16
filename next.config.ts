@@ -29,6 +29,12 @@ const nextConfig: NextConfig = {
         hostname: 'media.datacamp.com',
         port: '',
         pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'bigdataanalyticsnews.com',
+        port: '',
+        pathname: '/**',
       }
     ],
   },

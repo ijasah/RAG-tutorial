@@ -2,6 +2,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import Image from 'next/image';
 import { Hero } from '@/components/Hero';
 import { TableOfContents } from '@/components/TableOfContents';
 import { Section } from '@/components/Section';
@@ -186,6 +187,9 @@ const Index = () => {
                  <p className="text-muted-foreground mb-4">
                     Vector databases are specialized databases designed to store and manage high-dimensional vectors (embeddings) efficiently. These databases make it easier to perform similarity searches and retrieve relevant information for a given query.
                   </p>
+                  <Card className="overflow-hidden">
+                    <Image src="https://bigdataanalyticsnews.com/wp-content/uploads/2024/04/top-vector-database.jpg" alt="Top Vector Databases" width={800} height={450} className="w-full object-cover" />
+                  </Card>
                   <VectorDBAnimation />
                   <SimilarityMetricsSimulator />
                </div>
