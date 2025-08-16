@@ -34,12 +34,11 @@ const magnitude = (v: Vector) => Math.sqrt(v.x * v.x + v.y * v.y);
 const cosineSimilarity = (v1: Vector, v2: Vector) => dotProduct(v1, v2) / (magnitude(v1) * magnitude(v2));
 const euclideanDistance = (v1: Vector, v2: Vector) => Math.sqrt(Math.pow(v1.x - v2.x, 2) + Math.pow(v1.y - v2.y, 2));
 
-const MetricDisplay = ({ title, formula, value, children, description }: { title: string, formula: string, value: string, children: React.ReactNode, description?: React.ReactNode }) => (
+const MetricDisplay = ({ title, formula, value, children }: { title: string, formula: string, value: string, children: React.ReactNode }) => (
     <div className="flex flex-col space-y-2 p-4 border rounded-lg bg-muted/30 h-full">
         <div className="text-center">
             <h3 className="font-semibold text-lg text-primary">{title}</h3>
             <p className="font-mono text-sm text-muted-foreground mt-1 h-6">{formula}</p>
-            {description && <div className="text-xs text-muted-foreground mt-2 px-2">{description}</div>}
         </div>
         <div className="relative w-full h-[300px] rounded-lg bg-muted/40 overflow-hidden my-2">
             {children}
@@ -75,27 +74,22 @@ const VectorVisualization = ({ selectedVec, metric }: { selectedVec: Vector, met
     
     const arcPath = `M ${startPointArc.x} ${startPointArc.y} A ${arcRadius} ${arcRadius} 0 ${largeArcFlag} 1 ${endPointArc.x} ${endPointArc.y}`;
     
-    const getTextPosition = (vec: Vector) => {
+    const getTextPosition = (vec: Vector, isQuery: boolean) => {
         const coords = getCoords(vec);
-        const angle = Math.atan2(coords.y - origin.y, coords.x - origin.x);
-        const offsetX = Math.cos(angle) * 15;
-        const offsetY = Math.sin(angle) * 15;
-        
-        let textAnchor = "start";
-        if (angle > Math.PI / 2 || angle < -Math.PI / 2) {
-            textAnchor = "end";
-        }
-        
+        // Basic logic to prevent overlap, can be improved
+        const yOffset = isQuery ? -15 : 15;
+        const xOffset = isQuery ? 15 : 0;
+
         return {
-            x: coords.x + offsetX,
-            y: coords.y + offsetY,
-            textAnchor,
-            dy: "0.35em",
+            x: coords.x + xOffset,
+            y: coords.y + yOffset,
+            textAnchor: isQuery ? "start" : "middle",
         }
     }
     
-    const queryLabelPos = getTextPosition(queryVector);
-    const selectedLabelPos = getTextPosition(selectedVec);
+    const queryLabelPos = getTextPosition(queryVector, true);
+    const selectedLabelPos = getTextPosition(selectedVec, false);
+
 
     return (
         <svg viewBox={`0 0 ${width} ${height - 50}`} className="w-full h-full" style={{ fontSize: '12px' }}>
@@ -109,7 +103,7 @@ const VectorVisualization = ({ selectedVec, metric }: { selectedVec: Vector, met
                     <g key={vec.label}>
                        <motion.line x1={origin.x} y1={origin.y} x2={coords.x} y2={coords.y} stroke={i === 0 ? "hsl(var(--primary))" : "hsl(var(--foreground))"} strokeWidth={i === 0 ? "2.5" : "2"} opacity={i === 0 ? 1 : 0.8} initial={{pathLength: 0}} animate={{pathLength: 1}} transition={{duration: 0.5}} />
                        <motion.circle cx={coords.x} cy={coords.y} r="4" fill={i === 0 ? "hsl(var(--primary))" : "hsl(var(--foreground))"} opacity={i === 0 ? 1 : 0.8} initial={{scale: 0}} animate={{scale: 1}} transition={{delay: 0.5}}/>
-                        <text x={pos.x} y={pos.y} dy={pos.dy} textAnchor={pos.textAnchor as any} fontWeight="bold" fill={i === 0 ? "hsl(var(--primary))" : "hsl(var(--foreground))"} opacity={i === 0 ? 1 : 0.8}>{vec.label}</text>
+                        <text x={pos.x} y={pos.y} textAnchor={pos.textAnchor as any} fontWeight="bold" fill={i === 0 ? "hsl(var(--primary))" : "hsl(var(--foreground))"} opacity={i === 0 ? 1 : 0.8}>{vec.label}</text>
                     </g>
                  )
             })}
@@ -157,17 +151,6 @@ export const SimilarityMetricsSimulator = () => {
     const cosSim = useMemo(() => cosineSimilarity(queryVector, selectedVector), [selectedVector]);
     const eucDist = useMemo(() => euclideanDistance(queryVector, selectedVector), [selectedVector]);
 
-    const formulaDescription = (
-        <div className="space-y-1">
-            <p>
-                <strong className="text-primary">A · B</strong> is the dot product, measuring how much one vector goes in the direction of another.
-            </p>
-            <p>
-                <strong className="text-primary">||A|| & ||B||</strong> are the magnitudes (or lengths) of the vectors. Dividing by the magnitudes normalizes for length.
-            </p>
-        </div>
-    );
-
     return (
         <Card className="bg-card/50 mt-6">
             <CardHeader>
@@ -189,7 +172,7 @@ export const SimilarityMetricsSimulator = () => {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
-                    <MetricDisplay title="Cosine Similarity" formula="cos(θ) = (A · B) / (||A|| * ||B||)" value={cosSim.toFixed(3)} description={formulaDescription}>
+                    <MetricDisplay title="Cosine Similarity" formula="cos(θ) = (A · B) / (||A|| * ||B||)" value={cosSim.toFixed(3)}>
                         <VectorVisualization selectedVec={selectedVector} metric="cosine" />
                     </MetricDisplay>
                     <MetricDisplay title="Euclidean Distance" formula="√((x₂-x₁)² + (y₂-y₁)²)" value={eucDist.toFixed(2)}>
@@ -201,9 +184,11 @@ export const SimilarityMetricsSimulator = () => {
                     <Orbit className="h-4 w-4" />
                     <AlertTitle>Why Cosine Similarity is Preferred for RAG</AlertTitle>
                      <AlertDescription className="mt-2 space-y-2">
-                       <p>
-                           In semantic search, we care more about the <strong>topic</strong> (the vector's direction) than the document's length (the vector's magnitude). LLM embeddings encode meaning in <strong>direction</strong>.
-                       </p>
+                        <div className="space-y-1">
+                            <p>In semantic search, we care more about the <strong>topic</strong> (the vector's direction) than the document's length (the vector's magnitude). LLM embeddings encode meaning in <strong>direction</strong>. The formula for this is:</p>
+                             <p><strong className="text-primary">A · B</strong> is the dot product, measuring how much one vector goes in the direction of another.</p>
+                             <p><strong className="text-primary">||A|| & ||B||</strong> are the magnitudes (or lengths) of the vectors. Dividing by the magnitudes normalizes for length, isolating the angle.</p>
+                        </div>
                        <p>
                            Select the other "RAG" document and notice that the two RAG documents have a very high Cosine Similarity score because their vectors point in almost the same direction, even though one sentence is much longer. Euclidean Distance is misled by the difference in magnitude (length). This <strong>scale-invariance</strong> is crucial for finding the best context.
                        </p>
