@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './ui/card';
 import { HelpCircle, FileText, Bot, Search, RefreshCw, ArrowRight, MessageSquare, Sparkles, GitMerge } from 'lucide-react';
 import { Badge } from './ui/badge';
 import { cn } from '@/lib/utils';
