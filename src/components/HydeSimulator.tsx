@@ -83,7 +83,7 @@ export const HydeSimulator = () => {
                         {step >= 1 && (
                             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1, transition: {delay: 0.1} }}>
                                 <FlowNode icon={<HelpCircle />} title="User Query" status={getStatus(1)} step={1} currentStep={step}>
-                                    <p className="p-2 border rounded bg-background text-xs">"What are the benefits of RAG?"</p>
+                                    <div className="p-2 border rounded bg-background text-xs">"What are the benefits of RAG?"</div>
                                 </FlowNode>
                             </motion.div>
                         )}
@@ -92,7 +92,7 @@ export const HydeSimulator = () => {
                         {step >= 6 && (
                              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1, transition: {delay: 0.6} }}>
                                 <FlowNode icon={<Sparkles />} title="Final Answer" status={getStatus(6)} step={6} currentStep={step}>
-                                    <p className="p-2 border rounded bg-background text-xs">The main benefits of RAG are improved accuracy...</p>
+                                    <div className="p-2 border rounded bg-background text-xs">The main benefits of RAG are improved accuracy...</div>
                                 </FlowNode>
                             </motion.div>
                         )}
@@ -108,7 +108,7 @@ export const HydeSimulator = () => {
                         {step >= 2 && (
                              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1, transition: {delay: 0.2} }}>
                                 <FlowNode icon={<Bot />} title="Generate Fake Answer" status={getStatus(2)} step={2} currentStep={step}>
-                                    <p className="p-2 border rounded bg-background text-xs">"RAG offers several benefits, including improved accuracy..."</p>
+                                    <div className="p-2 border rounded bg-background text-xs">"RAG offers several benefits, including improved accuracy..."</div>
                                 </FlowNode>
                             </motion.div>
                         )}
@@ -117,7 +117,7 @@ export const HydeSimulator = () => {
                         {step >= 5 && (
                              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1, transition: {delay: 0.5} }}>
                                 <FlowNode icon={<GitMerge />} title="Combine & Augment" status={getStatus(5)} step={5} currentStep={step}>
-                                    <p className="p-2 border rounded bg-background text-xs">Original query + retrieved chunks are combined.</p>
+                                    <div className="p-2 border rounded bg-background text-xs">Original query + retrieved chunks are combined.</div>
                                 </FlowNode>
                             </motion.div>
                         )}
@@ -133,7 +133,7 @@ export const HydeSimulator = () => {
                          {step >= 3 && (
                             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1, transition: {delay: 0.3} }}>
                                 <FlowNode icon={<Search />} title="Doc-to-Doc Search" status={getStatus(3)} step={3} currentStep={step}>
-                                    <p className="p-2 border rounded bg-background text-xs">Fake answer embedding is used to find similar real documents.</p>
+                                    <div className="p-2 border rounded bg-background text-xs">Fake answer embedding is used to find similar real documents.</div>
                                 </FlowNode>
                             </motion.div>
                          )}
@@ -143,8 +143,8 @@ export const HydeSimulator = () => {
                               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1, transition: {delay: 0.4} }}>
                                 <FlowNode icon={<FileText />} title="Retrieve Top K Chunks" status={getStatus(4)} step={4} currentStep={step}>
                                     <div className="space-y-1">
-                                        <p className="p-1.5 border rounded bg-background text-xs flex items-center gap-1"><Badge variant="secondary">C1</Badge> RAG grounds LLMs...</p>
-                                        <p className="p-1.5 border rounded bg-background text-xs flex items-center gap-1"><Badge variant="secondary">C2</Badge> RAG improves accuracy...</p>
+                                        <div className="p-1.5 border rounded bg-background text-xs flex items-center gap-1"><Badge variant="secondary">C1</Badge> RAG grounds LLMs...</div>
+                                        <div className="p-1.5 border rounded bg-background text-xs flex items-center gap-1"><Badge variant="secondary">C2</Badge> RAG improves accuracy...</div>
                                     </div>
                                 </FlowNode>
                             </motion.div>
