@@ -9,10 +9,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Bot, Search, MessageSquare, Sparkles, Play, Wand2, Database, HelpCircle } from 'lucide-react';
 
 const exampleQueries = [
-    { value: "What is the capital of France?", type: 'internal', label: "Simple QA (Internal Knowledge)" },
-    { value: "What is RAGAS?", type: 'search', label: "Simple QA (Web Search)" },
-    { value: "Who is the CEO of Databricks?", type: 'reflect', label: "Single-Step Reflection" },
-    { value: "What was the key finding of the original RAG paper and who were its authors?", type: 'multi_reflect', label: "Multi-Step Reflection" },
+    { value: "What is the capital of France?", type: 'internal', label: "Simple QA (Internal): What is the capital of France?" },
+    { value: "What is RAGAS?", type: 'search', label: "Simple QA (Search): What is RAGAS?" },
+    { value: "Who is the CEO of Databricks?", type: 'reflect', label: "Self-Reflection: Who is the CEO of Databricks?" },
+    { value: "What was the key finding of the original RAG paper and who were its authors?", type: 'multi_reflect', label: "Multi-Step: What is the key finding of the original RAG paper and who were its authors?" },
 ];
 
 type AgentLog = {
