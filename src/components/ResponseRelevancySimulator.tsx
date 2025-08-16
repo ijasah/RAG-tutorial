@@ -84,7 +84,7 @@ export const ResponseRelevancySimulator = () => {
     
     const getStepDescription = () => {
         const descriptions = [
-            "Click 'Start' to begin the Response Relevancy simulation.",
+            "Click 'Start Simulation' to begin the Response Relevancy simulation.",
             "1. Start with the user's question and the LLM's generated answer.",
             "2. Generate hypothetical questions from the answer. If the answer is good, these should resemble the original question.",
             "3. Calculate the cosine similarity between the original question and each generated question.",
@@ -152,8 +152,10 @@ export const ResponseRelevancySimulator = () => {
                      <Button onClick={handleReset} variant="outline" size="sm" disabled={step === 0}>
                          <RefreshCw className="mr-2 h-4 w-4" /> Reset
                      </Button>
-                     <Button onClick={handleNext} size="sm" className="ml-4 w-32" disabled={step >= maxSteps || isEvaluating}>
-                         {step > 0 ? (isEvaluating ? 'Evaluating...' : 'Next') : 'Start Simulation'} <ArrowRight className="ml-2 h-4 w-4" />
+                     <Button onClick={handleNext} size="sm" className="ml-4 w-40" disabled={step >= maxSteps || isEvaluating}>
+                         {step === 0 && 'Start Simulation'}
+                         {step > 0 && (isEvaluating ? 'Evaluating...' : 'Next')}
+                         {step > 0 && !isEvaluating && <ArrowRight className="ml-2 h-4 w-4" />}
                      </Button>
                 </div>
             </CardContent>

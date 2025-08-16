@@ -105,7 +105,7 @@ export const NoiseSensitivitySimulator = () => {
     
     const getStepDescription = () => {
         const descriptions = [
-            "Click 'Start' to begin the Noise Sensitivity simulation.",
+            "Click 'Start Simulation' to begin the Noise Sensitivity simulation.",
             "1. First, we examine the inputs: the user's question, the ground truth, and the contexts retrieved by the RAG system.",
             "2. Next, the LLM generates an answer based on the retrieved contexts.",
             "3. Now, we break the answer into individual claims and check if each one is supported by the ground truth.",
@@ -185,8 +185,10 @@ export const NoiseSensitivitySimulator = () => {
                      <Button onClick={handleReset} variant="outline" size="sm" disabled={step === 0}>
                          <RefreshCw className="mr-2 h-4 w-4" /> Reset
                      </Button>
-                     <Button onClick={handleNext} size="sm" className="ml-4 w-32" disabled={step >= maxSteps || isEvaluating}>
-                         {step > 0 ? (isEvaluating ? 'Evaluating...' : 'Next') : 'Start Simulation'} <ArrowRight className="ml-2 h-4 w-4" />
+                     <Button onClick={handleNext} size="sm" className="ml-4 w-40" disabled={step >= maxSteps || isEvaluating}>
+                         {step === 0 && 'Start Simulation'}
+                         {step > 0 && (isEvaluating ? 'Evaluating...' : 'Next')} 
+                         {step > 0 && !isEvaluating && <ArrowRight className="ml-2 h-4 w-4" />}
                      </Button>
                 </div>
             </CardContent>
