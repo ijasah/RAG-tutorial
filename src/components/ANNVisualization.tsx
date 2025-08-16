@@ -46,7 +46,7 @@ export function ANNVisualization() {
     const [step, setStep] = useState(0);
     const [isSimulating, setIsSimulating] = useState(false);
 
-    const queryPoint = useMemo(() => ({ x: width / 2, y: height / 2 }), [width]);
+    const queryPoint = useMemo(() => ({ x: width / 2, y: height / 2 }), []);
 
     const regeneratePoints = useCallback(() => {
         setPoints(generatePoints(50, width, height));
@@ -112,10 +112,10 @@ export function ANNVisualization() {
         const descriptions = [
             "Ready to see how ANN works? Click 'Start' to begin.",
             "This is our dataset of 50 points. A brute-force search would have to check every single one against a query.",
-            "First, ANN builds an intelligent graph. An **entry point** (blue) is chosen to start all searches.",
-            "**Layer 1** (highways) is built, containing long-range links that let searches quickly jump across the dataset.",
-            "**Layer 0** (local streets) is built, containing short-range links that connect nearby points for fine-grained searching.",
-            "Now, a **query** (purple) enters. Instead of checking all points, it starts at the entry point.",
+            "First, ANN builds an intelligent graph. An entry point (blue) is chosen to start all searches.",
+            "Layer 1 (the 'highway') is built. These are long-range links that connect distant points, allowing a search to quickly jump to the right region of the graph.",
+            "Layer 0 (the 'local streets') is built. These are short-range links connecting nearby points, used for fine-grained searching within a region.",
+            "Now, a query (purple) enters. Instead of checking all points, the search starts at the graph's entry point.",
             "The search follows the fast 'highway' links to traverse to the most promising region of the graph.",
             "Once in the right neighborhood, the search switches to the dense local links to find the exact nearest neighbors.",
             "Success! The nearest neighbors (highlighted) are found after visiting only a fraction of the total points."
