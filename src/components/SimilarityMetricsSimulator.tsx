@@ -4,7 +4,7 @@ import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Calculator, Orbit, ArrowLeft, ArrowRight } from 'lucide-react';
+import { Calculator, Orbit, ArrowLeft, ArrowRight, Lightbulb } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 import { cn } from '@/lib/utils';
 import { CodeBlock } from './ui/code-block';
@@ -154,167 +154,15 @@ const VectorVisualization = ({ selectedVec, metric }: { selectedVec: Vector, met
     );
 }
 
-const Formula = ({children} : {children: React.ReactNode}) => <code className="font-mono text-base bg-muted p-2 rounded-md block text-center my-3">{children}</code>
-
-const derivationSteps = [
-    {
-        title: "Goal: Two Views of the Dot Product",
-        content: () => (
-            <div>
-                <p>Our goal is to understand why the two common definitions of the dot product are equivalent. From this, cosine similarity falls out naturally.</p>
-                <h4 className="font-semibold text-foreground mt-4 mb-2">1. The Algebraic Definition (from coordinates)</h4>
-                <Formula>a · b = ∑ aᵢbᵢ</Formula>
-                <h4 className="font-semibold text-foreground mt-4 mb-2">2. The Geometric Definition (from angle)</h4>
-                <Formula>a · b = ||a|| ||b|| cos(θ)</Formula>
-                <p className="mt-4">Equating them gives the famous formula for cosine similarity:</p>
-                <Formula>cos(θ) = (a · b) / (||a|| ||b||)</Formula>
-            </div>
-        )
-    },
-    {
-        title: "Derivation 1: Using the Law of Cosines",
-        content: () => (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-                <div>
-                    <p>You are correct, the triangle formed by vectors **a** and **b** is generally **not** a right-angled triangle. The Law of Cosines is a generalization of the Pythagorean theorem for any triangle.</p>
-                    <p className="mt-2 text-muted-foreground">To derive it, we can drop a perpendicular from the tip of **b** to the line of **a**, creating two right triangles.</p>
-                    <Formula>||a - b||² = ||a||² + ||b||² - 2||a||||b||cos(θ)</Formula>
-                </div>
-                 <div className="w-full max-w-[250px] mx-auto">
-                    <svg viewBox="0 0 120 120">
-                         {/* Axis */}
-                        <path d="M 10 110 L 110 110" stroke="hsl(var(--border))" strokeWidth="1" markerEnd="url(#arrow-axis)" />
-                        <path d="M 10 110 L 10 10" stroke="hsl(var(--border))" strokeWidth="1" markerEnd="url(#arrow-axis)" />
-                        
-                        {/* Vector a */}
-                        <path d="M 10 110 L 90 110" stroke="hsl(var(--primary))" strokeWidth="2" markerEnd="url(#arrow-primary)" />
-                        <text x="95" y="115" fill="hsl(var(--primary))" fontWeight="bold">a</text>
-                        
-                        {/* Vector b */}
-                        <path d="M 10 110 L 60 40" stroke="hsl(var(--foreground))" strokeWidth="2" markerEnd="url(#arrow-secondary)" />
-                        <text x="65" y="40" fill="hsl(var(--foreground))" fontWeight="bold">b</text>
-
-                        {/* Vector a-b */}
-                        <path d="M 90 110 L 60 40" stroke="hsl(var(--destructive))" strokeDasharray="3 3" strokeWidth="1.5" />
-                        <text x="80" y="75" fill="hsl(var(--destructive))" fontWeight="bold">a-b</text>
-                        
-                        {/* Angle Theta */}
-                        <path d="M 30 110 A 20 20 0 0 1 27 92" stroke="currentColor" fill="none" />
-                        <text x="35" y="100">θ</text>
-                        <defs>
-                            <marker id="arrow-primary" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="hsl(var(--primary))" /></marker>
-                            <marker id="arrow-secondary" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="hsl(var(--foreground))" /></marker>
-                            <marker id="arrow-axis" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="4" markerHeight="4" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="hsl(var(--border))" /></marker>
-                        </defs>
-                    </svg>
-                </div>
-            </div>
-        )
-    },
-    {
-        title: "Derivation 1: Expanding the Algebra",
-        content: () => (
-             <div>
-                <p>Now, let's expand the term ||a - b||² using coordinates, where a = (x₁, y₁) and b = (x₂, y₂).</p>
-                <Formula>||a - b||² = (x₁-x₂)² + (y₁-y₂)²</Formula>
-                <p>Expanding this out gives:</p>
-                <CodeBlock className="text-xs" code={`= (x₁² - 2x₁x₂ + x₂²) + (y₁² - 2y₁y₂ + y₂²)
-= (x₁² + y₁²) + (x₂² + y₂²) - 2(x₁x₂ + y₁y₂)
-= ||a||² + ||b||² - 2(a · b)`} />
-                 <p className="mt-4">Here, we've defined the algebraic dot product as a shorthand: a · b = x₁x₂ + y₁y₂.</p>
-            </div>
-        )
-    },
-     {
-        title: "Derivation 1: Equating the Two Forms",
-        content: () => (
-             <div>
-                <p>We now have two different expressions for ||a - b||².</p>
-                <p className="font-semibold text-foreground mt-4">From Law of Cosines:</p>
-                 <CodeBlock className="text-xs" code={`||a||² + ||b||² - 2||a||||b||cos(θ)`} />
-                <p className="font-semibold text-foreground mt-4">From Algebra:</p>
-                 <CodeBlock className="text-xs" code={`||a||² + ||b||² - 2(a · b)`} />
-                <p className="mt-4">Equating them and canceling terms leaves us with the desired result:</p>
-                <Formula>||a|| ||b|| cos(θ) = a · b</Formula>
-                 <p>This proves that the geometric and algebraic definitions of the dot product are one and the same.</p>
-            </div>
-        )
-    },
-    {
-        title: "Derivation 2: Using Projections",
-        content: () => (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-                 <div>
-                    <p>This is often a more intuitive route. The dot product <strong>a · b</strong> can be interpreted as the length of the "shadow" (projection) of vector <strong>b</strong> onto vector <strong>a</strong>, scaled by the length of <strong>a</strong>.</p>
-                    <p className="mt-4">From basic trigonometry, the length of this projection is:</p>
-                     <Formula>Projection Length = ||b|| cos(θ)</Formula>
-                </div>
-                 <div className="w-full max-w-[250px] mx-auto">
-                    <svg viewBox="0 0 100 100">
-                        <path d="M 10 90 L 90 90" stroke="hsl(var(--primary))" strokeWidth="2" markerEnd="url(#arrow-primary)" />
-                        <text x="95" y="90" fill="hsl(var(--primary))" fontWeight="bold">a</text>
-                        <path d="M 10 90 L 60 40" stroke="hsl(var(--foreground))" strokeWidth="2" markerEnd="url(#arrow-secondary)" />
-                        <text x="65" y="40" fill="hsl(var(--foreground))" fontWeight="bold">b</text>
-                        <path d="M 60 40 L 60 90" stroke="currentColor" strokeDasharray="3 3" strokeWidth="1.5" />
-                        <path d="M 10 90 L 60 90" stroke="hsl(var(--destructive))" strokeWidth="3" />
-                        <text x="30" y="80" fill="hsl(var(--destructive))">||b||cos(θ)</text>
-                         <path d="M 25 82 A 15 15 0 0 1 30 70" stroke="currentColor" fill="none" />
-                        <text x="35" y="80">θ</text>
-                        <defs>
-                            <marker id="arrow-primary" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="hsl(var(--primary))" /></marker>
-                            <marker id="arrow-secondary" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="hsl(var(--foreground))" /></marker>
-                        </defs>
-                    </svg>
-                </div>
-            </div>
-        )
-    },
-    {
-        title: "Derivation 2: The Final Step",
-        content: () => (
-             <div>
-                <p>The scalar projection of <strong>b</strong> onto the direction of <strong>a</strong> is also defined as <strong>b</strong> dotted with the unit vector of <strong>a</strong>.</p>
-                <Formula>Projection Length = b · (a / ||a||) = (a · b) / ||a||</Formula>
-                <p className="mt-4">Now we equate our two expressions for the projection length:</p>
-                 <CodeBlock className="text-xs" code={`||b||cos(θ) = (a · b) / ||a||`} />
-                <p className="mt-4">Rearranging gives the final result:</p>
-                 <Formula>a · b = ||a|| ||b|| cos(θ)</Formula>
-                <p>This confirms the equivalence again. The dot product elegantly connects geometry and algebra.</p>
-            </div>
-        )
-    },
-     {
-        title: "Numeric Example: A=(5,4), B=(2,2)",
-        content: () => (
-             <div>
-                <p>Let's walk through the math with concrete numbers.</p>
-                <h4 className="font-semibold text-foreground mt-4 mb-2">Step A: Dot Product</h4>
-                 <CodeBlock code={`A · B = (5 * 2) + (4 * 2) = 10 + 8 = 18`} />
-                <h4 className="font-semibold text-foreground mt-4 mb-2">Step B: Norms (Lengths)</h4>
-                 <CodeBlock code={`||A|| = √(5² + 4²) = √41 ≈ 6.40
-||B|| = √(2² + 2²) = √8 ≈ 2.83`} />
-                 <h4 className="font-semibold text-foreground mt-4 mb-2">Step C: Cosine Similarity</h4>
-                 <CodeBlock code={`cos(θ) = 18 / (6.40 * 2.83) ≈ 18 / 18.11 ≈ 0.994`} />
-                 <h4 className="font-semibold text-foreground mt-4 mb-2">Step D: Final Angle</h4>
-                 <CodeBlock code={`θ = arccos(0.994) ≈ 6.3°`} />
-                <p className="mt-4 text-center">The small angle confirms the vectors are closely aligned.</p>
-            </div>
-        )
-    },
-]
-
 export const SimilarityMetricsSimulator = () => {
     const [selectedIndex, setSelectedIndex] = useState(0);
     const selectedVector = documents[selectedIndex];
-    const [derivationStep, setDerivationStep] = useState(0);
 
     const cosSim = useMemo(() => cosineSimilarity(queryVector, selectedVector), [selectedVector]);
     const eucDist = useMemo(() => euclideanDistance(queryVector, selectedVector), [selectedVector]);
 
-    const CurrentStep = derivationSteps[derivationStep].content;
-
     return (
-        <Card className="bg-card/50 mt-6">
+        <Card className="bg-card/50 mt-6 transition-all hover:shadow-lg hover:-translate-y-1">
             <CardHeader>
                 <CardTitle className="flex items-center gap-2"><Calculator /> Similarity Metrics Side-by-Side</CardTitle>
                 <CardDescription>
@@ -343,38 +191,13 @@ export const SimilarityMetricsSimulator = () => {
                 </div>
                  
                 <Alert className="mt-8 border-primary/30 bg-primary/10">
-                    <Orbit className="h-4 w-4" />
-                    <AlertTitle>Deriving Cosine Similarity: A Step-by-Step Guide</AlertTitle>
+                    <Lightbulb className="h-4 w-4" />
+                    <AlertTitle>Why Cosine Similarity?</AlertTitle>
                      <AlertDescription asChild className="mt-4 space-y-4">
-                        <div>
-                             <p className="text-center text-muted-foreground mb-4">Click through to see how the formula is derived from first principles.</p>
-                            <Card className="bg-background/50">
-                                <CardHeader>
-                                    <CardTitle className="text-lg">{derivationStep + 1}. {derivationSteps[derivationStep].title}</CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <AnimatePresence mode="wait">
-                                        <motion.div
-                                            key={derivationStep}
-                                            initial={{ opacity: 0, x: 20 }}
-                                            animate={{ opacity: 1, x: 0 }}
-                                            exit={{ opacity: 0, x: -20 }}
-                                            transition={{ duration: 0.3 }}
-                                        >
-                                           <CurrentStep />
-                                        </motion.div>
-                                    </AnimatePresence>
-                                </CardContent>
-                            </Card>
-                            <div className="flex justify-between items-center mt-4">
-                                <Button variant="outline" onClick={() => setDerivationStep(s => Math.max(0, s - 1))} disabled={derivationStep === 0}>
-                                    <ArrowLeft className="mr-2" /> Previous
-                                </Button>
-                                <p className="text-sm text-muted-foreground">{derivationStep + 1} / {derivationSteps.length}</p>
-                                <Button variant="outline" onClick={() => setDerivationStep(s => Math.min(derivationSteps.length - 1, s + 1))} disabled={derivationStep === derivationSteps.length - 1}>
-                                    Next <ArrowRight className="ml-2" />
-                                </Button>
-                            </div>
+                        <div className="space-y-4">
+                            <p>In text analysis, we want to know if two documents are *about the same thing*, regardless of how long they are. A short sentence and a long paragraph can both be about RAG.</p>
+                            <p><strong>Cosine Similarity is perfect for this because it measures the angle between two vectors, not their distance.</strong> If the vectors point in the same direction, they are considered similar, even if one is much longer than the other.</p>
+                             <p>Euclidean distance, on the other hand, measures the direct line between the two vector endpoints. This means a long document will always be "far away" from a short document, even if they share the same topic, making it less ideal for comparing text relevance.</p>
                         </div>
                     </AlertDescription>
                 </Alert>
