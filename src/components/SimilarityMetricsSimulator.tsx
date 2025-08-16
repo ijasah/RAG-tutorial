@@ -160,5 +160,3 @@ const SimilarityMetricsSimulator = () => {
 };
 
 export { SimilarityMetricsSimulator };
-
-    
