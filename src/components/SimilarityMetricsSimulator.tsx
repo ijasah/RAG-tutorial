@@ -1,12 +1,11 @@
 // src/components/SimilarityMetricsSimulator.tsx
 "use client";
 import React, { useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calculator, Orbit } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 type Vector = { x: number; y: number; label: string; };
 
@@ -35,12 +34,11 @@ const magnitude = (v: Vector) => Math.sqrt(v.x * v.x + v.y * v.y);
 const cosineSimilarity = (v1: Vector, v2: Vector) => dotProduct(v1, v2) / (magnitude(v1) * magnitude(v2));
 const euclideanDistance = (v1: Vector, v2: Vector) => Math.sqrt(Math.pow(v1.x - v2.x, 2) + Math.pow(v1.y - v2.y, 2));
 
-
 const MetricDisplay = ({ title, formula, value, children, description }: { title: string, formula: string, value: string, children: React.ReactNode, description?: React.ReactNode }) => (
     <div className="flex flex-col space-y-2 p-4 border rounded-lg bg-muted/30 h-full">
         <div className="text-center">
             <h3 className="font-semibold text-lg text-primary">{title}</h3>
-            <p className="font-mono text-xs text-muted-foreground mt-1 h-6">{formula}</p>
+            <p className="font-mono text-sm text-muted-foreground mt-1 h-6">{formula}</p>
             {description && <div className="text-xs text-muted-foreground mt-2 px-2">{description}</div>}
         </div>
         <div className="relative w-full h-[300px] rounded-lg bg-muted/40 overflow-hidden my-2">
@@ -53,7 +51,6 @@ const MetricDisplay = ({ title, formula, value, children, description }: { title
     </div>
 );
 
-
 const VectorVisualization = ({ selectedVec, metric }: { selectedVec: Vector, metric: 'cosine' | 'euclidean' }) => {
     const queryCoords = getCoords(queryVector);
     const selectedCoords = getCoords(selectedVec);
@@ -61,7 +58,6 @@ const VectorVisualization = ({ selectedVec, metric }: { selectedVec: Vector, met
     const queryAngle = Math.atan2(-queryVector.y, queryVector.x);
     const selectedAngle = Math.atan2(-selectedVec.y, selectedVec.x);
     
-    const angleDiff = Math.abs(queryAngle - selectedAngle);
     const arcRadius = 40;
 
     const startAngle = Math.min(queryAngle, selectedAngle);
@@ -79,16 +75,21 @@ const VectorVisualization = ({ selectedVec, metric }: { selectedVec: Vector, met
     
     const arcPath = `M ${startPointArc.x} ${startPointArc.y} A ${arcRadius} ${arcRadius} 0 ${largeArcFlag} 1 ${endPointArc.x} ${endPointArc.y}`;
     
-    const getTextPosition = (vec: Vector, baseVec: Vector = queryVector) => {
+    const getTextPosition = (vec: Vector) => {
         const coords = getCoords(vec);
         const angle = Math.atan2(coords.y - origin.y, coords.x - origin.x);
         const offsetX = Math.cos(angle) * 15;
         const offsetY = Math.sin(angle) * 15;
         
+        let textAnchor = "start";
+        if (angle > Math.PI / 2 || angle < -Math.PI / 2) {
+            textAnchor = "end";
+        }
+        
         return {
             x: coords.x + offsetX,
             y: coords.y + offsetY,
-            textAnchor: (angle > -Math.PI / 2 && angle < Math.PI / 2) ? "start" : "end",
+            textAnchor,
             dy: "0.35em",
         }
     }
