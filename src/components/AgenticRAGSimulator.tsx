@@ -67,7 +67,7 @@ export const AgenticRAGSimulator = () => {
                             setTimeout(() => {
                                 setAgentState('answering');
                                 setFinalAnswer("Based on verified information, Ali Ghodsi is the CEO of Databricks.");
-                                setTimeout(() => setAgentState('complete'), 500);
+                                // Do not transition to 'complete' to keep all cards visible
                             }, 2000)
                         }, 2000);
                     }, 1500);
@@ -85,7 +85,7 @@ export const AgenticRAGSimulator = () => {
         setSelectedQuery(exampleQueries[0].value);
     }
 
-    const isRunning = agentState !== 'idle' && agentState !== 'complete';
+    const isRunning = agentState !== 'idle' && (agentState !== 'answering' && agentState !== 'complete');
     const isSelfReflectQuery = selectedQuery === "Who is the CEO of Databricks?";
 
     return (
@@ -100,7 +100,7 @@ export const AgenticRAGSimulator = () => {
             </CardHeader>
             <CardContent className="space-y-6">
                 <div className="flex gap-2">
-                     <Select onValueChange={setSelectedQuery} defaultValue={selectedQuery} disabled={isRunning}>
+                     <Select onValueChange={setSelectedQuery} defaultValue={selectedQuery} disabled={agentState !== 'idle'}>
                         <SelectTrigger>
                             <SelectValue placeholder="Select a question..." />
                         </SelectTrigger>
@@ -110,14 +110,14 @@ export const AgenticRAGSimulator = () => {
                             ))}
                         </SelectContent>
                     </Select>
-                    <Button onClick={!isRunning ? handleSimulate : reset} className="min-w-[120px]">
-                        {!isRunning ? <><Play className="mr-2" />Simulate</> : 'Reset'}
+                    <Button onClick={agentState === 'idle' ? handleSimulate : reset} className="min-w-[120px]">
+                        {agentState === 'idle' ? <><Play className="mr-2" />Simulate</> : 'Reset'}
                     </Button>
                 </div>
 
                 <div className="space-y-4 min-h-[350px]">
                     <AnimatePresence>
-                        {(thought && (!isSelfReflectQuery || (isSelfReflectQuery && agentState !== 'thinking' && agentState !== 'retrieving'))) && (
+                        {thought && (
                             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-4 bg-muted/50 rounded-lg border">
                                 <h4 className="font-semibold text-sm mb-2 flex items-center gap-2"><Sparkles className="text-primary" /> Agent's Thought Process</h4>
                                 <p className="text-sm text-muted-foreground italic">{thought}</p>
@@ -135,7 +135,7 @@ export const AgenticRAGSimulator = () => {
                     </AnimatePresence>
                     
                     <AnimatePresence>
-                        {agentState === 'reflecting' && (
+                        {agentState === 'reflecting' && isSelfReflectQuery && (
                              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-4 bg-amber-500/10 rounded-lg border border-amber-500/30 flex items-center gap-2">
                                 <Wand2 className="w-5 h-5 text-amber-400" />
                                 <p className="text-sm text-amber-300">Reflecting on retrieved information...</p>
