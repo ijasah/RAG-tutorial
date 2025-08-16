@@ -17,7 +17,7 @@ import { VectorDBAnimation } from '@/components/VectorDBAnimation';
 import { SimilarityMetricsSimulator } from '@/components/SimilarityMetricsSimulator';
 import { LLMToRAGTimeline } from '@/components/LLMToRAGTimeline';
 import { RAGEnhancementTechniques } from '@/components/RAGEnhancementTechniques';
-
+import { ContextRecallSimulator } from '@/components/ContextRecallSimulator';
 
 import {
   BookOpen,
@@ -187,7 +187,7 @@ const Index = () => {
                  <p className="text-muted-foreground mb-4">
                     Vector databases are specialized databases designed to store and manage high-dimensional vectors (embeddings) efficiently. These databases make it easier to perform similarity searches and retrieve relevant information for a given query.
                   </p>
-                  <Card className="overflow-hidden">
+                  <Card className="overflow-hidden" data-ai-hint="vector database">
                     <Image src="https://bigdataanalyticsnews.com/wp-content/uploads/2024/04/top-vector-database.jpg" alt="Top Vector Databases" width={800} height={450} className="w-full object-cover" />
                   </Card>
                   <VectorDBAnimation />
@@ -237,12 +237,23 @@ const Index = () => {
             <Section id="evaluation" title="RAG Evaluation with RAGAS" icon={<ShieldCheck className="h-8 w-8 text-primary" />}>
               <div className="space-y-6">
                 <p className="text-muted-foreground">
-                  A crucial step in building a RAG system is evaluating the quality of the retrieved context. If the context is irrelevant or noisy, the generated answer will be poor. **Context Precision** is a key metric that measures this by asking: "How relevant is the retrieved information to the user's query?"
+                  A crucial step in building a RAG system is evaluating its performance. How do we know if the retrieved context is useful or if the final answer is correct? We use evaluation metrics to quantify the quality of our RAG pipeline.
+                </p>
+                 <h3 className="text-xl font-semibold mb-3 mt-8 text-foreground">Context Precision</h3>
+                 <p className="text-muted-foreground -mt-4">
+                  Context Precision measures the signal-to-noise ratio of the retrieved context. It answers the question: "Is the retrieved information relevant to the query?" High precision means the context is focused and useful.
                 </p>
                 <ContextPrecisionSimulator />
+                
+                 <h3 className="text-xl font-semibold mb-3 mt-8 text-foreground">Context Recall</h3>
+                 <p className="text-muted-foreground -mt-4">
+                  Context Recall measures how well the retriever finds all the necessary information. It answers the question: "Did we retrieve all the relevant context needed to fully answer the query?" High recall means we aren't missing important facts.
+                </p>
+                <ContextRecallSimulator />
+
                 <div>
                     <h3 className="text-xl font-semibold mb-3 mt-8 text-foreground">Conclusion</h3>
-                    <p className="text-muted-foreground">Incorporating robust evaluation into the RAG workflow is crucial for building reliable and accurate AI systems. By using metrics like Context Precision, we can quantify the performance of our retrieval system and ensure that the final answers are grounded in high-quality, relevant information.</p>
+                    <p className="text-muted-foreground">Incorporating robust evaluation into the RAG workflow is crucial for building reliable and accurate AI systems. By using metrics like Context Precision and Context Recall, we can quantify the performance of our retrieval system and ensure that the final answers are grounded in high-quality, relevant information.</p>
                 </div>
               </div>
             </Section>

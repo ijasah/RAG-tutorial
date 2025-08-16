@@ -5,7 +5,7 @@ import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { HelpCircle, Check, X, FileText, Search, BrainCircuit, Bot, Database, MessageSquare } from 'lucide-react';
+import { HelpCircle, Check, X, FileText, Search, BrainCircuit, Bot, Database, MessageSquare, Play, RefreshCw, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
 import { CodeBlock } from './ui/code-block';
@@ -14,7 +14,7 @@ import { Badge } from './ui/badge';
 const scenarios = {
     llm_vs_response: {
         name: "LLM vs. Response",
-        description: "An LLM compares each retrieved context chunk against the final generated answer to determine relevance. This is useful when you don't have a ground-truth reference.",
+        description: "An LLM compares each retrieved context chunk against the final generated answer to determine relevance.",
         data: {
             question: "What is RAG?",
             retrieved_contexts: [
@@ -32,7 +32,7 @@ const scenarios = {
     },
     llm_vs_reference: {
         name: "LLM vs. Reference Answer",
-        description: "An LLM compares each retrieved chunk against a pre-written, ground-truth 'reference' answer. This provides a more objective measure of relevance.",
+        description: "An LLM compares each retrieved chunk against a pre-written, ground-truth 'reference' answer.",
          data: {
             question: "What is RAG?",
             retrieved_contexts: [
@@ -50,7 +50,7 @@ const scenarios = {
     },
     non_llm_vs_reference: {
         name: "Similarity vs. Reference Contexts",
-        description: "This method avoids using an LLM for evaluation. Instead, it calculates a classic similarity score (e.g., cosine similarity) between each retrieved chunk and a set of ground-truth 'reference contexts'.",
+        description: "This method avoids an LLM for evaluation. Instead, it calculates a similarity score (e.g., cosine similarity) between each retrieved chunk and a set of ground-truth 'reference contexts'.",
         data: {
             question: "What is RAG?",
             retrieved_contexts: [
@@ -73,54 +73,104 @@ const scenarios = {
 
 type ScenarioKey = keyof typeof scenarios;
 
-const ChunkCard = ({ chunk, analysis, isNonLLM }: { chunk: any, analysis: any, isNonLLM: boolean }) => (
+const ChunkCard = ({ chunk, analysis, isNonLLM, isEvaluated }: { chunk: any, analysis: any, isNonLLM: boolean, isEvaluated: boolean }) => (
     <motion.div
         initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className={cn("p-3 rounded-lg border-2 transition-all", analysis.relevant ? 'border-green-500/60 bg-green-500/10' : 'border-red-500/60 bg-red-500/10')}
+        animate={{
+            opacity: 1,
+            y: 0,
+            borderColor: isEvaluated ? (analysis.relevant ? 'hsl(var(--primary))' : 'hsl(var(--destructive))') : 'hsl(var(--border))',
+            backgroundColor: isEvaluated ? (analysis.relevant ? 'hsla(var(--primary), 0.1)' : 'hsla(var(--destructive), 0.1)') : 'transparent',
+        }}
+        transition={{ duration: 0.4 }}
+        className="p-3 rounded-lg border-2"
     >
         <div className="flex justify-between items-start">
             <div>
                 <p className="text-sm font-medium">{isNonLLM ? chunk.text : chunk}</p>
-                <p className="text-xs text-muted-foreground mt-1">{analysis.reason}</p>
+                 <AnimatePresence>
+                {isEvaluated && (
+                    <motion.p
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1, transition: { delay: 0.3 } }}
+                        className="text-xs text-muted-foreground mt-1"
+                    >
+                        {analysis.reason}
+                    </motion.p>
+                )}
+                </AnimatePresence>
             </div>
-            <div className="flex items-center gap-2 pl-4">
-                 {isNonLLM && <Badge variant={analysis.relevant ? 'default' : 'destructive'} className={cn(analysis.relevant && 'bg-green-600')}>{chunk.score.toFixed(2)}</Badge>}
-                 {analysis.relevant ? <Check className="w-5 h-5 text-green-500" /> : <X className="w-5 h-5 text-red-500" />}
-            </div>
+             <AnimatePresence>
+            {isEvaluated && (
+                 <motion.div
+                    initial={{ opacity: 0, scale: 0.5 }}
+                    animate={{ opacity: 1, scale: 1, transition: { delay: 0.2 } }}
+                    className="flex items-center gap-2 pl-4"
+                >
+                     {isNonLLM && <Badge variant={analysis.relevant ? 'default' : 'destructive'} className={cn(analysis.relevant && 'bg-green-600')}>{chunk.score.toFixed(2)}</Badge>}
+                     {analysis.relevant ? <Check className="w-5 h-5 text-green-500" /> : <X className="w-5 h-5 text-red-500" />}
+                 </motion.div>
+            )}
+            </AnimatePresence>
         </div>
     </motion.div>
 );
 
 export const ContextPrecisionSimulator = () => {
   const [activeTab, setActiveTab] = useState<ScenarioKey>('llm_vs_response');
+  const [evaluatedChunks, setEvaluatedChunks] = useState<number[]>([]);
+  const [isRunning, setIsRunning] = useState(false);
+
   const activeScenario = scenarios[activeTab];
+  const isNonLLM = activeTab === 'non_llm_vs_reference';
   
   const score = useMemo(() => {
-    const relevantCount = activeScenario.data.analysis.filter(a => a.relevant).length;
-    const totalCount = activeScenario.data.analysis.length;
-    return totalCount > 0 ? (relevantCount / totalCount) : 0;
-  }, [activeScenario]);
+    if (evaluatedChunks.length === 0) return 0;
+    const relevantCount = evaluatedChunks.map(i => activeScenario.data.analysis[i]).filter(a => a.relevant).length;
+    return relevantCount / evaluatedChunks.length;
+  }, [evaluatedChunks, activeScenario]);
 
-  const isNonLLM = activeTab === 'non_llm_vs_reference';
+  const handleSimulate = () => {
+    setIsRunning(true);
+    setEvaluatedChunks([]);
+    
+    const chunks = activeScenario.data.retrieved_contexts;
+    chunks.forEach((_, index) => {
+        setTimeout(() => {
+            setEvaluatedChunks(prev => [...prev, index]);
+            if (index === chunks.length - 1) {
+                setIsRunning(false);
+            }
+        }, (index + 1) * 1000);
+    });
+  }
+
+  const handleReset = () => {
+      setIsRunning(false);
+      setEvaluatedChunks([]);
+  }
+
+  const handleTabChange = (value: string) => {
+      handleReset();
+      setActiveTab(value as ScenarioKey);
+  }
 
   return (
     <Card className="bg-card/50">
       <CardHeader>
         <CardTitle>Context Precision Simulator</CardTitle>
         <CardDescription>
-          Explore different methods for calculating Context Precision, a metric that measures the signal-to-noise ratio of retrieved context.
+          Explore methods for calculating Context Precision, which measures the signal-to-noise ratio of retrieved context. High precision means the context is focused and relevant.
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as ScenarioKey)}>
+        <Tabs value={activeTab} onValueChange={handleTabChange}>
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="llm_vs_response">LLM (vs. Response)</TabsTrigger>
             <TabsTrigger value="llm_vs_reference">LLM (vs. Reference)</TabsTrigger>
             <TabsTrigger value="non_llm_vs_reference">Similarity-based</TabsTrigger>
           </TabsList>
-
-          <AnimatePresence mode="wait">
+            <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}
               initial={{ y: 10, opacity: 0 }}
@@ -129,11 +179,11 @@ export const ContextPrecisionSimulator = () => {
               transition={{ duration: 0.3 }}
             >
               <TabsContent value={activeTab} className="mt-4">
-                <div className="p-4 mb-6 bg-muted/40 rounded-lg border text-center space-y-2">
+                 <div className="p-4 mb-6 bg-muted/40 rounded-lg border text-center space-y-2">
                   <h3 className="text-lg font-semibold text-primary">{activeScenario.name}</h3>
                   <p className="text-sm text-muted-foreground max-w-2xl mx-auto">{activeScenario.description}</p>
-                   <CodeBlock className="text-left !bg-background/50" code={`# Formula: (Number of Relevant Chunks) / (Total Retrieved Chunks)
-score = ${activeScenario.data.analysis.filter(a => a.relevant).length} / ${activeScenario.data.analysis.length} = ${score.toFixed(2)}`} />
+                   <CodeBlock className="text-left !bg-background/50" code={`# Formula: (Sum of Relevant Chunks) / (Total Retrieved Chunks)
+score = ${activeScenario.data.analysis.filter((a,i) => evaluatedChunks.includes(i) && a.relevant).length} / ${evaluatedChunks.length} = ${score.toFixed(2)}`} />
                 </div>
                 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -159,38 +209,17 @@ score = ${activeScenario.data.analysis.filter(a => a.relevant).length} / ${activ
                             </CardContent>
                         </Card>
 
-                        {activeTab === 'llm_vs_response' && (
-                             <Card>
-                                <CardHeader>
-                                     <CardTitle className="text-base flex items-center gap-2"><MessageSquare className="text-primary"/>Generated Response</CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <p className="text-sm">{(activeScenario.data as any).response}</p>
-                                </CardContent>
-                            </Card>
-                        )}
-                         {activeTab === 'llm_vs_reference' && (
-                             <Card>
-                                <CardHeader>
-                                     <CardTitle className="text-base flex items-center gap-2"><FileText className="text-primary"/>Reference Answer</CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <p className="text-sm">{(activeScenario.data as any).reference_answer}</p>
-                                </CardContent>
-                            </Card>
-                        )}
-                        {activeTab === 'non_llm_vs_reference' && (
-                             <Card>
-                                <CardHeader>
-                                     <CardTitle className="text-base flex items-center gap-2"><FileText className="text-primary"/>Reference Contexts</CardTitle>
-                                </CardHeader>
-                                <CardContent className="space-y-2">
-                                     {(activeScenario.data as any).reference_contexts.map((c: string, i: number) => (
-                                         <p key={i} className="p-2 bg-muted/50 rounded-md border text-sm">{c}</p>
-                                     ))}
-                                </CardContent>
-                            </Card>
-                        )}
+                        {/* Ground Truth Column */}
+                        <Card>
+                             <CardHeader>
+                                <CardTitle className="text-base flex items-center gap-2"><FileText className="text-primary"/>Ground Truth</CardTitle>
+                            </CardHeader>
+                             <CardContent>
+                                {activeTab === 'llm_vs_response' && <p className="text-sm">{(activeScenario.data as any).response}</p>}
+                                {activeTab === 'llm_vs_reference' && <p className="text-sm">{(activeScenario.data as any).reference_answer}</p>}
+                                {activeTab === 'non_llm_vs_reference' && <div className="space-y-2">{(activeScenario.data as any).reference_contexts.map((c: string, i: number) => (<p key={i} className="p-2 bg-muted/50 rounded-md border text-sm">{c}</p>))}</div>}
+                            </CardContent>
+                        </Card>
                     </div>
 
                     {/* Right Column: Analysis */}
@@ -198,25 +227,29 @@ score = ${activeScenario.data.analysis.filter(a => a.relevant).length} / ${activ
                          <Card className="sticky top-24">
                             <CardHeader>
                                  <CardTitle className="text-base flex items-center gap-2"><BrainCircuit className="text-primary"/>Relevance Analysis</CardTitle>
-                                 <CardDescription>Each retrieved chunk is evaluated for relevance against the target.</CardDescription>
+                                 <CardDescription>Each retrieved chunk is evaluated for relevance against the target. Click "Run" to start.</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-3">
-                                <AnimatePresence>
                                 {(isNonLLM ? activeScenario.data.retrieved_contexts as any[] : activeScenario.data.retrieved_contexts as string[]).map((chunk, index) => (
                                     <ChunkCard
                                         key={index}
                                         chunk={chunk}
                                         analysis={activeScenario.data.analysis[index]}
                                         isNonLLM={isNonLLM}
+                                        isEvaluated={evaluatedChunks.includes(index)}
                                     />
                                 ))}
-                                </AnimatePresence>
                             </CardContent>
                         </Card>
                     </div>
-
                 </div>
-
+                 <div className="flex justify-center mt-6 pt-4 border-t">
+                     <Button onClick={!isRunning ? handleSimulate : handleReset} className="w-40">
+                         {!isRunning && evaluatedChunks.length === 0 && <><Play className="mr-2" />Run Evaluation</>}
+                         {isRunning && 'Evaluating...'}
+                         {!isRunning && evaluatedChunks.length > 0 && <><RefreshCw className="mr-2" />Re-run</>}
+                     </Button>
+                </div>
               </TabsContent>
             </motion.div>
           </AnimatePresence>
