@@ -6,19 +6,20 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Bot, Search, MessageSquare, Sparkles, Play, Wand2, Database } from 'lucide-react';
+import { Bot, Search, MessageSquare, Sparkles, Play, Wand2, Database, HelpCircle } from 'lucide-react';
 
 const exampleQueries = [
     { value: "What is the capital of France?", type: 'internal', label: "What is the capital of France?" },
     { value: "What is RAGAS?", type: 'search', label: "What is RAGAS?" },
-    { value: "Who is the CEO of Databricks?", type: 'reflect', label: "Who is the CEO of Databricks? (Self-Reflection)" },
+    { value: "Who is the CEO of Databricks? (Self-Reflection)", type: 'reflect', label: "Who is the CEO of Databricks? (Self-Reflection)" },
 ];
 
 export const AgenticRAGSimulator = () => {
     const [selectedQuery, setSelectedQuery] = useState(exampleQueries[0].value);
-    const [agentState, setAgentState] = useState<'idle' | 'thinking' | 'retrieving' | 'reflecting' | 'verifying' | 'answering'| 'complete'>('idle');
+    const [agentState, setAgentState] = useState<'idle' | 'thinking' | 'retrieving' | 'reflecting' | 'verifying' | 'answering' | 'complete'>('idle');
     const [thought, setThought] = useState("");
     const [retrievedChunk, setRetrievedChunk] = useState("");
+    const [reflection, setReflection] = useState("");
     const [verificationResult, setVerificationResult] = useState("");
     const [finalAnswer, setFinalAnswer] = useState("");
 
@@ -26,6 +27,7 @@ export const AgenticRAGSimulator = () => {
         setAgentState('thinking');
         setThought("");
         setRetrievedChunk("");
+        setReflection("");
         setVerificationResult("");
         setFinalAnswer("");
 
@@ -40,6 +42,7 @@ export const AgenticRAGSimulator = () => {
                 setTimeout(() => {
                     setAgentState('answering');
                     setFinalAnswer("The capital of France is Paris.");
+                    setTimeout(() => setAgentState('complete'), 100);
                 }, 1500);
             } else if (type === 'search') {
                 setThought("The user is asking about a specific or recent topic. I should use the search tool to get the latest information.");
@@ -49,16 +52,17 @@ export const AgenticRAGSimulator = () => {
                     setTimeout(() => {
                         setAgentState('answering');
                         setFinalAnswer("Based on the search results, RAGAS is an evaluation framework for Retrieval-Augmented Generation systems.");
+                        setTimeout(() => setAgentState('complete'), 100);
                     }, 2000);
                 }, 1500);
             } else if (type === 'reflect') {
-                setThought("The user is asking about a person. I should first check my internal knowledge base.");
+                setThought("I should first check my internal knowledge base to answer this question.");
                  setTimeout(() => {
                     setAgentState('retrieving');
                     setRetrievedChunk("Internal document: Ali Ghodsi is a co-founder of Databricks.");
                      setTimeout(() => {
                         setAgentState('reflecting');
-                        setThought("The retrieved information mentions he is a co-founder, but not explicitly the CEO. This could be outdated. I need to verify this using an external tool to be sure.");
+                        setReflection("The retrieved information mentions he is a co-founder, but not explicitly the CEO. This could be outdated. I need to verify this using an external tool to be sure.");
                         setTimeout(() => {
                             setAgentState('verifying');
                             setVerificationResult("Web search result: Ali Ghodsi is the current CEO of Databricks.");
@@ -78,12 +82,11 @@ export const AgenticRAGSimulator = () => {
         setAgentState('idle');
         setThought("");
         setRetrievedChunk("");
+        setReflection("");
         setVerificationResult("");
         setFinalAnswer("");
         setSelectedQuery(exampleQueries[0].value);
     }
-
-    const isSelfReflectQuery = selectedQuery === "Who is the CEO of Databricks? (Self-Reflection)";
 
     return (
         <Card className="bg-card/50">
@@ -113,11 +116,20 @@ export const AgenticRAGSimulator = () => {
                 </div>
 
                 <div className="space-y-4 min-h-[350px]">
-                    <AnimatePresence>
-                        {thought && (agentState !== 'retrieving' || !isSelfReflectQuery) && (
+                     <AnimatePresence>
+                        {thought && selectedQuery !== "Who is the CEO of Databricks? (Self-Reflection)" && (
                             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-4 bg-muted/50 rounded-lg border">
                                 <h4 className="font-semibold text-sm mb-2 flex items-center gap-2"><Sparkles className="text-primary" /> Agent's Thought Process</h4>
                                 <p className="text-sm text-muted-foreground italic">{thought}</p>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                    
+                    <AnimatePresence>
+                        {reflection && (
+                             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-4 bg-muted/50 rounded-lg border">
+                                <h4 className="font-semibold text-sm mb-2 flex items-center gap-2"><Sparkles className="text-primary" /> Agent's Thought Process</h4>
+                                <p className="text-sm text-muted-foreground italic">{reflection}</p>
                             </motion.div>
                         )}
                     </AnimatePresence>
@@ -127,15 +139,6 @@ export const AgenticRAGSimulator = () => {
                             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-4 bg-purple-500/10 rounded-lg border border-purple-500/30">
                                 <h4 className="font-semibold text-sm mb-2 flex items-center gap-2"><Database className="text-purple-400" /> Retrieved from Knowledge Base</h4>
                                 <p className="text-sm text-muted-foreground">{retrievedChunk}</p>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-                    
-                     <AnimatePresence>
-                        {thought && (agentState === 'reflecting' || agentState === 'verifying' || agentState === 'answering' || agentState === 'complete') && isSelfReflectQuery && (
-                            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-4 bg-muted/50 rounded-lg border">
-                                <h4 className="font-semibold text-sm mb-2 flex items-center gap-2"><Sparkles className="text-primary" /> Agent's Thought Process</h4>
-                                <p className="text-sm text-muted-foreground italic">The retrieved information mentions he is a co-founder, but not explicitly the CEO. This could be outdated. I need to verify this using an external tool to be sure.</p>
                             </motion.div>
                         )}
                     </AnimatePresence>
