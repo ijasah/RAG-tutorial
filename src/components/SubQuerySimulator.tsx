@@ -4,8 +4,8 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { HelpCircle, FileText, Bot, Search, RefreshCw, ArrowRight, MessageSquare, Database, GitMerge, BrainCircuit, Sparkles } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './ui/card';
+import { HelpCircle, FileText, Search, RefreshCw, ArrowRight, MessageSquare, Database, GitMerge, BrainCircuit } from 'lucide-react';
 import { Badge } from './ui/badge';
 
 const FlowNode = ({ icon, title, children, status, step, currentStep, annotation, annotationPosition = 'top' }: { icon: React.ReactNode, title: string, children: React.ReactNode, status: 'inactive' | 'active' | 'complete', step: number, currentStep: number, annotation?: string, annotationPosition?: 'top' | 'bottom' }) => (
@@ -70,14 +70,15 @@ export const SubQuerySimulator = () => {
     return (
         <Card className="bg-card/60 border-primary/20">
             <CardHeader>
-                <p className="text-sm text-muted-foreground text-center h-12 flex items-center justify-center bg-muted/40 rounded-lg">
+                <CardTitle className="text-base">Method: Sub-Query Generation</CardTitle>
+                <CardDescription className="pt-2 h-12">
                     {getStepDescription()}
-                </p>
+                </CardDescription>
             </CardHeader>
             <CardContent className="p-4 pt-0 space-y-4">
                 <div className="grid grid-cols-[1fr,auto,1fr,auto,1fr] items-center gap-x-4">
                     {/* Column 1: Initial Query & LLM */}
-                    <div className="space-y-12">
+                    <div className="space-y-4">
                          <FlowNode icon={<HelpCircle />} title="User Query" status={getStatus(1)} step={1} currentStep={step}>
                             <p className="p-2 bg-background rounded border">{originalQuery}</p>
                         </FlowNode>
@@ -122,7 +123,7 @@ export const SubQuerySimulator = () => {
                 </div>
                 
                  {/* Bottom Row: Synthesis LLM and Final Answer */}
-                <div className="grid grid-cols-[1fr,auto,1fr] items-center gap-x-4 mt-8">
+                <div className="grid grid-cols-[1fr,auto,1fr] items-center gap-x-4 mt-4">
                      <FlowNode icon={<GitMerge />} title="Combine Chunks" status={getStatus(4)} step={4} currentStep={step} annotation="④ Gather" annotationPosition="bottom">
                         <p>All retrieved context is collected.</p>
                     </FlowNode>
