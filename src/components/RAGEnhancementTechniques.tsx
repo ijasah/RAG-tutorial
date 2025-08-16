@@ -10,6 +10,7 @@ import { SubQuerySimulator } from './SubQuerySimulator';
 import { StepbackPromptSimulator } from './StepbackPromptSimulator';
 import { HierarchicalIndexSimulator } from './HierarchicalIndexSimulator';
 import { HybridRetrieveSimulator } from './HybridRetrieveSimulator';
+import { SentenceWindowSimulator } from './SentenceWindowSimulator';
 
 
 const techniqueCategories = [
@@ -75,6 +76,11 @@ const retrieverEnhancementMethods = [
         title: "Hybrid Retrieve & Rerank",
         value: "hybrid-retrieve",
         component: <HybridRetrieveSimulator />
+    },
+    {
+        title: "Sentence Window Retrieval",
+        value: "sentence-window",
+        component: <SentenceWindowSimulator />
     }
 ];
 
