@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from './ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { HelpCircle, FileText, Bot, Search, RefreshCw, ArrowRight, CornerDownLeft, Sparkles, MessageSquare } from 'lucide-react';
 import { Badge } from './ui/badge';
 
@@ -62,8 +62,11 @@ export const HydeSimulator = () => {
     }
 
     return (
-        <Card className="bg-card/60 mt-4 border-primary/20">
-            <CardContent className="p-4 space-y-4">
+        <Card className="bg-card/60 border-primary/20">
+            <CardHeader>
+                <CardTitle className="text-base">Method: HyDE (Hypothetical Document Embeddings)</CardTitle>
+            </CardHeader>
+            <CardContent className="p-4 pt-0 space-y-4">
                 <div className="text-center p-2 rounded-lg bg-muted/50 h-12 flex items-center justify-center">
                     <p className="text-sm text-muted-foreground">{getStepDescription()}</p>
                 </div>

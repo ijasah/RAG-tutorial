@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { BrainCircuit, HelpCircle, FileText, Database, Search, ChevronRight, RefreshCw, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from './ui/badge';
-import { Card, CardContent } from './ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 
@@ -83,8 +83,11 @@ export const HypotheticalQuestionsSimulator = () => {
     }
 
     return (
-        <Card className="bg-card/60 mt-4 border-primary/20">
-            <CardContent className="p-4">
+        <Card className="bg-card/60 border-primary/20">
+            <CardHeader>
+                <CardTitle className="text-base">Method: Hypothetical Questions</CardTitle>
+            </CardHeader>
+            <CardContent className="p-4 pt-0">
                 <Tabs value={phase} onValueChange={(v) => resetAndSwitch(v as any)} className="w-full">
                     <TabsList className="grid w-full grid-cols-2">
                         <TabsTrigger value="indexing">Phase 1: Indexing</TabsTrigger>

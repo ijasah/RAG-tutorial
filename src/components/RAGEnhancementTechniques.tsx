@@ -64,15 +64,9 @@ export const RAGEnhancementTechniques = () => {
                                     Improves the user's query before it hits the retrieval system. This can involve expanding the query with synonyms, correcting typos, or using advanced techniques like generating hypothetical documents or questions that the query might be asking. Explore the simulators for a couple such techniques below.
                                 </p>
                                 <div className="space-y-6 pt-4">
-                                    <div>
-                                        <h4 className="font-semibold text-base mb-2">Method: Hypothetical Questions</h4>
-                                        <HypotheticalQuestionsSimulator />
-                                    </div>
+                                    <HypotheticalQuestionsSimulator />
                                     <Separator />
-                                    <div>
-                                        <h4 className="font-semibold text-base mb-2">Method: HyDE (Hypothetical Document Embeddings)</h4>
-                                        <HydeSimulator />
-                                    </div>
+                                    <HydeSimulator />
                                 </div>
                             </AccordionContent>
                         </AccordionItem>
