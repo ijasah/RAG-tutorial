@@ -83,7 +83,7 @@ const findLeafNodes = (node: TreeNode, queryPoint: Point, searchK: number): Tree
         const { split, children } = currentNode;
         if (!split || !children) continue;
 
-        const distanceToHyperplane = (queryPoint.x - split.midX) * Math.cos(split.angle) + (queryPoint.y - split.midY) * Math.sin(split.angle);
+        const distanceToHyperplane = (queryPoint.x - split.midX) * Math.cos(split.angle) + (queryPoint.y - midY) * Math.sin(split.angle);
 
         // Add both children to the priority queue with their "wrong side" distance
         pq.push([children[0], Math.max(0, -distanceToHyperplane)]);
