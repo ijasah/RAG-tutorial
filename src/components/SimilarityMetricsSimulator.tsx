@@ -1,11 +1,12 @@
 // src/components/SimilarityMetricsSimulator.tsx
 "use client";
 import React, { useState, useMemo } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calculator, Orbit } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 type Vector = { x: number; y: number; label: string; };
 
@@ -34,11 +35,15 @@ const magnitude = (v: Vector) => Math.sqrt(v.x * v.x + v.y * v.y);
 const cosineSimilarity = (v1: Vector, v2: Vector) => dotProduct(v1, v2) / (magnitude(v1) * magnitude(v2));
 const euclideanDistance = (v1: Vector, v2: Vector) => Math.sqrt(Math.pow(v1.x - v2.x, 2) + Math.pow(v1.y - v2.y, 2));
 
-const MetricDisplay = ({ title, formula, value, children }: { title: string, formula: string, value: string, children: React.ReactNode }) => (
-    <div className="flex flex-col space-y-3 p-4 border rounded-lg bg-muted/20 h-full">
-        <h3 className="font-semibold text-lg text-primary text-center">{title}</h3>
-        <p className="font-mono text-xs text-muted-foreground h-8 text-center">{formula}</p>
-        <div className="relative w-full h-[300px] rounded-lg bg-muted/30 overflow-hidden">
+
+const MetricDisplay = ({ title, formula, value, children, description }: { title: string, formula: string, value: string, children: React.ReactNode, description?: React.ReactNode }) => (
+    <div className="flex flex-col space-y-2 p-4 border rounded-lg bg-muted/30 h-full">
+        <div className="text-center">
+            <h3 className="font-semibold text-lg text-primary">{title}</h3>
+            <p className="font-mono text-xs text-muted-foreground mt-1 h-6">{formula}</p>
+            {description && <div className="text-xs text-muted-foreground mt-2 px-2">{description}</div>}
+        </div>
+        <div className="relative w-full h-[300px] rounded-lg bg-muted/40 overflow-hidden my-2">
             {children}
         </div>
         <div className="text-center mt-auto">
@@ -53,72 +58,76 @@ const VectorVisualization = ({ selectedVec, metric }: { selectedVec: Vector, met
     const queryCoords = getCoords(queryVector);
     const selectedCoords = getCoords(selectedVec);
 
-    const queryAngle = Math.atan2(queryVector.y, queryVector.x);
-    const selectedAngle = Math.atan2(selectedVec.y, selectedVec.x);
-
+    const queryAngle = Math.atan2(-queryVector.y, queryVector.x);
+    const selectedAngle = Math.atan2(-selectedVec.y, selectedVec.x);
+    
     const angleDiff = Math.abs(queryAngle - selectedAngle);
     const arcRadius = 40;
 
-    const largeArcFlag = angleDiff > Math.PI ? 1 : 0;
-
+    const startAngle = Math.min(queryAngle, selectedAngle);
+    const endAngle = Math.max(queryAngle, selectedAngle);
+    
     const startPointArc = {
-        x: origin.x + arcRadius * Math.cos(Math.min(queryAngle, selectedAngle)),
-        y: origin.y - arcRadius * Math.sin(Math.min(queryAngle, selectedAngle))
-    }
+        x: origin.x + arcRadius * Math.cos(startAngle),
+        y: origin.y + arcRadius * Math.sin(startAngle)
+    };
     const endPointArc = {
-        x: origin.x + arcRadius * Math.cos(Math.max(queryAngle, selectedAngle)),
-        y: origin.y - arcRadius * Math.sin(Math.max(queryAngle, selectedAngle))
-    }
+        x: origin.x + arcRadius * Math.cos(endAngle),
+        y: origin.y + arcRadius * Math.sin(endAngle)
+    };
+    const largeArcFlag = (endAngle - startAngle) > Math.PI ? 1 : 0;
+    
     const arcPath = `M ${startPointArc.x} ${startPointArc.y} A ${arcRadius} ${arcRadius} 0 ${largeArcFlag} 1 ${endPointArc.x} ${endPointArc.y}`;
-
-    const getTextPosition = (vecCoords: { x: number, y: number }, baseCoords: { x: number, y: number } = {x: 0, y: 0}) => {
-        const dx = (vecCoords.x - baseCoords.x);
-        const dy = (vecCoords.y - baseCoords.y);
-        const angle = Math.atan2(dy, dx);
-        const offsetX = Math.cos(angle) * 30; // 30px offset
-        const offsetY = Math.sin(angle) * 30;
+    
+    const getTextPosition = (vec: Vector, baseVec: Vector = queryVector) => {
+        const coords = getCoords(vec);
+        const angle = Math.atan2(coords.y - origin.y, coords.x - origin.x);
+        const offsetX = Math.cos(angle) * 15;
+        const offsetY = Math.sin(angle) * 15;
         
         return {
-            x: vecCoords.x + offsetX,
-            y: vecCoords.y + offsetY,
-            textAnchor: Math.abs(angle) > Math.PI / 2 ? "end" : "start"
+            x: coords.x + offsetX,
+            y: coords.y + offsetY,
+            textAnchor: (angle > -Math.PI / 2 && angle < Math.PI / 2) ? "start" : "end",
+            dy: "0.35em",
         }
     }
     
-    const selectedLabelPos = getTextPosition(selectedCoords, queryCoords);
-
+    const queryLabelPos = getTextPosition(queryVector);
+    const selectedLabelPos = getTextPosition(selectedVec);
 
     return (
         <svg viewBox={`0 0 ${width} ${height - 50}`} className="w-full h-full" style={{ fontSize: '12px' }}>
             <path d={`M ${origin.x} 0 V ${height} M 0 ${origin.y} H ${width}`} stroke="hsl(var(--border))" strokeWidth="0.5" />
             
-            {/* Query Vector */}
-            <g>
-               <motion.line x1={origin.x} y1={origin.y} x2={queryCoords.x} y2={queryCoords.y} stroke="hsl(var(--primary))" strokeWidth="2.5" initial={{pathLength: 0}} animate={{pathLength: 1}} transition={{duration: 0.5}} />
-               <motion.circle cx={queryCoords.x} cy={queryCoords.y} r="4" fill="hsl(var(--primary))" initial={{scale: 0}} animate={{scale: 1}} transition={{delay: 0.5}}/>
-                <text x={queryCoords.x} y={queryCoords.y - 12} textAnchor="middle" fontWeight="bold" fill="hsl(var(--primary))">{queryVector.label}</text>
-            </g>
-
-            {/* Selected Vector */}
-            <g>
-                <motion.line x1={origin.x} y1={origin.y} x2={selectedCoords.x} y2={selectedCoords.y} stroke="hsl(var(--foreground))" strokeWidth="2" opacity="0.8" initial={{pathLength: 0}} animate={{pathLength: 1}} transition={{duration: 0.5}} />
-                <motion.circle cx={selectedCoords.x} cy={selectedCoords.y} r="4" fill="hsl(var(--foreground))"  opacity="0.8" initial={{scale: 0}} animate={{scale: 1}} transition={{delay: 0.5}}/>
-                <text x={selectedCoords.x} y={selectedCoords.y - 12} dy="0" textAnchor="middle" fontWeight="bold" fill="hsl(var(--foreground))" opacity="0.8" >{selectedVec.label}</text>
-            </g>
+            {/* Vectors */}
+            {[queryVector, selectedVec].map((vec, i) => {
+                 const coords = getCoords(vec);
+                 const pos = i === 0 ? queryLabelPos : selectedLabelPos;
+                 return (
+                    <g key={vec.label}>
+                       <motion.line x1={origin.x} y1={origin.y} x2={coords.x} y2={coords.y} stroke={i === 0 ? "hsl(var(--primary))" : "hsl(var(--foreground))"} strokeWidth={i === 0 ? "2.5" : "2"} opacity={i === 0 ? 1 : 0.8} initial={{pathLength: 0}} animate={{pathLength: 1}} transition={{duration: 0.5}} />
+                       <motion.circle cx={coords.x} cy={coords.y} r="4" fill={i === 0 ? "hsl(var(--primary))" : "hsl(var(--foreground))"} opacity={i === 0 ? 1 : 0.8} initial={{scale: 0}} animate={{scale: 1}} transition={{delay: 0.5}}/>
+                        <text x={pos.x} y={pos.y} dy={pos.dy} textAnchor={pos.textAnchor as any} fontWeight="bold" fill={i === 0 ? "hsl(var(--primary))" : "hsl(var(--foreground))"} opacity={i === 0 ? 1 : 0.8}>{vec.label}</text>
+                    </g>
+                 )
+            })}
 
             {metric === 'cosine' && (
-                <motion.path
-                    key={`arc-${selectedVec.label}`}
-                    d={arcPath}
-                    stroke="hsl(var(--destructive))"
-                    strokeWidth="2"
-                    fill="hsla(var(--destructive), 0.1)"
-                    strokeDasharray="3 3"
-                    initial={{ pathLength: 0, opacity: 0 }}
-                    animate={{ pathLength: 1, opacity: 1 }}
-                    exit={{ pathLength: 0, opacity: 0 }}
-                    transition={{duration: 0.5, delay: 0.2}}
-                />
+                <>
+                    <motion.path
+                        key={`arc-${selectedVec.label}`}
+                        d={arcPath}
+                        stroke="hsl(var(--destructive))"
+                        strokeWidth="2"
+                        fill="hsla(var(--destructive), 0.1)"
+                        strokeDasharray="3 3"
+                        initial={{ pathLength: 0, opacity: 0 }}
+                        animate={{ pathLength: 1, opacity: 1 }}
+                        exit={{ pathLength: 0, opacity: 0 }}
+                        transition={{duration: 0.5, delay: 0.2}}
+                    />
+                </>
             )}
             {metric === 'euclidean' && (
                 <motion.line
@@ -142,11 +151,21 @@ const VectorVisualization = ({ selectedVec, metric }: { selectedVec: Vector, met
 
 export const SimilarityMetricsSimulator = () => {
     const [selectedIndex, setSelectedIndex] = useState(0);
-
     const selectedVector = documents[selectedIndex];
     
     const cosSim = useMemo(() => cosineSimilarity(queryVector, selectedVector), [selectedVector]);
     const eucDist = useMemo(() => euclideanDistance(queryVector, selectedVector), [selectedVector]);
+
+    const formulaDescription = (
+        <div className="space-y-1">
+            <p>
+                <strong className="text-primary">A · B</strong> is the dot product, measuring how much one vector goes in the direction of another.
+            </p>
+            <p>
+                <strong className="text-primary">||A|| & ||B||</strong> are the magnitudes (or lengths) of the vectors. Dividing by the magnitudes normalizes for length.
+            </p>
+        </div>
+    );
 
     return (
         <Card className="bg-card/50 mt-6">
@@ -169,7 +188,7 @@ export const SimilarityMetricsSimulator = () => {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
-                    <MetricDisplay title="Cosine Similarity" formula="cos(θ) = (A · B) / (||A|| * ||B||)" value={cosSim.toFixed(3)}>
+                    <MetricDisplay title="Cosine Similarity" formula="cos(θ) = (A · B) / (||A|| * ||B||)" value={cosSim.toFixed(3)} description={formulaDescription}>
                         <VectorVisualization selectedVec={selectedVector} metric="cosine" />
                     </MetricDisplay>
                     <MetricDisplay title="Euclidean Distance" formula="√((x₂-x₁)² + (y₂-y₁)²)" value={eucDist.toFixed(2)}>
