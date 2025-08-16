@@ -3,10 +3,12 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { GitBranch, Lightbulb, Search, Database, Brain, Sparkles, Wand2, BrainCircuit } from 'lucide-react';
+import { GitBranch, Lightbulb, Search, Database, Brain, Sparkles, Wand2, BrainCircuit, CornerDownLeft } from 'lucide-react';
 import { HypotheticalQuestionsSimulator } from './HypotheticalQuestionsSimulator';
 import { HydeSimulator } from './HydeSimulator';
 import { SubQuerySimulator } from './SubQuerySimulator';
+import { StepbackPromptSimulator } from './StepbackPromptSimulator';
+
 
 const techniqueCategories = [
     {
@@ -37,19 +39,24 @@ const techniqueCategories = [
 
 const queryEnhancementMethods = [
     {
-        title: "Method: Sub-Query Generation",
+        title: "Sub-Query Generation",
         value: "sub-query",
         component: <SubQuerySimulator />
     },
     {
-        title: "Method: Hypothetical Questions",
+        title: "Hypothetical Questions",
         value: "hypothetical-questions",
         component: <HypotheticalQuestionsSimulator />
     },
     {
-        title: "Method: HyDE (Hypothetical Document Embeddings)",
+        title: "HyDE (Hypothetical Document Embeddings)",
         value: "hyde",
         component: <HydeSimulator />
+    },
+    {
+        title: "Step-back Prompting",
+        value: "step-back",
+        component: <StepbackPromptSimulator />
     }
 ];
 
@@ -91,7 +98,10 @@ export const RAGEnhancementTechniques = () => {
                                             {queryEnhancementMethods.map((method) => (
                                                  <AccordionItem key={method.value} value={method.value} className="border-b-0">
                                                     <AccordionTrigger className="p-3 text-sm bg-muted/40 hover:bg-muted/60 rounded-lg">
-                                                        {method.title}
+                                                        <div className="flex items-center gap-2">
+                                                           <CornerDownLeft className="w-4 h-4" /> 
+                                                           {method.title}
+                                                        </div>
                                                     </AccordionTrigger>
                                                     <AccordionContent className="pt-4">
                                                         {method.component}
