@@ -56,8 +56,8 @@ const DocumentChunk = ({ text, isHighlighted }: { text: string; isHighlighted: b
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.3 }}
         className={cn(
-            "p-2 border rounded bg-background transition-colors",
-            isHighlighted ? "border-primary" : "border-border"
+            "p-2 border rounded bg-background transition-all",
+            isHighlighted ? "border-primary border-2" : "border-border"
         )}
     >
         {text}
@@ -101,21 +101,21 @@ export const SentenceWindowSimulator = () => {
                  <div className="grid grid-cols-[1fr,auto,1.5fr,auto,1.5fr,auto,1fr] gap-4 items-center min-h-[250px]">
                     {/* Column 1: Query */}
                     <AnimatePresence>
-                    {step >= 2 ? (
+                    {step >= 2 && (
                         <motion.div initial={{opacity: 0}} animate={{opacity: 1}}>
                             <FlowNode icon={<HelpCircle />} title="User Query" status={getStatus(2)} step={2} currentStep={step}>
                                 <div className="p-2 border rounded bg-background text-xs">{userQuery}</div>
                             </FlowNode>
                         </motion.div>
-                    ) : <div></div>}
+                    )}
                     </AnimatePresence>
 
-                    <AnimatePresence>{step >= 2 ? <FlowArrow step={2} currentStep={step} /> : <div></div>}</AnimatePresence>
+                    <AnimatePresence>{step >= 2 && <FlowArrow step={2} currentStep={step} />}</AnimatePresence>
 
 
                     {/* Column 2: Vector Store */}
                     <AnimatePresence>
-                    {step >= 1 ? (
+                    {step >= 1 && (
                          <motion.div initial={{opacity: 0}} animate={{opacity: 1}}>
                             <FlowNode icon={<Database />} title="3. Vector Store" status={getStatus(3)} step={3} currentStep={step}>
                                 <AnimatePresence>
@@ -125,14 +125,14 @@ export const SentenceWindowSimulator = () => {
                                 </AnimatePresence>
                             </FlowNode>
                         </motion.div>
-                    ) : <div></div>}
+                    )}
                     </AnimatePresence>
 
-                    <AnimatePresence>{step >= 4 ? <FlowArrow step={4} currentStep={step} /> : <div></div>}</AnimatePresence>
+                    <AnimatePresence>{step >= 4 && <FlowArrow step={4} currentStep={step} />}</AnimatePresence>
 
                     {/* Column 3: Wider Window */}
                     <AnimatePresence>
-                    {step >= 4 ? (
+                    {step >= 4 && (
                         <motion.div initial={{opacity: 0}} animate={{opacity: 1}}>
                             <FlowNode icon={<GitMerge />} title="4. Wider Window of Context" status={getStatus(4)} step={4} currentStep={step}>
                                 <div className="space-y-1.5">
@@ -142,7 +142,7 @@ export const SentenceWindowSimulator = () => {
                                             initial={{opacity: 0}} animate={{opacity: 1, transition:{delay: i * 0.1}}}
                                             className={cn(
                                                 "p-2 border rounded bg-background",
-                                                chunk.id === relevantChunkId && "border-primary"
+                                                chunk.id === relevantChunkId && "border-primary border-2"
                                             )}
                                         >
                                             {chunk.text}
@@ -151,31 +151,31 @@ export const SentenceWindowSimulator = () => {
                                 </div>
                             </FlowNode>
                         </motion.div>
-                     ) : <div></div>}
+                     )}
                     </AnimatePresence>
                     
-                    <AnimatePresence>{step >= 5 ? <FlowArrow step={5} currentStep={step} /> : <div></div>}</AnimatePresence>
+                    <AnimatePresence>{step >= 5 && <FlowArrow step={5} currentStep={step} />}</AnimatePresence>
 
 
                     {/* Column 4: LLM and Answer */}
                     <div className="flex flex-col gap-4">
                         <AnimatePresence>
-                        {step >= 5 ? (
+                        {step >= 5 && (
                              <motion.div initial={{opacity: 0}} animate={{opacity: 1}}>
                                 <FlowNode icon={<Sparkles />} title="5. LLM" status={getStatus(5)} step={5} currentStep={step}>
                                     <p>The LLM receives the expanded context to generate a more informed response.</p>
                                 </FlowNode>
                             </motion.div>
-                        ) : <div></div>}
+                        )}
                         </AnimatePresence>
                         <AnimatePresence>
-                        {step >= 6 ? (
+                        {step >= 6 && (
                             <motion.div initial={{opacity: 0}} animate={{opacity: 1}}>
                                 <FlowNode icon={<MessageSquare />} title="6. Answer" status={getStatus(6)} step={6} currentStep={step}>
                                     <p className="p-2 border rounded bg-background text-xs">{finalAnswer}</p>
                                 </FlowNode>
                             </motion.div>
-                        ) : <div></div>}
+                        )}
                         </AnimatePresence>
                     </div>
 
