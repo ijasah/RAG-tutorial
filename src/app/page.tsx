@@ -19,6 +19,7 @@ import { LLMToRAGTimeline } from '@/components/LLMToRAGTimeline';
 import { RAGEnhancementTechniques } from '@/components/RAGEnhancementTechniques';
 import { ContextRecallSimulator } from '@/components/ContextRecallSimulator';
 import { NoiseSensitivitySimulator } from '@/components/NoiseSensitivitySimulator';
+import { ResponseRelevancySimulator } from '@/components/ResponseRelevancySimulator';
 
 import {
   BookOpen,
@@ -312,6 +313,15 @@ const Index = () => {
                   Noise Sensitivity measures how robust an LLM is to handling irrelevant or distracting information in its context. A lower score is better, indicating the model can ignore the "noise" and produce a factual answer.
                 </p>
                 <NoiseSensitivitySimulator />
+
+                 <h3 className="text-xl font-semibold mb-3 mt-8 text-foreground">Response Relevancy</h3>
+                  <p className="text-muted-foreground -mt-4 font-semibold text-lg italic text-center py-4">
+                    "Is the generated answer actually relevant to the question?"
+                  </p>
+                 <p className="text-muted-foreground -mt-4">
+                  Response Relevancy measures how well the generated answer addresses the user's original query. It uses a clever trick: if the answer is relevant, you should be able to reverse-engineer the original question from it. This metric penalizes incomplete or redundant answers.
+                </p>
+                <ResponseRelevancySimulator />
 
                 <div>
                     <h3 className="text-xl font-semibold mb-3 mt-8 text-foreground">Conclusion</h3>
