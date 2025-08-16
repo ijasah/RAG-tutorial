@@ -16,7 +16,7 @@ const exampleQueries = [
 
 const AgenticRAGSimulator = () => {
     const [selectedQuery, setSelectedQuery] = useState(exampleQueries[0].value);
-    const [agentState, setAgentState] = useState<'idle' | 'thinking' | 'retrieving' | 'reflecting' | 'verifying' | 'answering' | 'complete'>('idle');
+    const [agentState, setAgentState] = useState<'idle' | 'thinking' | 'retrieving' | 'reflecting' | 'verifying' | 'answering'>('idle');
     const [thought, setThought] = useState("");
     const [retrievedChunk, setRetrievedChunk] = useState("");
     const [verificationResult, setVerificationResult] = useState("");
@@ -40,7 +40,6 @@ const AgenticRAGSimulator = () => {
                 setTimeout(() => {
                     setAgentState('answering');
                     setFinalAnswer("The capital of France is Paris.");
-                    setTimeout(() => setAgentState('complete'), 500);
                 }, 1500);
             } else if (type === 'search') {
                 setThought("The user is asking about a specific or recent topic. I should use the search tool to get the latest information.");
@@ -50,7 +49,6 @@ const AgenticRAGSimulator = () => {
                     setTimeout(() => {
                         setAgentState('answering');
                         setFinalAnswer("Based on the search results, RAGAS is an evaluation framework for Retrieval-Augmented Generation systems.");
-                        setTimeout(() => setAgentState('complete'), 500);
                     }, 2000);
                 }, 1500);
             } else if (type === 'reflect') {
@@ -67,7 +65,6 @@ const AgenticRAGSimulator = () => {
                             setTimeout(() => {
                                 setAgentState('answering');
                                 setFinalAnswer("Based on verified information, Ali Ghodsi is the CEO of Databricks.");
-                                setTimeout(() => setAgentState('complete'), 500);
                             }, 2000)
                         }, 2000);
                     }, 1500);
@@ -113,7 +110,7 @@ const AgenticRAGSimulator = () => {
                 </div>
 
                 <AnimatePresence>
-                    <div className="space-y-4 min-h-[250px]">
+                    <div className="space-y-4 min-h-[350px]">
                         {agentState !== 'idle' && (
                             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-4 bg-muted/50 rounded-lg border">
                                 <h4 className="font-semibold text-sm mb-2 flex items-center gap-2"><Sparkles className="text-primary" /> Agent's Thought Process</h4>
