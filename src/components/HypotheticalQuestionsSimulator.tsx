@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { BrainCircuit, HelpCircle, FileText, Database, Search, ChevronRight, Play, RefreshCw, ArrowRight } from 'lucide-react';
+import { BrainCircuit, HelpCircle, FileText, Database, Search, ChevronRight, RefreshCw, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from './ui/badge';
 import { Card, CardContent } from './ui/card';
@@ -24,7 +24,7 @@ const hypotheticalQuestions = {
 const userQuery = "Why is RAG better than just using an LLM?";
 
 const FlowCard = ({ title, icon, children, highlighted }: { title: string, icon: React.ReactNode, children: React.ReactNode, highlighted?: boolean }) => (
-    <Card className={cn(highlighted ? "border-primary bg-primary/10" : "")}>
+    <Card className={cn("transition-all", highlighted ? "border-primary bg-primary/10" : "")}>
         <CardContent className="p-4">
             <div className="flex items-center gap-3 mb-3">
                 {icon}
@@ -38,7 +38,7 @@ const FlowCard = ({ title, icon, children, highlighted }: { title: string, icon:
 );
 
 const Arrow = () => (
-    <div className="flex justify-center items-center my-2">
+    <div className="flex justify-center items-center my-2 md:rotate-90 md:my-0 md:mx-auto">
         <ChevronRight className="w-6 h-6 text-muted-foreground/50" />
     </div>
 );
@@ -58,21 +58,21 @@ export const HypotheticalQuestionsSimulator = () => {
 
     const getIndexingDescription = () => {
         const descriptions = [
-            "Click 'Start' to begin the indexing phase.",
-            "1. Original documents are split into smaller chunks.",
-            "2. An LLM generates a hypothetical question that each chunk could answer.",
-            "3. The generated questions and their corresponding chunk IDs are stored.",
+            "Click 'Start' to begin the indexing phase, where we prepare our data.",
+            "1. First, original documents are split into smaller, manageable chunks.",
+            "2. An LLM generates a hypothetical question that each specific chunk could answer.",
+            "3. The generated questions and links to their original chunks are stored and indexed.",
         ];
         return descriptions[step] || descriptions[descriptions.length -1];
     }
     
     const getRetrievalDescription = () => {
         const descriptions = [
-            "Now, let's see how a user query is handled.",
-            "1. A user asks a question.",
+            "Now, let's see how a new user query is handled using our special index.",
+            "1. A user asks a new question. This query may be phrased differently than our documents.",
             "2. The user's query is used to search for the most similar *hypothetical question* in our store.",
-            "3. The hypothetical question with the highest similarity score is found ('chunk-1').",
-            "4. The original chunk corresponding to the winning question is retrieved to answer the user's query."
+            "3. The hypothetical question with the highest similarity score is found (in this case, for 'chunk-1').",
+            "4. The system retrieves the original chunk linked to that winning question to answer the user's query."
         ];
         return descriptions[step] || descriptions[descriptions.length -1];
     }
@@ -96,16 +96,16 @@ export const HypotheticalQuestionsSimulator = () => {
                             initial={{ opacity: 0, x: -10 }}
                             animate={{ opacity: 1, x: 0 }}
                             exit={{ opacity: 0, x: 10 }}
+                            className="mt-4"
                         >
-                            <div className="p-2 text-center mt-4">
-                                <p className="text-sm text-muted-foreground h-10 flex items-center justify-center">
+                            <div className="p-2 text-center">
+                                <p className="text-sm text-muted-foreground h-12 flex items-center justify-center">
                                     {isIndexing ? getIndexingDescription() : getRetrievalDescription()}
                                 </p>
                             </div>
                             
                             {isIndexing && (
-                                <div className="p-2 space-y-4 md:space-y-0 md:grid md:grid-cols-[1fr_auto_1fr_auto_1fr] md:items-start md:gap-4">
-                                    {/* Chunks */}
+                                <div className="p-2 grid grid-cols-1 md:grid-cols-3 md:gap-4 items-start">
                                     <AnimatePresence>
                                         {step >= 1 && (
                                              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
@@ -117,10 +117,8 @@ export const HypotheticalQuestionsSimulator = () => {
                                         )}
                                     </AnimatePresence>
                                    
-                                    {/* Arrow 1 */}
                                     {step >= 2 && <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}><Arrow /></motion.div>}
                                     
-                                    {/* Hypothetical Questions */}
                                     <AnimatePresence>
                                         {step >= 2 && (
                                             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
@@ -131,21 +129,19 @@ export const HypotheticalQuestionsSimulator = () => {
                                             </motion.div>
                                         )}
                                     </AnimatePresence>
-                                    
-                                    {/* Arrow 2 */}
+
                                     {step >= 3 && <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}><Arrow /></motion.div>}
 
-                                    {/* Vector Store */}
                                     <AnimatePresence>
                                     {step >= 3 && (
                                         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-                                            <FlowCard title="Stored Content" icon={<Database className="w-5 h-5 text-primary"/>}>
+                                            <FlowCard title="Indexed Store" icon={<Database className="w-5 h-5 text-primary"/>}>
                                                 <div>
-                                                    <Badge>chunk-1</Badge>
+                                                    <Badge>Ref: chunk-1</Badge>
                                                     <p className="p-2 mt-1 border rounded bg-background">{hypotheticalQuestions['chunk-1']}</p>
                                                 </div>
                                                  <div>
-                                                    <Badge>chunk-2</Badge>
+                                                    <Badge>Ref: chunk-2</Badge>
                                                     <p className="p-2 mt-1 border rounded bg-background">{hypotheticalQuestions['chunk-2']}</p>
                                                 </div>
                                             </FlowCard>
@@ -156,9 +152,8 @@ export const HypotheticalQuestionsSimulator = () => {
                             )}
 
                             {isRetrieval && (
-                                 <div className="p-2 space-y-4 md:space-y-0 md:grid md:grid-cols-[1fr_auto_1fr_auto_1fr] md:items-start md:gap-4">
-                                     {/* User Query */}
-                                    <AnimatePresence>
+                                 <div className="p-2 grid grid-cols-1 md:grid-cols-[1fr,auto,1fr,auto,1fr] items-start md:gap-4">
+                                     <AnimatePresence>
                                      {step >= 1 && (
                                          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
                                             <FlowCard title="User Query" icon={<HelpCircle className="w-5 h-5 text-primary" />}>
@@ -168,31 +163,27 @@ export const HypotheticalQuestionsSimulator = () => {
                                      )}
                                      </AnimatePresence>
                                      
-                                     {/* Arrow 1 */}
                                      {step >= 2 && <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}><Arrow /></motion.div>}
 
-                                     {/* Search */}
                                      <AnimatePresence>
                                      {step >= 2 && (
                                          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
                                             <FlowCard title="Similarity Search" icon={<Search className="w-5 h-5 text-primary"/>} highlighted={step >=3}>
                                                  <div>
                                                     <p className="p-2 border rounded bg-background">{hypotheticalQuestions['chunk-1']}</p>
-                                                    <div className="text-right pr-2">{step >= 3 && <Badge variant={step >= 3 ? "default" : "secondary"}>Score: 0.91</Badge>}</div>
+                                                    <div className="text-right pr-2 mt-1">{step >= 3 && <Badge variant={step >= 3 ? "default" : "secondary"}>Similarity: 0.91</Badge>}</div>
                                                 </div>
                                                  <div>
                                                     <p className="p-2 border rounded bg-background">{hypotheticalQuestions['chunk-2']}</p>
-                                                    <div className="text-right pr-2">{step >= 3 && <Badge variant="secondary">Score: 0.62</Badge>}</div>
+                                                    <div className="text-right pr-2 mt-1">{step >= 3 && <Badge variant="secondary">Similarity: 0.62</Badge>}</div>
                                                 </div>
                                             </FlowCard>
                                          </motion.div>
                                      )}
                                      </AnimatePresence>
                                      
-                                      {/* Arrow 2 */}
-                                     {step >= 4 && <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}><Arrow /></motion.div>}
+                                      {step >= 4 && <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}><Arrow /></motion.div>}
                                      
-                                     {/* Retrieved Chunk */}
                                      <AnimatePresence>
                                      {step >= 4 && (
                                          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
