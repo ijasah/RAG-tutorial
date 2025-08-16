@@ -5,6 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { GitBranch, Lightbulb, Search, Database, Brain, Sparkles, Wand2, BrainCircuit } from 'lucide-react';
 import { HypotheticalQuestionsSimulator } from './HypotheticalQuestionsSimulator';
+import { HydeSimulator } from './HydeSimulator';
+import { Separator } from './ui/separator';
 
 const divideAndConquerTechniques = [
     {
@@ -59,9 +61,19 @@ export const RAGEnhancementTechniques = () => {
                             </AccordionTrigger>
                             <AccordionContent className="pl-10 text-muted-foreground space-y-4">
                                 <p>
-                                    Improves the user's query before it hits the retrieval system. This can involve expanding the query with synonyms, correcting typos, or using advanced techniques like generating hypothetical questions that the query might be asking. Explore the simulator for one such technique below.
+                                    Improves the user's query before it hits the retrieval system. This can involve expanding the query with synonyms, correcting typos, or using advanced techniques like generating hypothetical documents or questions that the query might be asking. Explore the simulators for a couple such techniques below.
                                 </p>
-                                <HypotheticalQuestionsSimulator />
+                                <div className="space-y-6 pt-4">
+                                    <div>
+                                        <h4 className="font-semibold text-base mb-2">Method: Hypothetical Questions</h4>
+                                        <HypotheticalQuestionsSimulator />
+                                    </div>
+                                    <Separator />
+                                    <div>
+                                        <h4 className="font-semibold text-base mb-2">Method: HyDE (Hypothetical Document Embeddings)</h4>
+                                        <HydeSimulator />
+                                    </div>
+                                </div>
                             </AccordionContent>
                         </AccordionItem>
                         {divideAndConquerTechniques.slice(1).map((item, index) => (
