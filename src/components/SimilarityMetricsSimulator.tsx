@@ -111,7 +111,7 @@ const SimilarityMetricsSimulator = () => {
 
                             {/* Selected Vector */}
                             <motion.line key={`selected-${selectedIndex}`} initial={{pathLength: 0}} animate={{pathLength: 1}} x1={origin.x} y1={origin.y} x2={getCoords(selectedVector).x} y2={getCoords(selectedVector).y} stroke="hsl(var(--foreground))" strokeWidth="2" />
-                            <text x={getCoords(selectedVector).x + 5} y={getCoords(selectedVector).y} fill="hsl(var(--foreground))" className="max-w-[100px]">{selectedVector.label}</text>
+                            <text x={getCoords(selectedVector).x + 5} y={getCoords(selectedVector).y} fill="hsl(var(--foreground))" >{selectedVector.label}</text>
 
                              {/* Other Vectors */}
                              {vectors.map((v, i) => i !== selectedIndex && (
@@ -160,3 +160,5 @@ const SimilarityMetricsSimulator = () => {
 };
 
 export { SimilarityMetricsSimulator };
+
+    
