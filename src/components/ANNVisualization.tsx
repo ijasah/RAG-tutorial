@@ -87,7 +87,6 @@ const findPointsInPolygon = (polygon: Point[], points: Point[]) => {
 
 const createTreeFromSequence = (points: Point[], sequence: typeof splitSequence): TreeNode => {
     const root: TreeNode = { id: 'node-R', points, isLeaf: false, path: 'R' };
-    const queue: TreeNode[] = [root];
     let leafColorIndex = 0;
 
     const allSplits: Split[] = sequence.map(s => {
@@ -101,7 +100,7 @@ const createTreeFromSequence = (points: Point[], sequence: typeof splitSequence)
 
     const processNode = (node: TreeNode) => {
         const splitIndex = sequence.findIndex(s => s.path === node.path);
-        if (splitIndex === -1) {
+        if (splitIndex === -1 || node.points.length <= K) {
             node.isLeaf = true;
             node.regionColor = colors[leafColorIndex++ % colors.length];
             return;
@@ -186,41 +185,41 @@ export function ANNVisualization() {
             {x: 0, y: 0}, {x: WIDTH, y: 0}, {x: WIDTH, y: HEIGHT}, {x: 0, y: HEIGHT}
         ]; // Start with the full canvas
         
-        for (let i = 0; i < nodePath.length -1; i++) {
-            const path = nodePath.substring(0, i + 2);
-            const parentPath = path.substring(0, path.length - 1);
-            let parentNode = tree;
-            for (const dir of parentPath.slice(1)) {
-                if (!parentNode.children) break;
-                parentNode = dir === 'L' ? parentNode.children[0] : parentNode.children[1];
-            }
-            const split = parentNode.split;
+        let currentNode = tree;
+        for (let i = 0; i < nodePath.length - 1; i++) {
+            const split = currentNode.split;
             if (!split) continue;
 
-            const isLeft = nodePath[i+1] === 'L';
+            const isLeftChildPath = nodePath[i+1] === 'L';
             const {midX, midY, angle} = split;
-            const splitPoint = getCoords({id: 0, x: midX, y: midY});
+            
+            const p1 = {x: midX, y: midY};
+            const p2 = {x: midX + Math.cos(angle), y: midY + Math.sin(angle)};
 
-            const newBounds = [];
+            const newBounds: {x: number, y: number}[] = [];
             let prevPoint = bounds[bounds.length - 1];
+
+            const isPrevPointLeft = ((p2.x - p1.x) * (prevPoint.y - p1.y) - (p2.y - p1.y) * (prevPoint.x - p1.x)) > 0;
+
             for (const currentPoint of bounds) {
-                 const prevVal = (prevPoint.x - splitPoint.x) * Math.cos(angle) + (prevPoint.y - splitPoint.y) * Math.sin(angle);
-                 const currentVal = (currentPoint.x - splitPoint.x) * Math.cos(angle) + (currentPoint.y - splitPoint.y) * Math.sin(split.angle);
+                 const isCurrentPointLeft = ((p2.x - p1.x) * (currentPoint.y - p1.y) - (p2.y - p1.y) * (currentPoint.x - p1.x)) > 0;
+                 
+                 if (isCurrentPointLeft !== isPrevPointLeft) {
+                    const intersectionX = ((p1.x*p2.y - p1.y*p2.x)*(prevPoint.x - currentPoint.x) - (prevPoint.x*currentPoint.y - prevPoint.y*currentPoint.x)*(p1.x-p2.x)) / ((p1.x-p2.x)*(prevPoint.y-currentPoint.y) - (p1.y-p2.y)*(prevPoint.x-currentPoint.x));
+                    const intersectionY = ((p1.x*p2.y - p1.y*p2.x)*(prevPoint.y - currentPoint.y) - (prevPoint.x*currentPoint.y - prevPoint.y*currentPoint.x)*(p1.y-p2.y)) / ((p1.x-p2.x)*(prevPoint.y-currentPoint.y) - (p1.y-p2.y)*(prevPoint.x-currentPoint.x));
+                    newBounds.push({ x: intersectionX, y: intersectionY});
+                }
 
-                const prevSide = prevVal >= 0;
-                const currentSide = currentVal >= 0;
-
-                if (prevSide === isLeft) newBounds.push(prevPoint);
-                if (prevSide !== currentSide) { // intersection
-                    const dx = currentPoint.x - prevPoint.x, dy = currentPoint.y - prevPoint.y;
-                    const dot = (splitPoint.x - prevPoint.x) * Math.cos(angle) + (splitPoint.y - prevPoint.y) * Math.sin(angle);
-                    const lineDot = dx * Math.cos(angle) + dy * Math.sin(angle);
-                    const t = dot / lineDot;
-                    newBounds.push({ x: prevPoint.x + t * dx, y: prevPoint.y + t * dy });
+                if (isCurrentPointLeft === isLeftChildPath) {
+                    newBounds.push(currentPoint);
                 }
                 prevPoint = currentPoint;
             }
-             bounds = newBounds;
+            bounds = newBounds.map(p => getCoords(p));
+            
+            if (currentNode.children) {
+                 currentNode = nodePath[i+1] === 'L' ? currentNode.children[0] : currentNode.children[1];
+            }
         }
         return bounds;
     }
@@ -254,9 +253,7 @@ export function ANNVisualization() {
             while (!currentNode.isLeaf) {
                 const { split, children } = currentNode;
                 if (!split || !children) break;
-                 const {x, y} = getCoords(queryPoint);
-                 const splitPoint = getCoords({x: split.midX, y: split.midY, id: 0});
-                 const val = (x - splitPoint.x) * Math.cos(split.angle) + (y - splitPoint.y) * Math.sin(split.angle);
+                 const val = (queryPoint.x - split.midX) * Math.cos(split.angle) + (queryPoint.y - split.midY) * Math.sin(split.angle);
                 currentNode = val >= 0 ? children[0] : children[1];
                 searchPath = currentNode.path;
             }
@@ -311,30 +308,13 @@ export function ANNVisualization() {
                                 const {midX, midY, angle, color} = split;
                                 const c = getCoords({x: midX, y: midY, id: 0});
                                 
-                                const bounds = getRegionBoundaries(s.path);
-                                const intersections = [];
-                                for (let i = 0; i < bounds.length; i++) {
-                                    const p1 = bounds[i];
-                                    const p2 = bounds[(i + 1) % bounds.length];
-                                    
-                                    const dx = p2.x - p1.x;
-                                    const dy = p2.y - p1.y;
-                                    const lineDot = dx * Math.cos(angle) + dy * Math.sin(angle);
-                                    if(Math.abs(lineDot) > 1e-6) {
-                                      const dot = (c.x - p1.x) * Math.cos(angle) + (c.y - p1.y) * Math.sin(angle);
-                                      const t = dot / lineDot;
-                                      if (t >=0 && t <=1) {
-                                          intersections.push({ x: p1.x + t * dx, y: p1.y + t * dy });
-                                      }
-                                    }
-                                }
-
-                                if (intersections.length < 2) return null;
-
+                                const p1 = {x: c.x - 1000 * Math.sin(angle), y: c.y + 1000 * Math.cos(angle)};
+                                const p2 = {x: c.x + 1000 * Math.sin(angle), y: c.y - 1000 * Math.cos(angle)};
+                               
                                 return (
                                     <motion.line key={`split-${s.path}`}
-                                        x1={intersections[0].x} y1={intersections[0].y}
-                                        x2={intersections[1].x} y2={intersections[1].y}
+                                        x1={p1.x} y1={p1.y}
+                                        x2={p2.x} y2={p2.y}
                                         className="stroke-border" stroke={color} strokeWidth="2"
                                         initial={{ opacity: 0 }} animate={{ opacity: 1 }}
                                     />
@@ -419,3 +399,4 @@ export function ANNVisualization() {
         </Card>
     );
 };
+    
