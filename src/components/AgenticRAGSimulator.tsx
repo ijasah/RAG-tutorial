@@ -92,7 +92,7 @@ export const AgenticRAGSimulator = () => {
     }
 
     return (
-        <Card className="bg-card/50">
+        <Card className="bg-card/50 transition-all hover:shadow-lg hover:-translate-y-1">
             <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                     <Bot /> Agentic RAG Simulator

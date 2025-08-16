@@ -156,7 +156,7 @@ export const ContextPrecisionSimulator = () => {
   }
 
   return (
-    <Card className="bg-card/50">
+    <Card className="bg-card/50 transition-all hover:shadow-lg hover:-translate-y-1">
       <CardHeader>
         <CardTitle>Context Precision Simulator</CardTitle>
         <CardDescription>

@@ -169,7 +169,7 @@ export const ContextRecallSimulator = () => {
     : `score = (Retrieved Reference Contexts) / (Total Reference Contexts) = ${activeScenario.data.analysis.filter((a,i) => evaluatedItems.includes(i) && a.retrieved).length} / ${activeScenario.data.analysis.length} = ${score.toFixed(2)}`;
 
   return (
-    <Card className="bg-card/50">
+    <Card className="bg-card/50 transition-all hover:shadow-lg hover:-translate-y-1">
       <CardHeader>
         <CardTitle>Context Recall Simulator</CardTitle>
         <CardDescription>
