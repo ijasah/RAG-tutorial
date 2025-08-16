@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './ui/card';
-import { HelpCircle, FileText, Bot, Search, RefreshCw, ArrowRight, ArrowDown, MessageSquare, Sparkles, GitMerge, BrainCircuit } from 'lucide-react';
+import { HelpCircle, FileText, Bot, Search, RefreshCw, ArrowRight, ArrowDown, MessageSquare, Sparkles, GitMerge, BrainCircuit, ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from './ui/badge';
 
@@ -34,14 +34,25 @@ const FlowNode = ({ icon, title, children, status, step, currentStep, className 
     </motion.div>
 );
 
-const Arrow = ({ step, currentStep, className }: { step: number, currentStep: number, className?: string }) => (
+const RightArrow = ({ step, currentStep }: { step: number, currentStep: number }) => (
      <motion.div
         initial={{ opacity: 0, scale: 0.5 }}
         animate={{ opacity: currentStep >= step ? 1 : 0.2, scale: currentStep >= step ? 1 : 0.5 }}
         transition={{ duration: 0.3, delay: (step * 0.1) + 0.1 }}
-        className={cn("flex justify-center items-center text-muted-foreground/60", className)}
+        className="flex justify-center items-center text-muted-foreground/60"
     >
        <ArrowRight className="w-6 h-6" />
+    </motion.div>
+);
+
+const LeftArrow = ({ step, currentStep }: { step: number, currentStep: number }) => (
+     <motion.div
+        initial={{ opacity: 0, scale: 0.5 }}
+        animate={{ opacity: currentStep >= step ? 1 : 0.2, scale: currentStep >= step ? 1 : 0.5 }}
+        transition={{ duration: 0.3, delay: (step * 0.1) + 0.1 }}
+        className="flex justify-center items-center text-muted-foreground/60"
+    >
+       <ArrowLeft className="w-6 h-6" />
     </motion.div>
 );
 
@@ -87,13 +98,13 @@ export const StepbackPromptSimulator = () => {
                                 <p className="p-2 bg-background rounded border">{originalQuery}</p>
                             </FlowNode>
 
-                            <Arrow step={1} currentStep={step} />
+                            <RightArrow step={1} currentStep={step} />
 
                             <FlowNode icon={<BrainCircuit />} title="Step-back Question" status={getStatus(1)} step={1} currentStep={step}>
                                 <p className="p-2 bg-background rounded border">{stepbackQuery}</p>
                             </FlowNode>
                             
-                            <Arrow step={2} currentStep={step} />
+                            <RightArrow step={2} currentStep={step} />
 
                             <FlowNode icon={<Search />} title="2. Retrieved Context" status={getStatus(2)} step={2} currentStep={step}>
                                 <p className="p-2 bg-background rounded border">{retrievedContext}</p>
@@ -111,7 +122,7 @@ export const StepbackPromptSimulator = () => {
                         )}
                     </AnimatePresence>
 
-                    {/* Bottom Row: Synthesis */}
+                    {/* Bottom Row: Synthesis (Corrected right-to-left flow) */}
                      <AnimatePresence>
                      {step >= 3 && (
                          <motion.div className="grid grid-cols-[1fr,auto,1fr,auto,1fr] gap-4 items-stretch">
@@ -119,7 +130,7 @@ export const StepbackPromptSimulator = () => {
                                 <p className="p-2 bg-background rounded border">{finalAnswer}</p>
                             </FlowNode>
                             
-                            <Arrow step={4} currentStep={step} />
+                            <LeftArrow step={5} currentStep={step} />
 
                             <FlowNode icon={<GitMerge />} title="4. Final Context" status={getStatus(4)} step={4} currentStep={step}>
                                 <p className="font-semibold text-foreground">Original Query:</p>
@@ -128,7 +139,7 @@ export const StepbackPromptSimulator = () => {
                                 <p className="p-2 bg-background rounded border">{stepbackAnswer}</p>
                             </FlowNode>
 
-                            <Arrow step={3} currentStep={step} />
+                            <LeftArrow step={4} currentStep={step} />
 
                             <FlowNode icon={<MessageSquare />} title="3. Step-back Answer" status={getStatus(3)} step={3} currentStep={step}>
                                 <p className="p-2 bg-background rounded border">{stepbackAnswer}</p>
