@@ -5,13 +5,14 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Calculator, Scaling } from 'lucide-react';
+import { Calculator, Scaling, Info } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 
 type Vector = { x: number; y: number; label: string; };
 
 const vectors: Vector[] = [
     { x: 4, y: 1, label: 'King' },
+    { x: 8, y: 2, label: 'King (scaled)' }, // Same direction, larger magnitude
     { x: 3.5, y: 1.5, label: 'Queen' },
     { x: 1, y: 4, label: 'Apple' },
 ];
@@ -19,7 +20,7 @@ const vectors: Vector[] = [
 const queryVector: Vector = { x: 4, y: 0.5, label: 'Man' };
 const width = 500;
 const height = 300;
-const scale = 50;
+const scale = 30; // Adjusted scale for larger vectors
 const origin = { x: 40, y: height - 40 };
 
 const getCoords = (vec: Vector) => ({
@@ -47,13 +48,13 @@ const SimilarityMetricsSimulator = () => {
             return {
                 formula: "cos(θ) = (A · B) / (||A|| * ||B||)",
                 result: `Score: ${cosSim.toFixed(3)}`,
-                explanation: "Cosine Similarity measures the angle between vectors. A score close to 1 means they point in a similar direction, indicating high semantic similarity. This is ideal for text embeddings.",
+                explanation: "Cosine Similarity measures the angle between vectors. A score close to 1 means they point in a similar direction, indicating high semantic similarity.",
             };
         }
         return {
             formula: "dist(A, B) = √((x₂ - x₁)² + (y₂ - y₁)²)",
             result: `Distance: ${eucDist.toFixed(2)}`,
-            explanation: "Euclidean Distance measures the direct, straight-line distance. Notice 'Queen' is closer than 'King' in distance, but 'King' is more semantically similar in direction (angle). This is why cosine is often preferred.",
+            explanation: "Euclidean Distance measures the direct, straight-line distance. Notice how vector length heavily impacts the score, making it less ideal for semantic meaning.",
         };
     }, [metric, cosSim, eucDist]);
 
@@ -63,7 +64,7 @@ const SimilarityMetricsSimulator = () => {
             <CardHeader>
                 <CardTitle className="flex items-center gap-2"><Calculator /> Similarity Metrics</CardTitle>
                 <CardDescription>
-                    Explore how different metrics measure the "closeness" of vectors. Compare the query 'Man' to other concepts.
+                    Explore how different metrics measure the "closeness" of vectors. Compare the query 'Man' to other concepts and see why Cosine Similarity is preferred for RAG.
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -76,7 +77,7 @@ const SimilarityMetricsSimulator = () => {
                             </TabsList>
                         </Tabs>
                         <p className="text-sm text-muted-foreground">Compare <span className="font-bold text-primary">'{queryVector.label}'</span> to:</p>
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 flex-wrap">
                             {vectors.map((v, i) => (
                                 <Button key={v.label} onClick={() => setSelectedIndex(i)} variant={selectedIndex === i ? 'default' : 'outline'}>
                                     {v.label}
@@ -87,6 +88,13 @@ const SimilarityMetricsSimulator = () => {
                             <Scaling className="h-4 w-4" />
                             <AlertTitle className="font-mono text-primary text-sm">{formula}</AlertTitle>
                             <AlertDescription className="text-xs mt-2">{explanation}</AlertDescription>
+                        </Alert>
+                         <Alert className="border-primary/30 bg-primary/10">
+                            <Info className="h-4 w-4" />
+                            <AlertTitle>Why Cosine Similarity?</AlertTitle>
+                            <AlertDescription className="text-xs">
+                                In text analysis, we care more about the *topic* (the vector's direction) than document length (the vector's magnitude). Cosine Similarity is **scale-invariant**; it only measures the angle. Notice 'King' and 'King (scaled)' have the same high cosine score because their direction is identical. This is ideal for finding semantically related content.
+                            </AlertDescription>
                         </Alert>
                         <div className="text-center font-bold text-xl">{result}</div>
                     </div>
@@ -100,7 +108,7 @@ const SimilarityMetricsSimulator = () => {
                             <text x={getCoords(queryVector).x + 5} y={getCoords(queryVector).y} fill="hsl(var(--primary))">{queryVector.label}</text>
 
                             {/* Selected Vector */}
-                            <motion.line x1={origin.x} y1={origin.y} x2={getCoords(selectedVector).x} y2={getCoords(selectedVector).y} stroke="hsl(var(--foreground))" strokeWidth="2" />
+                            <motion.line key={`selected-${selectedIndex}`} initial={{pathLength: 0}} animate={{pathLength: 1}} x1={origin.x} y1={origin.y} x2={getCoords(selectedVector).x} y2={getCoords(selectedVector).y} stroke="hsl(var(--foreground))" strokeWidth="2" />
                             <text x={getCoords(selectedVector).x + 5} y={getCoords(selectedVector).y} fill="hsl(var(--foreground))">{selectedVector.label}</text>
 
                              {/* Other Vectors */}
