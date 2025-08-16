@@ -286,14 +286,20 @@ const Index = () => {
                 </div>
 
                  <h3 className="text-xl font-semibold mb-3 mt-8 text-foreground">Context Precision</h3>
+                 <p className="text-muted-foreground -mt-4 font-semibold text-lg italic text-center py-4">
+                  "Is the retrieved information relevant to the query?"
+                </p>
                  <p className="text-muted-foreground -mt-4">
-                  Context Precision measures the signal-to-noise ratio of the retrieved context. It answers the question: "Is the retrieved information relevant to the query?" High precision means the context is focused and useful.
+                  Context Precision measures the signal-to-noise ratio of the retrieved context. High precision means the context is focused and useful.
                 </p>
                 <ContextPrecisionSimulator />
                 
                  <h3 className="text-xl font-semibold mb-3 mt-8 text-foreground">Context Recall</h3>
+                  <p className="text-muted-foreground -mt-4 font-semibold text-lg italic text-center py-4">
+                  "Did we retrieve all the relevant context needed to fully answer the query?"
+                </p>
                  <p className="text-muted-foreground -mt-4">
-                  Context Recall measures how well the retriever finds all the necessary information. It answers the question: "Did we retrieve all the relevant context needed to fully answer the query?" High recall means we aren't missing important facts.
+                  Context Recall measures how well the retriever finds all the necessary information. High recall means we aren't missing important facts.
                 </p>
                 <ContextRecallSimulator />
 
