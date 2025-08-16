@@ -16,7 +16,7 @@ const exampleQueries = [
 
 export const AgenticRAGSimulator = () => {
     const [selectedQuery, setSelectedQuery] = useState(exampleQueries[0].value);
-    const [agentState, setAgentState] = useState<'idle' | 'thinking' | 'retrieving' | 'reflecting' | 'verifying' | 'answering' | 'complete'>('idle');
+    const [agentState, setAgentState] = useState<'idle' | 'thinking' | 'retrieving' | 'reflecting' | 'verifying' | 'answering'>('idle');
     const [thought, setThought] = useState("");
     const [retrievedChunk, setRetrievedChunk] = useState("");
     const [verificationResult, setVerificationResult] = useState("");
@@ -40,7 +40,6 @@ export const AgenticRAGSimulator = () => {
                 setTimeout(() => {
                     setAgentState('answering');
                     setFinalAnswer("The capital of France is Paris.");
-                    setTimeout(() => setAgentState('complete'), 500);
                 }, 1500);
             } else if (type === 'search') {
                 setThought("The user is asking about a specific or recent topic. I should use the search tool to get the latest information.");
@@ -50,7 +49,6 @@ export const AgenticRAGSimulator = () => {
                     setTimeout(() => {
                         setAgentState('answering');
                         setFinalAnswer("Based on the search results, RAGAS is an evaluation framework for Retrieval-Augmented Generation systems.");
-                        setTimeout(() => setAgentState('complete'), 500);
                     }, 2000);
                 }, 1500);
             } else if (type === 'reflect') {
@@ -67,8 +65,7 @@ export const AgenticRAGSimulator = () => {
                             setTimeout(() => {
                                 setAgentState('answering');
                                 setFinalAnswer("Based on verified information, Ali Ghodsi is the CEO of Databricks.");
-                                // Do not transition to 'complete' to keep all cards visible
-                            }, 2000)
+                            }, 2000);
                         }, 2000);
                     }, 1500);
                 }, 1000);
@@ -85,7 +82,6 @@ export const AgenticRAGSimulator = () => {
         setSelectedQuery(exampleQueries[0].value);
     }
 
-    const isRunning = agentState !== 'idle' && (agentState !== 'answering' && agentState !== 'complete');
     const isSelfReflectQuery = selectedQuery === "Who is the CEO of Databricks?";
 
     return (
