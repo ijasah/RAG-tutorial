@@ -1,28 +1,27 @@
 // src/components/SimilarityMetricsSimulator.tsx
 "use client";
 import React, { useState, useMemo } from 'react';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Calculator, Orbit, Info } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Calculator, Orbit } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 
 type Vector = { x: number; y: number; label: string; };
 
 const documents: Vector[] = [
     { x: 4, y: 3, label: 'RAG is a technique.' },
-    { x: 8, y: 6, label: 'RAG is a powerful technique for LLMs.' }, 
+    { x: 8, y: 6, label: 'RAG is a powerful technique for LLMs.' },
     { x: 3.5, y: 4, label: 'Chunking splits text.' },
     { x: 1, y: 5, label: 'The sky is blue.' },
 ];
 
 const queryVector: Vector = { x: 5, y: 3.75, label: 'What is RAG?' };
 
-const width = 400;
-const height = 300;
-const scale = 25; 
-const origin = { x: 40, y: height - 60 };
+const width = 500;
+const height = 450;
+const scale = 35;
+const origin = { x: 50, y: height - 80 };
 
 const getCoords = (vec: Vector) => ({
     x: origin.x + vec.x * scale,
@@ -36,10 +35,10 @@ const cosineSimilarity = (v1: Vector, v2: Vector) => dotProduct(v1, v2) / (magni
 const euclideanDistance = (v1: Vector, v2: Vector) => Math.sqrt(Math.pow(v1.x - v2.x, 2) + Math.pow(v1.y - v2.y, 2));
 
 const MetricDisplay = ({ title, formula, value, children }: { title: string, formula: string, value: string, children: React.ReactNode }) => (
-    <div className="flex flex-col items-center space-y-3">
+    <div className="flex flex-col items-center space-y-3 p-4 border rounded-lg bg-muted/20 h-full">
         <h3 className="font-semibold text-lg text-primary">{title}</h3>
-        <p className="font-mono text-xs text-muted-foreground">{formula}</p>
-        <div className="relative w-full h-[300px] border rounded-lg bg-muted/30 overflow-hidden">
+        <p className="font-mono text-xs text-muted-foreground h-8">{formula}</p>
+        <div className="relative w-full h-[300px] rounded-lg bg-muted/30 overflow-hidden">
             {children}
         </div>
         <div className="text-center">
@@ -50,6 +49,86 @@ const MetricDisplay = ({ title, formula, value, children }: { title: string, for
 );
 
 
+const VectorVisualization = ({ selectedVec, metric }: { selectedVec: Vector, metric: 'cosine' | 'euclidean' }) => {
+    
+    const cosSim = cosineSimilarity(queryVector, selectedVec);
+    const queryAngle = Math.atan2(queryVector.y, queryVector.x);
+    const selectedAngle = Math.atan2(selectedVec.y, selectedVec.x);
+
+    const angleDiff = Math.acos(cosSim);
+    const arcRadius = 40;
+
+    const startAngle = Math.min(queryAngle, selectedAngle);
+    const endAngle = Math.max(queryAngle, selectedAngle);
+    
+    const startPoint = {
+        x: origin.x + arcRadius * Math.cos(startAngle),
+        y: origin.y - arcRadius * Math.sin(startAngle)
+    };
+    const endPoint = {
+        x: origin.x + arcRadius * Math.cos(endAngle),
+        y: origin.y - arcRadius * Math.sin(endAngle)
+    };
+
+    const largeArcFlag = angleDiff > Math.PI ? 1 : 0;
+    
+    const arcPath = `M ${startPoint.x} ${startPoint.y} A ${arcRadius} ${arcRadius} 0 ${largeArcFlag} 1 ${endPoint.x} ${endPoint.y}`;
+
+    return (
+         <svg viewBox={`0 0 ${width} ${height - 50}`} className="w-full h-full" style={{ fontSize: '12px' }}>
+            {/* Grid lines and axes */}
+            <path d={`M ${origin.x} 0 V ${height} M 0 ${origin.y} H ${width}`} stroke="hsl(var(--border))" strokeWidth="0.5" />
+            
+            {/* Query Vector */}
+            <g>
+               <line x1={origin.x} y1={origin.y} x2={getCoords(queryVector).x} y2={getCoords(queryVector).y} stroke="hsl(var(--primary))" strokeWidth="2.5" />
+               <circle cx={getCoords(queryVector).x} cy={getCoords(queryVector).y} r="4" fill="hsl(var(--primary))" />
+               <text x={getCoords(queryVector).x + 5} y={getCoords(queryVector).y - 10} fontWeight="bold" fill="hsl(var(--primary))">{queryVector.label}</text>
+            </g>
+
+            {/* Selected Vector */}
+            <g>
+               <line x1={origin.x} y1={origin.y} x2={getCoords(selectedVec).x} y2={getCoords(selectedVec).y} stroke="hsl(var(--foreground))" strokeWidth="2" opacity="0.8" />
+                <circle cx={getCoords(selectedVec).x} cy={getCoords(selectedVec).y} r="4" fill="hsl(var(--foreground))"  opacity="0.8"/>
+               <text x={getCoords(selectedVec).x + 5} y={getCoords(selectedVec).y + 5} fontWeight="bold" fill="hsl(var(--foreground))" opacity="0.8" >{selectedVec.label}</text>
+            </g>
+
+            <AnimatePresence>
+            {metric === 'cosine' && (
+                <motion.path
+                    key={`arc-${selectedVec.label}`}
+                    d={arcPath}
+                    stroke="hsl(var(--primary))"
+                    strokeWidth="2"
+                    fill="hsla(var(--primary), 0.1)"
+                    strokeDasharray="3 3"
+                    initial={{ pathLength: 0, opacity: 0 }}
+                    animate={{ pathLength: 1, opacity: 1 }}
+                    exit={{ pathLength: 0, opacity: 0 }}
+                    transition={{duration: 0.5}}
+                />
+            )}
+            {metric === 'euclidean' && (
+                <motion.line
+                    key={`euclidean-${selectedVec.label}`}
+                    x1={getCoords(queryVector).x}
+                    y1={getCoords(queryVector).y}
+                    x2={getCoords(selectedVec).x}
+                    y2={getCoords(selectedVec).y}
+                    stroke="hsl(var(--primary))"
+                    strokeWidth="2"
+                    strokeDasharray="4 4"
+                    initial={{ pathLength: 0, opacity: 0 }}
+                    animate={{ pathLength: 1, opacity: 1 }}
+                    exit={{ pathLength: 0, opacity: 0 }}
+                    transition={{duration: 0.5}}
+                />
+            )}
+            </AnimatePresence>
+        </svg>
+    );
+}
+
 export const SimilarityMetricsSimulator = () => {
     const [selectedIndex, setSelectedIndex] = useState(0);
 
@@ -57,61 +136,6 @@ export const SimilarityMetricsSimulator = () => {
     
     const cosSim = useMemo(() => cosineSimilarity(queryVector, selectedVector), [selectedVector]);
     const eucDist = useMemo(() => euclideanDistance(queryVector, selectedVector), [selectedVector]);
-
-    const VectorVisualization = ({ selectedVec, metric }: { selectedVec: Vector, metric: 'cosine' | 'euclidean' }) => (
-        <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-full" style={{ fontSize: '10px' }}>
-            {/* Grid lines and axes */}
-            <path d={`M ${origin.x} 0 V ${height} M 0 ${origin.y} H ${width}`} stroke="hsl(var(--border))" strokeWidth="0.5" />
-
-            {/* Other Vectors (de-emphasized) */}
-            {documents.map((v, i) => i !== selectedIndex && (
-                <g key={`other-${i}`} opacity="0.1">
-                    <line x1={origin.x} y1={origin.y} x2={getCoords(v).x} y2={getCoords(v).y} stroke="hsl(var(--foreground))" strokeWidth="1.5" />
-                </g>
-            ))}
-            
-            {/* Query Vector */}
-            <g>
-               <line x1={origin.x} y1={origin.y} x2={getCoords(queryVector).x} y2={getCoords(queryVector).y} stroke="hsl(var(--primary))" strokeWidth="2" />
-               <circle cx={getCoords(queryVector).x} cy={getCoords(queryVector).y} r="3" fill="hsl(var(--primary))" />
-               <text x={getCoords(queryVector).x - 20} y={getCoords(queryVector).y - 10} fontWeight="bold" fill="hsl(var(--primary))">Query</text>
-            </g>
-
-            {/* Selected Vector */}
-            <g>
-               <line x1={origin.x} y1={origin.y} x2={getCoords(selectedVec).x} y2={getCoords(selectedVec).y} stroke="hsl(var(--foreground))" strokeWidth="2.5" />
-                <circle cx={getCoords(selectedVec).x} cy={getCoords(selectedVec).y} r="3" fill="hsl(var(--foreground))" />
-               <text x={getCoords(selectedVec).x + 5} y={getCoords(selectedVec).y + 3} fontWeight="bold" fill="hsl(var(--foreground))" >Doc</text>
-            </g>
-
-            {metric === 'cosine' && (
-                <motion.path
-                    key={`arc-${selectedIndex}`}
-                    d={`M ${origin.x + 40} ${origin.y} A 40 40 0 0 1 ${origin.x + 40 * Math.cos(Math.acos(cosSim))} ${origin.y - 40 * Math.sin(Math.acos(cosSim))}`}
-                    stroke="hsl(var(--primary))"
-                    strokeWidth="1.5"
-                    fill="hsla(var(--primary), 0.1)"
-                    strokeDasharray="3 3"
-                    initial={{ pathLength: 0 }}
-                    animate={{ pathLength: 1 }}
-                />
-            )}
-            {metric === 'euclidean' && (
-                <motion.line
-                    key={`euclidean-${selectedIndex}`}
-                    x1={getCoords(queryVector).x}
-                    y1={getCoords(queryVector).y}
-                    x2={getCoords(selectedVec).x}
-                    y2={getCoords(selectedVec).y}
-                    stroke="hsl(var(--primary))"
-                    strokeWidth="1.5"
-                    strokeDasharray="4 4"
-                    initial={{ pathLength: 0 }}
-                    animate={{ pathLength: 1 }}
-                />
-            )}
-        </svg>
-    );
 
     return (
         <Card className="bg-card/50 mt-6">
@@ -122,19 +146,18 @@ export const SimilarityMetricsSimulator = () => {
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-                 {/* Controls */}
                 <div className="p-4 rounded-lg bg-muted/40">
                     <p className="text-sm font-semibold mb-2 text-center">Compare Query: "{queryVector.label}"</p>
                     <div className="flex gap-2 flex-wrap justify-center">
                         {documents.map((v, i) => (
-                            <Button key={i} onClick={() => setSelectedIndex(i)} variant={selectedIndex === i ? 'default' : 'outline'} size="sm" className="text-xs h-auto py-1.5">
+                            <Button key={i} onClick={() => setSelectedIndex(i)} variant={selectedIndex === i ? 'default' : 'outline'} size="sm" className="text-xs h-auto py-1.5 px-3">
                                 "{v.label}"
                             </Button>
                         ))}
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
                     <MetricDisplay title="Cosine Similarity" formula="cos(θ) = (A · B) / (||A|| * ||B||)" value={cosSim.toFixed(3)}>
                         <VectorVisualization selectedVec={selectedVector} metric="cosine" />
                     </MetricDisplay>
@@ -145,17 +168,16 @@ export const SimilarityMetricsSimulator = () => {
                  
                 <Alert className="mt-8 border-primary/30 bg-primary/10">
                     <Orbit className="h-4 w-4" />
-                    <AlertTitle>Why Cosine Similarity is Preferred</AlertTitle>
-                    <AlertDescription className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 mt-2">
+                    <AlertTitle>Why Cosine Similarity is Preferred for RAG</AlertTitle>
+                     <AlertDescription className="mt-2">
                        <p>
-                           <strong>Focuses on Direction:</strong> LLM embeddings encode meaning in a vector's <span className="text-primary font-semibold">direction</span>. Cosine similarity excels by only measuring the angle between vectors, ignoring magnitude. This is why the two "RAG" documents have a near-perfect score of ~1.0—they point in the same direction.
+                           In semantic search, we care more about the <strong>topic</strong> (the vector's direction) than the document's length (the vector's magnitude). LLM embeddings encode meaning in <strong>direction</strong>.
                        </p>
-                       <p>
-                           <strong>Ignores Misleading Magnitude:</strong> Euclidean distance measures the literal distance between vector endpoints. A longer document on the same topic will have a different magnitude, resulting in a larger (worse) Euclidean distance, even though the meaning is the same. This makes it less reliable for semantic tasks.
+                       <p className="mt-2">
+                           Notice that the two "RAG" documents have a very high Cosine Similarity score (~1.0) because their vectors point in almost the same direction, even though one sentence is much longer. Euclidean Distance gives them very different scores because it is misled by the difference in magnitude (length). This <strong>scale-invariance</strong> is crucial for finding the best context.
                        </p>
                     </AlertDescription>
                 </Alert>
-
             </CardContent>
         </Card>
     );
