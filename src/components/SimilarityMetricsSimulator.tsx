@@ -55,7 +55,7 @@ const VectorVisualization = ({ selectedVec, metric }: { selectedVec: Vector, met
     const queryAngle = Math.atan2(queryVector.y, queryVector.x);
     const selectedAngle = Math.atan2(selectedVec.y, selectedVec.x);
 
-    const angleDiff = Math.acos(cosSim);
+    const angleDiff = Math.abs(queryAngle - selectedAngle);
     const arcRadius = 40;
 
     const startAngle = Math.min(queryAngle, selectedAngle);
@@ -72,7 +72,18 @@ const VectorVisualization = ({ selectedVec, metric }: { selectedVec: Vector, met
 
     const largeArcFlag = angleDiff > Math.PI ? 1 : 0;
     
-    const arcPath = `M ${startPoint.x} ${startPoint.y} A ${arcRadius} ${arcRadius} 0 ${largeArcFlag} 0 ${endPoint.x} ${endPoint.y}`;
+    // Correct way to draw an arc between two angles
+    const startPointArc = {
+        x: origin.x + arcRadius * Math.cos(queryAngle),
+        y: origin.y - arcRadius * Math.sin(queryAngle)
+    }
+    const endPointArc = {
+        x: origin.x + arcRadius * Math.cos(selectedAngle),
+        y: origin.y - arcRadius * Math.sin(selectedAngle)
+    }
+
+    const arcPath = `M ${startPointArc.x} ${startPointArc.y} A ${arcRadius} ${arcRadius} 0 ${largeArcFlag} ${queryAngle > selectedAngle ? 1 : 0} ${endPointArc.x} ${endPointArc.y}`;
+
 
     return (
          <svg viewBox={`0 0 ${width} ${height - 50}`} className="w-full h-full" style={{ fontSize: '12px' }}>
@@ -97,9 +108,9 @@ const VectorVisualization = ({ selectedVec, metric }: { selectedVec: Vector, met
                 <motion.path
                     key={`arc-${selectedVec.label}`}
                     d={arcPath}
-                    stroke="hsl(var(--primary))"
+                    stroke="hsl(var(--destructive))"
                     strokeWidth="2"
-                    fill="hsla(var(--primary), 0.1)"
+                    fill="hsla(var(--destructive), 0.1)"
                     strokeDasharray="3 3"
                     initial={{ pathLength: 0, opacity: 0 }}
                     animate={{ pathLength: 1, opacity: 1 }}
@@ -114,7 +125,7 @@ const VectorVisualization = ({ selectedVec, metric }: { selectedVec: Vector, met
                     y1={getCoords(queryVector).y}
                     x2={getCoords(selectedVec).x}
                     y2={getCoords(selectedVec).y}
-                    stroke="hsl(var(--primary))"
+                    stroke="hsl(var(--destructive))"
                     strokeWidth="2"
                     strokeDasharray="4 4"
                     initial={{ pathLength: 0, opacity: 0 }}
