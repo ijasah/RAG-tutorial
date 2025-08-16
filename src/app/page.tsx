@@ -141,7 +141,7 @@ const Index = () => {
                   Retrieval is a crucial part of the RAG framework because it helps the model fetch relevant information from external sources to augment its generated content. By combining retrieval with generation, we can make LLMs more accurate and capable of answering domain-specific questions by pulling in specific knowledge.
                 </p>
                 
-                <Card>
+                <Card className="transition-all hover:shadow-lg hover:-translate-y-1">
                   <CardHeader>
                     <CardTitle>What is Retrieval?</CardTitle>
                   </CardHeader>
@@ -157,7 +157,7 @@ const Index = () => {
                 <div>
                   <h3 className="text-xl font-semibold mb-3 text-foreground">Advantages and Challenges</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <Card className="border-green-500/30 bg-green-500/10">
+                    <Card className="border-green-500/30 bg-green-500/10 transition-all hover:shadow-lg hover:-translate-y-1">
                       <CardHeader>
                         <CardTitle className="text-green-400">Advantages</CardTitle>
                       </CardHeader>
@@ -169,7 +169,7 @@ const Index = () => {
                         </ul>
                       </CardContent>
                     </Card>
-                    <Card className="border-destructive/30 bg-destructive/10">
+                    <Card className="border-destructive/30 bg-destructive/10 transition-all hover:shadow-lg hover:-translate-y-1">
                       <CardHeader>
                         <CardTitle className="text-destructive">Challenges</CardTitle>
                       </CardHeader>
@@ -191,7 +191,7 @@ const Index = () => {
                  <p className="text-muted-foreground mb-4">
                     Vector databases are specialized databases designed to store and manage high-dimensional vectors (embeddings) efficiently. These databases make it easier to perform similarity searches and retrieve relevant information for a given query.
                   </p>
-                  <Card className="overflow-hidden" data-ai-hint="vector database">
+                  <Card className="overflow-hidden transition-all hover:shadow-lg hover:-translate-y-1" data-ai-hint="vector database">
                     <Image src="https://bigdataanalyticsnews.com/wp-content/uploads/2024/04/top-vector-database.jpg" alt="Top Vector Databases" width={800} height={450} className="w-full object-cover" />
                   </Card>
                   <VectorDBAnimation />
@@ -250,7 +250,7 @@ const Index = () => {
                     Before diving into the metrics, let's define the core components we'll be evaluating.
                   </p>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Card>
+                    <Card className="transition-all hover:shadow-lg hover:-translate-y-1">
                       <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-base"><FileQuestion className="text-primary"/>Query</CardTitle>
                       </CardHeader>
@@ -258,7 +258,7 @@ const Index = () => {
                         <p className="text-sm text-muted-foreground">The user's original question or prompt.</p>
                       </CardContent>
                     </Card>
-                     <Card>
+                     <Card className="transition-all hover:shadow-lg hover:-translate-y-1">
                       <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-base"><Search className="text-primary"/>Retrieved Context</CardTitle>
                       </CardHeader>
@@ -266,7 +266,7 @@ const Index = () => {
                          <p className="text-sm text-muted-foreground">The information chunks pulled from the vector database based on the query.</p>
                       </CardContent>
                     </Card>
-                     <Card>
+                     <Card className="transition-all hover:shadow-lg hover:-translate-y-1">
                       <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-base"><MessageSquare className="text-primary"/>Generated Answer</CardTitle>
                       </CardHeader>
@@ -274,7 +274,7 @@ const Index = () => {
                          <p className="text-sm text-muted-foreground">The final response produced by the LLM after being augmented with the context.</p>
                       </CardContent>
                     </Card>
-                     <Card>
+                     <Card className="transition-all hover:shadow-lg hover:-translate-y-1">
                       <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-base"><ClipboardCheck className="text-primary"/>Ground Truth</CardTitle>
                       </CardHeader>

@@ -125,7 +125,7 @@ export const RAGFlowDiagram = () => {
     }
 
   return (
-    <Card className="bg-card/50">
+    <Card className="bg-card/50 transition-all hover:shadow-lg hover:-translate-y-1">
       <CardHeader>
         <CardTitle>Interactive RAG Simulation</CardTitle>
         <CardDescription>

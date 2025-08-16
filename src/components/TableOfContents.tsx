@@ -35,9 +35,9 @@ export const TableOfContents = ({ activeSectionId, onLinkClick }: TableOfContent
                     onLinkClick(section.id);
                 }}
                 className={cn(
-                  'flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors',
+                  'flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5',
                   activeSectionId === section.id
-                    ? 'bg-primary/10 text-primary'
+                    ? 'bg-primary/10 text-primary shadow-md'
                     : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
                 )}
               >

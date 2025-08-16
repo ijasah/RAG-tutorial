@@ -92,7 +92,7 @@ export const ChunkingSimulator = () => {
   const colors = ["bg-sky-500/20", "bg-emerald-500/20", "bg-amber-500/20", "bg-rose-500/20", "bg-indigo-500/20"];
 
   return (
-    <Card className="bg-card/50">
+    <Card className="bg-card/50 transition-all hover:shadow-lg hover:-translate-y-1">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Puzzle />
