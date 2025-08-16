@@ -92,16 +92,16 @@ const SimilarityMetricsSimulator = () => {
                          <Alert className="border-primary/30 bg-primary/10">
                             <Info className="h-4 w-4" />
                             <AlertTitle>Why is Cosine Similarity Preferred?</AlertTitle>
-                            <AlertDescription className="text-xs space-y-2">
+                            <AlertDescription className="text-xs space-y-2 mt-2">
                                 <p>In text analysis, we care more about the **topic** (the vector's direction) than document length (the vector's magnitude). LLM embeddings encode semantic meaning in **direction**.</p>
                                 <p>Notice that the two "RAG" documents have a perfect cosine score of **1.000**. Their directions are identical, even though one is longer. Euclidean distance, however, gives them very different scores because it's sensitive to magnitude (length), which can be misleading.</p>
                                 <p>This **scale-invariance** is crucial in high-dimensional spaces, where angles remain meaningful while distances become less interpretable.</p>
                             </AlertDescription>
                         </Alert>
-                        <div className="text-center font-bold text-xl">{result}</div>
+                        <div className="text-center font-bold text-xl pt-2">{result}</div>
                     </div>
                     <div className="relative border rounded-lg bg-muted/30" style={{ width, height }}>
-                        <svg width={width} height={height} className="text-xs">
+                        <svg width={width} height={height} className="text-[10px]">
                             {/* Grid lines */}
                             <path d={`M ${origin.x} 0 V ${height} M 0 ${origin.y} H ${width}`} stroke="hsl(var(--border))" strokeWidth="1" />
                             
@@ -125,20 +125,21 @@ const SimilarityMetricsSimulator = () => {
                             {/* Angle Arc for Cosine */}
                             {metric === 'cosine' && (
                                 <motion.path
-                                    d={`M ${origin.x + 30} ${origin.y} A 30 30 0 0 1 ${origin.x + 30 * Math.cos(Math.acos(cosSim))} ${origin.y - 30 * Math.sin(Math.acos(cosSim))}`}
+                                    key={`arc-${selectedIndex}`}
+                                    d={`M ${origin.x + 40} ${origin.y} A 40 40 0 0 1 ${origin.x + 40 * Math.cos(Math.acos(cosSim))} ${origin.y - 40 * Math.sin(Math.acos(cosSim))}`}
                                     stroke="hsl(var(--primary))"
                                     strokeWidth="1.5"
                                     fill="none"
                                     strokeDasharray="3 3"
                                     initial={{ pathLength: 0 }}
                                     animate={{ pathLength: 1 }}
-                                    key={selectedIndex}
                                 />
                             )}
 
                              {/* Line for Euclidean */}
                              {metric === 'euclidean' && (
                                 <motion.line
+                                    key={`euclidean-${selectedIndex}`}
                                     x1={getCoords(queryVector).x}
                                     y1={getCoords(queryVector).y}
                                     x2={getCoords(selectedVector).x}
@@ -148,7 +149,6 @@ const SimilarityMetricsSimulator = () => {
                                     strokeDasharray="4 4"
                                     initial={{ pathLength: 0 }}
                                     animate={{ pathLength: 1 }}
-                                    key={selectedIndex + 'euclidean'}
                                 />
                             )}
                         </svg>
