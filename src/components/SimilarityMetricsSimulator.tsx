@@ -12,7 +12,7 @@ type Vector = { x: number; y: number; label: string; };
 
 const vectors: Vector[] = [
     { x: 4, y: 3, label: 'RAG is a technique.' },
-    { x: 8, y: 6, label: 'RAG is a powerful technique for LLMs.' }, // Same direction, larger magnitude
+    { x: 8, y: 6, label: 'RAG is a powerful technique for LLMs.' }, 
     { x: 3.5, y: 4, label: 'Chunking splits text.' },
     { x: 1, y: 5, label: 'The sky is blue.' },
 ];
