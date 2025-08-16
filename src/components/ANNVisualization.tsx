@@ -1,6 +1,6 @@
 // src/components/ANNVisualization.tsx
 "use client";
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -19,8 +19,13 @@ const ANNVisualization = () => {
     const width = 500;
     const height = 300;
     const [step, setStep] = useState(0);
+    const [points, setPoints] = useState<{x: number, y: number}[]>([]);
 
-    const points = useMemo(() => generatePoints(100, width, height), []);
+    useEffect(() => {
+        setPoints(generatePoints(100, width, height));
+    }, [width, height]);
+
+
     const queryPoint = useMemo(() => ({ x: width / 2, y: height / 2 }), [width, height]);
 
     // Find true nearest neighbors for comparison
@@ -37,12 +42,16 @@ const ANNVisualization = () => {
     const trueNeighbors = useMemo(() => getNeighbors(queryPoint, 5), [points, queryPoint]);
     // Simulate ANN by picking a random subset + some true neighbors
     const annNeighbors = useMemo(() => {
+        if (points.length === 0) return [];
         const ann = new Set([...trueNeighbors.slice(0,3), ...getNeighbors(points[10], 2)]);
         return Array.from(ann);
     }, [trueNeighbors, points]);
 
 
-    const reset = () => setStep(0);
+    const reset = () => {
+        setStep(0);
+        setPoints(generatePoints(100, width, height));
+    };
     const nextStep = () => setStep(s => s + 1);
 
     const getStepDescription = () => {
