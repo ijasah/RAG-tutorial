@@ -81,8 +81,8 @@ export function ANNVisualization() {
                 { source: l1_neighbor_1, target: l1_neighbor_2 },
                 { source: l1_neighbor_2, target: layer1Candidates[45] },
             ],
-            layer0Connections: points.flatMap((p, i) => {
-                const close = points.slice(i + 1).filter(other => getEuclideanDistance(p, other) < 50).slice(0,1);
+            layer0Connections: points.flatMap((p) => {
+                const close = points.filter(other => p.id !== other.id && getEuclideanDistance(p, other) < 50).slice(0,1);
                 return close.map(c => ({ source: p, target: c }));
             }),
             path,
@@ -113,8 +113,8 @@ export function ANNVisualization() {
             "Ready to see how ANN works? Click 'Start' to begin.",
             "This is our dataset of 50 points. A brute-force search would have to check every single one against a query.",
             "First, ANN builds an intelligent graph. An entry point (blue) is chosen to start all searches.",
-            "Layer 1 (the 'highway') is built. These are long-range links that connect distant points, allowing a search to quickly jump to the right region of the graph.",
-            "Layer 0 (the 'local streets') is built. These are short-range links connecting nearby points, used for fine-grained searching within a region.",
+            "Layer 1, the 'highway', is built. These are long-range links that connect distant points, allowing a search to quickly jump to the right region of the graph.",
+            "Layer 0, the 'local streets', is built. These are short-range links connecting nearby points, used for fine-grained searching within a region.",
             "Now, a query (purple) enters. Instead of checking all points, the search starts at the graph's entry point.",
             "The search follows the fast 'highway' links to traverse to the most promising region of the graph.",
             "Once in the right neighborhood, the search switches to the dense local links to find the exact nearest neighbors.",
@@ -159,12 +159,12 @@ export function ANNVisualization() {
                                         <AnimatePresence>
                                         {/* Layer 0 Connections */}
                                         {step >= 4 && layer0Connections.map((conn, i) => (
-                                            <motion.line key={`l0-${i}`} x1={conn.source.x} y1={conn.source.y} x2={conn.target.x} y2={conn.target.y} stroke="hsl(var(--border))" strokeWidth="0.5" initial={{opacity:0}} animate={{opacity:1}} transition={{delay: i * 0.01}}/>
+                                            <motion.line key={`l0-${conn.source.id}-${conn.target.id}`} x1={conn.source.x} y1={conn.source.y} x2={conn.target.x} y2={conn.target.y} stroke="hsl(var(--border))" strokeWidth="0.5" initial={{opacity:0}} animate={{opacity:1}} transition={{delay: i * 0.01}}/>
                                         ))}
 
                                         {/* Layer 1 Connections */}
                                         {step >= 3 && layer1Connections.map((conn, i) => (
-                                            <motion.line key={`l1-${i}`} x1={conn.source.x} y1={conn.source.y} x2={conn.target.x} y2={conn.target.y} stroke="hsl(var(--primary) / 0.5)" strokeWidth="1.5" initial={{pathLength:0}} animate={{pathLength:1}} transition={{delay: i * 0.2}}/>
+                                            <motion.line key={`l1-${conn.source.id}-${conn.target.id}`} x1={conn.source.x} y1={conn.source.y} x2={conn.target.x} y2={conn.target.y} stroke="hsl(var(--primary) / 0.5)" strokeWidth="1.5" initial={{pathLength:0}} animate={{pathLength:1}} transition={{delay: i * 0.2}}/>
                                         ))}
                                         
                                         {/* Data Points */}
@@ -180,14 +180,14 @@ export function ANNVisualization() {
 
                                         {/* Search Path */}
                                         {step >= 6 && path.map((p, i) => i > 0 && (
-                                            <motion.line key={`path-${i}`} x1={path[i-1].x} y1={path[i-1].y} x2={p.x} y2={p.y} stroke="hsl(var(--primary))" strokeWidth="2.5" strokeDasharray="4 4" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ delay: i * 0.5 }}/>
+                                            <motion.line key={`path-${path[i-1].id}-${p.id}`} x1={path[i-1].x} y1={path[i-1].y} x2={p.x} y2={p.y} stroke="hsl(var(--primary))" strokeWidth="2.5" strokeDasharray="4 4" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ delay: i * 0.5 }}/>
                                         ))}
 
                                         {/* Final Neighbors */}
-                                        {step >= 8 && neighbors.map((p, i) => (
-                                           <motion.g key={`neighbor-${i}`}>
-                                                <motion.line x1={queryPoint.x} y1={queryPoint.y} x2={p.x} y2={p.y} stroke="hsl(var(--primary))" strokeWidth={1} initial={{pathLength:0}} animate={{pathLength:1}} transition={{delay:0.5 + i*0.1}} />
-                                                <motion.circle cx={p.x} cy={p.y} r={5} className="fill-primary/50 stroke-primary" strokeWidth={2} initial={{scale:0}} animate={{scale:1}} transition={{delay:0.5 + i*0.1}}/>
+                                        {step >= 8 && neighbors.map((p) => (
+                                           <motion.g key={`neighbor-${p.id}`}>
+                                                <motion.line x1={queryPoint.x} y1={queryPoint.y} x2={p.x} y2={p.y} stroke="hsl(var(--primary))" strokeWidth={1} initial={{pathLength:0}} animate={{pathLength:1}} transition={{delay:0.5}} />
+                                                <motion.circle cx={p.x} cy={p.y} r={5} className="fill-primary/50 stroke-primary" strokeWidth={2} initial={{scale:0}} animate={{scale:1}} transition={{delay:0.5}}/>
                                            </motion.g>
                                         ))}
                                         </AnimatePresence>
