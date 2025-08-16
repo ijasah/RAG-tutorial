@@ -14,9 +14,9 @@ const exampleQueries = [
     { value: "Who is the CEO of Databricks?", type: 'reflect', label: "Who is the CEO of Databricks?" },
 ];
 
-const AgenticRAGSimulator = () => {
+export const AgenticRAGSimulator = () => {
     const [selectedQuery, setSelectedQuery] = useState(exampleQueries[0].value);
-    const [agentState, setAgentState] = useState<'idle' | 'thinking' | 'retrieving' | 'reflecting' | 'verifying' | 'answering'>('idle');
+    const [agentState, setAgentState] = useState<'idle' | 'thinking' | 'retrieving' | 'reflecting' | 'verifying' | 'answering' | 'complete'>('idle');
     const [thought, setThought] = useState("");
     const [retrievedChunk, setRetrievedChunk] = useState("");
     const [verificationResult, setVerificationResult] = useState("");
@@ -32,7 +32,7 @@ const AgenticRAGSimulator = () => {
         const queryData = exampleQueries.find(q => q.value === selectedQuery);
         if (!queryData) return;
 
-        const { type, value: query } = queryData;
+        const { type } = queryData;
 
         setTimeout(() => {
             if (type === 'internal') {
@@ -40,6 +40,7 @@ const AgenticRAGSimulator = () => {
                 setTimeout(() => {
                     setAgentState('answering');
                     setFinalAnswer("The capital of France is Paris.");
+                    setTimeout(() => setAgentState('complete'), 500);
                 }, 1500);
             } else if (type === 'search') {
                 setThought("The user is asking about a specific or recent topic. I should use the search tool to get the latest information.");
@@ -49,6 +50,7 @@ const AgenticRAGSimulator = () => {
                     setTimeout(() => {
                         setAgentState('answering');
                         setFinalAnswer("Based on the search results, RAGAS is an evaluation framework for Retrieval-Augmented Generation systems.");
+                        setTimeout(() => setAgentState('complete'), 500);
                     }, 2000);
                 }, 1500);
             } else if (type === 'reflect') {
@@ -65,6 +67,7 @@ const AgenticRAGSimulator = () => {
                             setTimeout(() => {
                                 setAgentState('answering');
                                 setFinalAnswer("Based on verified information, Ali Ghodsi is the CEO of Databricks.");
+                                setTimeout(() => setAgentState('complete'), 500);
                             }, 2000)
                         }, 2000);
                     }, 1500);
@@ -82,6 +85,8 @@ const AgenticRAGSimulator = () => {
         setSelectedQuery(exampleQueries[0].value);
     }
 
+    const isRunning = agentState !== 'idle' && agentState !== 'complete';
+
     return (
         <Card className="bg-card/50">
             <CardHeader>
@@ -94,7 +99,7 @@ const AgenticRAGSimulator = () => {
             </CardHeader>
             <CardContent className="space-y-6">
                 <div className="flex gap-2">
-                     <Select onValueChange={setSelectedQuery} defaultValue={selectedQuery} disabled={agentState !== 'idle'}>
+                     <Select onValueChange={setSelectedQuery} defaultValue={selectedQuery} disabled={isRunning}>
                         <SelectTrigger>
                             <SelectValue placeholder="Select a question..." />
                         </SelectTrigger>
@@ -104,52 +109,58 @@ const AgenticRAGSimulator = () => {
                             ))}
                         </SelectContent>
                     </Select>
-                    <Button onClick={agentState === 'idle' ? handleSimulate : reset} className="min-w-[120px]">
-                        {agentState === 'idle' ? <><Play className="mr-2" />Simulate</> : 'Reset'}
+                    <Button onClick={!isRunning ? handleSimulate : reset} className="min-w-[120px]">
+                        {!isRunning ? <><Play className="mr-2" />Simulate</> : 'Reset'}
                     </Button>
                 </div>
 
-                <AnimatePresence>
-                    <div className="space-y-4 min-h-[350px]">
-                        {agentState !== 'idle' && (
+                <div className="space-y-4 min-h-[350px]">
+                    <AnimatePresence>
+                        {thought && (
                             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-4 bg-muted/50 rounded-lg border">
                                 <h4 className="font-semibold text-sm mb-2 flex items-center gap-2"><Sparkles className="text-primary" /> Agent's Thought Process</h4>
                                 <p className="text-sm text-muted-foreground italic">{thought}</p>
                             </motion.div>
                         )}
+                    </AnimatePresence>
 
-                        {retrievedChunk.length > 0 && (
+                    <AnimatePresence>
+                        {retrievedChunk && (
                             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-4 bg-purple-500/10 rounded-lg border border-purple-500/30">
                                 <h4 className="font-semibold text-sm mb-2 flex items-center gap-2"><Database className="text-purple-400" /> Retrieved from Knowledge Base</h4>
                                 <p className="text-sm text-muted-foreground">{retrievedChunk}</p>
                             </motion.div>
                         )}
-                        
+                    </AnimatePresence>
+                    
+                    <AnimatePresence>
                         {agentState === 'reflecting' && (
                              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-4 bg-amber-500/10 rounded-lg border border-amber-500/30 flex items-center gap-2">
                                 <Wand2 className="w-5 h-5 text-amber-400" />
                                 <p className="text-sm text-amber-300">Reflecting on retrieved information...</p>
                             </motion.div>
                         )}
-
-                        {verificationResult.length > 0 && (
+                    </AnimatePresence>
+                    
+                    <AnimatePresence>
+                        {verificationResult && (
                             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-4 bg-blue-500/10 rounded-lg border border-blue-500/30">
                                 <h4 className="font-semibold text-sm mb-2 flex items-center gap-2"><Search className="text-blue-400" /> Verification Result</h4>
                                 <p className="text-sm text-muted-foreground">{verificationResult}</p>
                             </motion.div>
                         )}
+                    </AnimatePresence>
 
-                         {finalAnswer.length > 0 && (
+                    <AnimatePresence>
+                         {finalAnswer && (
                             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-4 bg-primary/10 rounded-lg border border-primary/30">
                                 <h4 className="font-semibold text-sm mb-2 flex items-center gap-2"><MessageSquare className="text-primary" /> Final Answer</h4>
                                 <p className="text-sm text-foreground">{finalAnswer}</p>
                             </motion.div>
                         )}
-                    </div>
-                </AnimatePresence>
+                    </AnimatePresence>
+                </div>
             </CardContent>
         </Card>
     );
 };
-
-export { AgenticRAGSimulator };
