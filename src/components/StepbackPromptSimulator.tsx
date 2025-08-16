@@ -119,7 +119,7 @@ export const StepbackPromptSimulator = () => {
                                 <p className="p-2 bg-background rounded border">{finalAnswer}</p>
                             </FlowNode>
                             
-                            <Arrow step={5} currentStep={step} className="rotate-180" />
+                            <Arrow step={4} currentStep={step} />
 
                             <FlowNode icon={<GitMerge />} title="4. Final Context" status={getStatus(4)} step={4} currentStep={step}>
                                 <p className="font-semibold text-foreground">Original Query:</p>
@@ -128,7 +128,7 @@ export const StepbackPromptSimulator = () => {
                                 <p className="p-2 bg-background rounded border">{stepbackAnswer}</p>
                             </FlowNode>
 
-                            <Arrow step={4} currentStep={step} className="rotate-180" />
+                            <Arrow step={3} currentStep={step} />
 
                             <FlowNode icon={<MessageSquare />} title="3. Step-back Answer" status={getStatus(3)} step={3} currentStep={step}>
                                 <p className="p-2 bg-background rounded border">{stepbackAnswer}</p>
