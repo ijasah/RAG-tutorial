@@ -1,150 +1,276 @@
-// src/components/RagasMetricSimulator.tsx
-"use client";
+// src/app/page.tsx
+'use client';
 
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { HelpCircle, CheckCircle, XCircle, FileText, Search } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import Image from 'next/image';
+import { Hero } from '@/components/Hero';
+import { TableOfContents } from '@/components/TableOfContents';
+import { Section } from '@/components/Section';
+import { RAGFlowDiagram } from '@/components/RAGFlowDiagram';
+import { ChunkingSimulator } from '@/components/ChunkingSimulator';
+import { ContextPrecisionSimulator } from '@/components/ContextPrecisionSimulator';
+import { AgenticRAGSimulator } from '@/components/AgenticRAGSimulator';
+import { TemperatureDemo } from '@/components/TemperatureDemo';
+import { TopKDemo } from '@/components/TopKDemo';
+import { TopPDemo } from '@/components/TopPDemo';
+import { VectorDBAnimation } from '@/components/VectorDBAnimation';
+import { SimilarityMetricsSimulator } from '@/components/SimilarityMetricsSimulator';
+import { LLMToRAGTimeline } from '@/components/LLMToRAGTimeline';
+import { RAGEnhancementTechniques } from '@/components/RAGEnhancementTechniques';
 
-const metrics = {
-  context_precision: {
-    name: "Context Precision",
-    description: "Measures whether the retrieved context is signal or noise. High precision means the context contains more relevant information.",
-    goodExample: {
-      question: "What is RAG?",
-      context: ["RAG stands for Retrieval-Augmented Generation. It enhances LLMs by adding an information retrieval step.", "A vector database stores embeddings for fast retrieval."],
-      answer: "Retrieval-Augmented Generation (RAG) is a technique to improve LLM accuracy by fetching external data.",
-      score: 0.92,
-      explanation: "High score because the retrieved context was highly relevant and directly used to form the correct answer."
-    },
-    badExample: {
-      question: "What is RAG?",
-      context: ["A vector database stores embeddings.", "The sky is blue.", "LLMs are trained on vast amounts of text data."],
-      answer: "RAG is a method used with LLMs.",
-      score: 0.33,
-      explanation: "Low score because most of the retrieved context was irrelevant (noise), leading to a vague answer."
+
+import {
+  BookOpen,
+  BrainCircuit,
+  Settings,
+  ShieldCheck,
+  ChevronUp,
+  ChevronDown,
+  Puzzle,
+  BookCopy,
+  Bot,
+  SlidersHorizontal,
+  Database,
+  Route,
+  Sparkles,
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { CodeBlock } from '@/components/ui/code-block';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+
+const sections = [
+  { id: 'llm-to-rag', title: 'The Journey to RAG', icon: <Route className="h-8 w-8 text-primary" /> },
+  { id: 'introduction', title: 'Introduction to RAG', icon: <BookOpen className="h-8 w-8 text-primary" /> },
+  { id: 'vector-dbs', title: 'Vector Databases & Similarity', icon: <Database className="h-8 w-8 text-primary" /> },
+  { id: 'chunking', title: 'RAG Chunking Strategies', icon: <Puzzle className="h-8 w-8 text-primary" /> },
+  { id: 'parameters', title: 'LLM Generation Parameters', icon: <SlidersHorizontal className="h-8 w-8 text-primary" /> },
+  { id: 'agentic-rag', title: 'Agentic RAG', icon: <Bot className="h-8 w-8 text-primary" /> },
+  { id: 'enhancements', title: 'RAG Enhancement Techniques', icon: <Sparkles className="h-8 w-8 text-primary" /> },
+  { id: 'evaluation', title: 'RAG Evaluation with RAGAS', icon: <ShieldCheck className="h-8 w-8 text-primary" /> },
+];
+
+const Index = () => {
+  const [activeSectionIndex, setActiveSectionIndex] = useState(0);
+  const sectionRefs = useRef<(HTMLElement | null)[]>([]);
+  const isScrolling = useRef(false);
+
+  useEffect(() => {
+    sectionRefs.current = sections.map(s => document.getElementById(s.id));
+  }, []);
+
+  const scrollToSection = (index: number) => {
+    if (isScrolling.current) return;
+    const element = document.getElementById(sections[index].id);
+    if (element) {
+      isScrolling.current = true;
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      setActiveSectionIndex(index);
+      setTimeout(() => {
+        isScrolling.current = false;
+      }, 1000); // Prevent rapid scrolling
     }
-  },
-  context_recall: {
-    name: "Context Recall",
-    description: "Measures if all the necessary information to answer the question was retrieved. High recall means no crucial information was missed.",
-    goodExample: {
-      question: "What are the two main components of RAG?",
-      context: ["RAG's core components are a retriever and a generator. The retriever finds data, the generator answers.", "RAG was introduced by Facebook AI."],
-      answer: "The two main components of RAG are the retriever and the generator.",
-      score: 1.0,
-      explanation: "Perfect score because all information needed from the ground truth answer was present in the retrieved context."
-    },
-    badExample: {
-      question: "What are the two main components of RAG?",
-      context: ["RAG uses a retriever to find relevant documents.", "RAG was introduced by Facebook AI in 2020."],
-      answer: "RAG uses a retriever component.",
-      score: 0.5,
-      explanation: "Low score because the context only mentioned the 'retriever' but missed the 'generator', so the answer is incomplete."
-    }
-  },
-  answer_relevancy: {
-    name: "Answer Relevancy",
-    description: "Evaluates how relevant the generated answer is to the question. A high score means the answer is pertinent and doesn't contain redundant or out-of-context information.",
-     goodExample: {
-      question: "What is RAG?",
-      context: ["..."],
-      answer: "Retrieval-Augmented Generation (RAG) is a technique to improve LLM accuracy by fetching external data before responding.",
-      score: 0.95,
-      explanation: "High score because the answer is concise and directly addresses the question."
-    },
-    badExample: {
-      question: "What is RAG?",
-      context: ["..."],
-      answer: "That's an interesting question. RAG is a technique to improve LLMs. By the way, LLMs are very complex.",
-      score: 0.60,
-      explanation: "Lower score because the answer includes conversational filler and irrelevant information, making it less direct."
-    }
-  },
-};
+  };
 
-type MetricKey = keyof typeof metrics;
+  const handleNextSection = () => {
+    const nextIndex = Math.min(activeSectionIndex + 1, sections.length - 1);
+    scrollToSection(nextIndex);
+  };
 
-const MetricCard = ({ metric, isGood }: { metric: any, isGood: boolean }) => {
-  const data = isGood ? metric.goodExample : metric.badExample;
+  const handlePrevSection = () => {
+    const prevIndex = Math.max(activeSectionIndex - 1, 0);
+    scrollToSection(prevIndex);
+  };
+
+  useEffect(() => {
+    const observerOptions = {
+      rootMargin: '-100px 0px -40% 0px',
+      threshold: 0,
+    };
+
+    const observerCallback: IntersectionObserverCallback = (entries) => {
+      if (isScrolling.current) return;
+
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+            const index = sections.findIndex((s) => s.id === entry.target.id);
+            if (index !== -1) {
+                setActiveSectionIndex(index);
+            }
+        }
+      });
+    };
+
+    const observer = new IntersectionObserver(observerCallback, observerOptions);
+    const elements = sections.map(s => document.getElementById(s.id)).filter(el => el);
+    elements.forEach(el => observer.observe(el!));
+
+    return () => {
+      elements.forEach(el => observer.unobserve(el!));
+    };
+  }, []);
 
   return (
-    <Card className={`border-2 ${isGood ? 'border-green-500/50' : 'border-red-500/50'}`}>
-      <CardHeader>
-        <CardTitle className={`flex items-center gap-2 ${isGood ? 'text-green-400' : 'text-red-400'}`}>
-          {isGood ? <CheckCircle /> : <XCircle />}
-          {isGood ? "Good Example" : "Bad Example"}
-        </CardTitle>
-        <div className="flex items-center justify-between pt-2">
-            <p className="text-sm text-muted-foreground">{data.explanation}</p>
-            <div className={`text-2xl font-bold ${isGood ? 'text-green-400' : 'text-red-400'}`}>
-                {data.score.toFixed(2)}
-            </div>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-4 text-xs">
-        <div>
-          <h4 className="font-semibold mb-1 flex items-center gap-2"><HelpCircle className="w-4 h-4 text-primary" />Question</h4>
-          <p className="p-2 bg-muted/50 rounded-md border">{data.question}</p>
-        </div>
-        <div>
-          <h4 className="font-semibold mb-1 flex items-center gap-2"><Search className="w-4 h-4 text-primary" />Retrieved Context</h4>
-          <div className="space-y-1">
-            {data.context.map((c: string, i: number) => <p key={i} className="p-2 bg-muted/50 rounded-md border">{c}</p>)}
+    <div className="min-h-screen bg-background text-foreground">
+      <Hero />
+      <div id="content" className="container mx-auto px-4 py-16">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-12">
+          <div className="lg:col-span-1">
+            <TableOfContents activeSectionId={sections[activeSectionIndex]?.id} onLinkClick={(id) => {
+              const index = sections.findIndex(s => s.id === id);
+              scrollToSection(index);
+            }}/>
           </div>
+          <main className="lg:col-span-3 space-y-24">
+            <Section id="llm-to-rag" title="The Journey from LLMs to RAG" icon={<Route className="h-8 w-8 text-primary" />}>
+                <div className="space-y-6">
+                  <p className="text-muted-foreground mb-4">
+                    Large Language Models (LLMs) are powerful, but they have inherent limitations. They can be prone to making things up (hallucination) and their knowledge is frozen at the time they were trained. Retrieval-Augmented Generation (RAG) was developed to address these critical issues. This timeline shows why RAG is a necessary evolution.
+                  </p>
+                  <LLMToRAGTimeline />
+                </div>
+            </Section>
+
+             <Section id="introduction" title="Introduction to RAG" icon={<BookOpen className="h-8 w-8 text-primary" />}>
+              <div className="space-y-6">
+                <p className="text-muted-foreground mb-4">
+                  Retrieval is a crucial part of the RAG framework because it helps the model fetch relevant information from external sources to augment its generated content. By combining retrieval with generation, we can make LLMs more accurate and capable of answering domain-specific questions by pulling in specific knowledge.
+                </p>
+                
+                <Card>
+                  <CardHeader>
+                    <CardTitle>What is Retrieval?</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-muted-foreground">
+                      Retrieval refers to the process of fetching relevant information from an external data source (like a database or a corpus of documents) based on a given input query. This process allows models to answer specific questions or provide more informed responses by leveraging knowledge that may not be encoded in the model itself.
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <RAGFlowDiagram />
+
+                <div>
+                  <h3 className="text-xl font-semibold mb-3 text-foreground">Advantages and Challenges</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <Card className="border-green-500/30 bg-green-500/10">
+                      <CardHeader>
+                        <CardTitle className="text-green-400">Advantages</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <ul className="list-disc list-inside space-y-2 text-muted-foreground">
+                          <li>Keeps information up-to-date without retraining.</li>
+                          <li>Allows for domain adaptation by updating the database.</li>
+                          <li>Reduces hallucination as answers are grounded.</li>
+                        </ul>
+                      </CardContent>
+                    </Card>
+                    <Card className="border-destructive/30 bg-destructive/10">
+                      <CardHeader>
+                        <CardTitle className="text-destructive">Challenges</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <ul className="list-disc list-inside space-y-2 text-muted-foreground">
+                          <li>Requires efficient retrieval systems for large datasets.</li>
+                          <li>Managing noisy or irrelevant retrieved documents.</li>
+                          <li>Handling increased latency due to the retrieval step.</li>
+                        </ul>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </div>
+              </div>
+            </Section>
+            
+            <Section id="vector-dbs" title="Vector Databases & Similarity" icon={<Database className="h-8 w-8 text-primary" />}>
+               <div className="space-y-6">
+                 <p className="text-muted-foreground mb-4">
+                    Vector databases are specialized databases designed to store and manage high-dimensional vectors (embeddings) efficiently. These databases make it easier to perform similarity searches and retrieve relevant information for a given query.
+                  </p>
+                  <Card className="overflow-hidden">
+                    <Image src="https://bigdataanalyticsnews.com/wp-content/uploads/2024/04/top-vector-database.jpg" alt="Top Vector Databases" width={800} height={450} className="w-full object-cover" />
+                  </Card>
+                  <VectorDBAnimation />
+                  <SimilarityMetricsSimulator />
+               </div>
+            </Section>
+
+            <Section id="chunking" title="RAG Chunking Strategies" icon={<Puzzle className="h-8 w-8 text-primary" />}>
+              <div className="space-y-8">
+                  <p className="text-muted-foreground">
+                    In RAG systems, effective chunking strategies are vital for optimizing the retrieval and generation process. Chunking helps break down information into manageable segments, which improves context preservation, relevance, and efficiency. Explore different strategies below.
+                  </p>
+                  <ChunkingSimulator />
+              </div>
+            </Section>
+
+            <Section id="parameters" title="LLM Generation Parameters" icon={<SlidersHorizontal className="h-8 w-8 text-primary" />}>
+              <div className="space-y-8">
+                <p className="text-muted-foreground">
+                  The "generation" in RAG is controlled by several key parameters that influence the output of the Large Language Model. Understanding these parameters is crucial for fine-tuning the model's responses to be more accurate, creative, or constrained as needed. Explore the interactive demos below to see how they work.
+                </p>
+                <TemperatureDemo />
+                <TopKDemo />
+                <TopPDemo />
+              </div>
+            </Section>
+            
+            <Section id="agentic-rag" title="Agentic RAG" icon={<Bot className="h-8 w-8 text-primary" />}>
+                <div className="space-y-6">
+                    <p className="text-muted-foreground">
+                        Agentic RAG represents the next evolution of information retrieval, where an AI agent actively decides whether it needs to fetch external information to answer a query. Instead of retrieving information for every query, the agent analyzes the request and uses a "search" tool only when its internal knowledge is insufficient. It can also perform other actions, like self-correction or reflection.
+                    </p>
+                    <AgenticRAGSimulator />
+                </div>
+            </Section>
+
+            <Section id="enhancements" title="RAG Enhancement Techniques" icon={<Sparkles className="h-8 w-8 text-primary" />}>
+                <div className="space-y-6">
+                    <p className="text-muted-foreground">
+                        Standard RAG is powerful, but there are many advanced techniques to enhance its performance. These strategies address weaknesses in each stage of the RAG pipeline, from understanding the user's query to generating the final answer.
+                    </p>
+                    <RAGEnhancementTechniques />
+                </div>
+            </Section>
+
+
+            <Section id="evaluation" title="RAG Evaluation with RAGAS" icon={<ShieldCheck className="h-8 w-8 text-primary" />}>
+              <div className="space-y-6">
+                <p className="text-muted-foreground">
+                  A crucial step in building a RAG system is evaluating the quality of the retrieved context. If the context is irrelevant or noisy, the generated answer will be poor. **Context Precision** is a key metric that measures this by asking: "How relevant is the retrieved information to the user's query?"
+                </p>
+                <ContextPrecisionSimulator />
+                <div>
+                    <h3 className="text-xl font-semibold mb-3 mt-8 text-foreground">Conclusion</h3>
+                    <p className="text-muted-foreground">Incorporating robust evaluation into the RAG workflow is crucial for building reliable and accurate AI systems. By using metrics like Context Precision, we can quantify the performance of our retrieval system and ensure that the final answers are grounded in high-quality, relevant information.</p>
+                </div>
+              </div>
+            </Section>
+          </main>
         </div>
-        <div>
-          <h4 className="font-semibold mb-1 flex items-center gap-2"><FileText className="w-4 h-4 text-primary" />Generated Answer</h4>
-          <p className="p-2 bg-muted/50 rounded-md border">{data.answer}</p>
-        </div>
-      </CardContent>
-    </Card>
-  )
-}
-
-
-export const RagasMetricSimulator = () => {
-  const [activeTab, setActiveTab] = useState<MetricKey>('context_precision');
-
-  const activeMetric = metrics[activeTab];
-
-  return (
-    <Card className="bg-card/50">
-        <CardHeader>
-            <CardTitle>RAGAS Evaluation Metrics</CardTitle>
-            <CardDescription>
-                Explore key RAGAS metrics by comparing good and bad examples for each. This helps illustrate what each metric is measuring.
-            </CardDescription>
-        </CardHeader>
-        <CardContent>
-            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as MetricKey)}>
-                <TabsList className="grid w-full grid-cols-3">
-                    <TabsTrigger value="context_precision">Context Precision</TabsTrigger>
-                    <TabsTrigger value="context_recall">Context Recall</TabsTrigger>
-                    <TabsTrigger value="answer_relevancy">Answer Relevancy</TabsTrigger>
-                </TabsList>
-
-                <motion.div
-                    key={activeTab}
-                    initial={{ y: 10, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    exit={{ y: -10, opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                >
-                    <TabsContent value={activeTab} className="mt-4">
-                        <div className="text-center p-4 mb-4 bg-muted/40 rounded-lg">
-                            <h3 className="text-lg font-semibold text-primary">{activeMetric.name}</h3>
-                            <p className="text-sm text-muted-foreground">{activeMetric.description}</p>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <MetricCard metric={activeMetric} isGood={true} />
-                            <MetricCard metric={activeMetric} isGood={false} />
-                        </div>
-                    </TabsContent>
-                </motion.div>
-            </Tabs>
-        </CardContent>
-    </Card>
-  )
+      </div>
+      <div className="fixed bottom-8 right-8 z-50 flex flex-col gap-2">
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={handlePrevSection}
+          disabled={activeSectionIndex === 0}
+          className={cn('transition-opacity', activeSectionIndex === 0 && 'opacity-50')}
+        >
+          <ChevronUp className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={handleNextSection}
+          disabled={activeSectionIndex === sections.length - 1}
+          className={cn('transition-opacity', activeSectionIndex === sections.length - 1 && 'opacity-50')}
+        >
+          <ChevronDown className="h-4 w-4" />
+        </Button>
+      </div>
+    </div>
+  );
 };
+
+export default Index;

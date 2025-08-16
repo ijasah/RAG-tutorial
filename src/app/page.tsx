@@ -8,7 +8,7 @@ import { TableOfContents } from '@/components/TableOfContents';
 import { Section } from '@/components/Section';
 import { RAGFlowDiagram } from '@/components/RAGFlowDiagram';
 import { ChunkingSimulator } from '@/components/ChunkingSimulator';
-import { RagasMetricSimulator } from '@/components/RagasMetricSimulator';
+import { ContextPrecisionSimulator } from '@/components/ContextPrecisionSimulator';
 import { AgenticRAGSimulator } from '@/components/AgenticRAGSimulator';
 import { TemperatureDemo } from '@/components/TemperatureDemo';
 import { TopKDemo } from '@/components/TopKDemo';
@@ -237,14 +237,12 @@ const Index = () => {
             <Section id="evaluation" title="RAG Evaluation with RAGAS" icon={<ShieldCheck className="h-8 w-8 text-primary" />}>
               <div className="space-y-6">
                 <p className="text-muted-foreground">
-                    Ragas is a library that provides tools to supercharge the evaluation of Large Language Model (LLM) applications. It is designed to help you evaluate your LLM applications with ease and confidence. Each metric is a paradigm designed to evaluate a particular aspect of the application.
+                  A crucial step in building a RAG system is evaluating the quality of the retrieved context. If the context is irrelevant or noisy, the generated answer will be poor. **Context Precision** is a key metric that measures this by asking: "How relevant is the retrieved information to the user's query?"
                 </p>
-
-                <RagasMetricSimulator />
-
+                <ContextPrecisionSimulator />
                 <div>
                     <h3 className="text-xl font-semibold mb-3 mt-8 text-foreground">Conclusion</h3>
-                    <p className="text-muted-foreground">Incorporating chunking and robust evaluation into RAG is crucial for enhancing the accuracy, efficiency, and context awareness of AI systems. By selecting the most appropriate chunking strategy and using metrics to evaluate performance, we can optimize the retrieval and generation process, ensuring more relevant and accurate responses.</p>
+                    <p className="text-muted-foreground">Incorporating robust evaluation into the RAG workflow is crucial for building reliable and accurate AI systems. By using metrics like Context Precision, we can quantify the performance of our retrieval system and ensure that the final answers are grounded in high-quality, relevant information.</p>
                 </div>
               </div>
             </Section>
