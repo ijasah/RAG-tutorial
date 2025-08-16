@@ -5,8 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Calculator, Scaling, Info, Orbit } from 'lucide-react';
-import { Alert, AlertDescription, AlertTitle } from './ui/alert';
+import { Calculator, Info, Orbit } from 'lucide-react';
 
 type Vector = { x: number; y: number; label: string; };
 
@@ -19,9 +18,9 @@ const vectors: Vector[] = [
 
 const queryVector: Vector = { x: 5, y: 3.75, label: 'What is RAG?' };
 const width = 500;
-const height = 300;
+const height = 450; // Increased height for the visualization
 const scale = 25; 
-const origin = { x: 40, y: height - 40 };
+const origin = { x: 40, y: height - 100 }; // Adjusted origin for more space
 
 const getCoords = (vec: Vector) => ({
     x: origin.x + vec.x * scale,
@@ -49,12 +48,12 @@ export const SimilarityMetricsSimulator = () => {
                 title: "Cosine Similarity",
                 formula: "cos(θ) = (A · B) / (||A|| * ||B||)",
                 result: `${cosSim.toFixed(3)}`,
-                explanation: "Measures the angle between vectors. A score close to 1 means they are identical in direction.",
+                explanation: "Measures the angle between vectors. A score close to 1 means they point in a similar direction.",
             };
         }
         return {
             title: "Euclidean Distance",
-            formula: "dist(A, B) = √((x₂ - x₁)² + (y₁ - y₂)²)",
+            formula: "dist(A, B) = √((x₂-x₁)² + (y₂-y₁)²)",
             result: `${eucDist.toFixed(2)}`,
             explanation: "Measures the direct, straight-line distance between the tips of the vectors.",
         };
@@ -70,7 +69,7 @@ export const SimilarityMetricsSimulator = () => {
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                     <div className="space-y-4">
                         <Tabs value={metric} onValueChange={(v) => setMetric(v as any)} className="w-full">
                             <TabsList className="grid w-full grid-cols-2">
@@ -98,13 +97,14 @@ export const SimilarityMetricsSimulator = () => {
                                <p className="text-center text-xs font-semibold uppercase text-primary/80">{title}</p>
                            </CardContent>
                         </Card>
+                        
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <Card className="bg-muted/50 border-primary/20">
                                 <CardHeader className="pb-2">
                                     <CardTitle className="text-sm flex items-center gap-2"><Orbit className="text-primary"/> The "Why"</CardTitle>
                                 </CardHeader>
                                 <CardContent>
-                                    <p className="text-xs text-muted-foreground">LLM embeddings encode meaning in **direction**, not magnitude. We care about the topic, not how long the text is.</p>
+                                    <p className="text-xs text-muted-foreground">LLM embeddings encode meaning in <strong className="text-foreground">direction</strong>, not magnitude. We care about the topic, not how long the text is.</p>
                                 </CardContent>
                             </Card>
                              <Card className="bg-muted/50 border-green-500/20">
@@ -112,15 +112,15 @@ export const SimilarityMetricsSimulator = () => {
                                      <CardTitle className="text-sm flex items-center gap-2"><Info className="text-green-400"/> The "Proof"</CardTitle>
                                 </CardHeader>
                                 <CardContent>
-                                    <p className="text-xs text-muted-foreground">Compare the two "RAG" docs. Their cosine score is **1.000** (identical direction), but Euclidean distance differs due to length. </p>
+                                    <p className="text-xs text-muted-foreground">Compare the two "RAG" docs. Their cosine score is <strong className="text-foreground">~1.000</strong> (identical direction), but Euclidean distance differs due to length. </p>
                                 </CardContent>
                             </Card>
                         </div>
                     </div>
-                     <div className="relative border rounded-lg bg-muted/30 overflow-hidden" style={{height: '450px'}}>
-                        <svg viewBox={`0 0 ${width} ${height + 150}`} className="w-full h-auto" style={{ fontSize: '10px' }}>
+                     <div className="relative border rounded-lg bg-muted/30 overflow-hidden" style={{height: `${height}px`}}>
+                        <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-full" style={{ fontSize: '10px' }}>
                             {/* Grid lines and axes */}
-                            <path d={`M ${origin.x} 0 V ${height + 150} M 0 ${origin.y} H ${width}`} stroke="hsl(var(--border))" strokeWidth="0.5" />
+                            <path d={`M ${origin.x} 0 V ${height} M 0 ${origin.y} H ${width}`} stroke="hsl(var(--border))" strokeWidth="0.5" />
 
                             {/* Other Vectors (de-emphasized) */}
                             {vectors.map((v, i) => i !== selectedIndex && (
