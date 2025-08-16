@@ -20,6 +20,7 @@ import { RAGEnhancementTechniques } from '@/components/RAGEnhancementTechniques'
 import { ContextRecallSimulator } from '@/components/ContextRecallSimulator';
 import { NoiseSensitivitySimulator } from '@/components/NoiseSensitivitySimulator';
 import { ResponseRelevancySimulator } from '@/components/ResponseRelevancySimulator';
+import { FaithfulnessSimulator } from '@/components/FaithfulnessSimulator';
 
 import {
   BookOpen,
@@ -39,6 +40,8 @@ import {
   Search,
   MessageSquare,
   ClipboardCheck,
+  CheckCircle,
+  XCircle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -304,6 +307,16 @@ const Index = () => {
                   Context Recall measures how well the retriever finds all the necessary information. High recall means we aren't missing important facts.
                 </p>
                 <ContextRecallSimulator />
+
+                 <h3 className="text-xl font-semibold mb-3 mt-8 text-foreground">Faithfulness</h3>
+                  <p className="text-muted-foreground -mt-4 font-semibold text-lg italic text-center py-4">
+                  "Is the answer factually consistent with the retrieved context?"
+                </p>
+                 <p className="text-muted-foreground -mt-4">
+                  Faithfulness measures whether the generated answer is grounded in the retrieved context. This is crucial for preventing hallucinations, where the model makes up information. A high faithfulness score means the answer is trustworthy.
+                </p>
+                <FaithfulnessSimulator />
+
 
                 <h3 className="text-xl font-semibold mb-3 mt-8 text-foreground">Noise Sensitivity</h3>
                   <p className="text-muted-foreground -mt-4 font-semibold text-lg italic text-center py-4">
