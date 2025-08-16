@@ -2,9 +2,10 @@
 "use client";
 
 import { cn } from '@/lib/utils';
-import { BookOpen, Puzzle, ShieldCheck, Bot, SlidersHorizontal, Database } from 'lucide-react';
+import { BookOpen, Puzzle, ShieldCheck, Bot, SlidersHorizontal, Database, Route } from 'lucide-react';
 
 const sections = [
+  { id: 'llm-to-rag', title: 'The Journey to RAG', icon: <Route className="w-4 h-4" /> },
   { id: 'introduction', title: 'Introduction to RAG', icon: <BookOpen className="w-4 h-4" /> },
   { id: 'vector-dbs', title: 'Vector DBs & Similarity', icon: <Database className="w-4 h-4" /> },
   { id: 'chunking', title: 'Chunking Strategies', icon: <Puzzle className="w-4 h-4" /> },

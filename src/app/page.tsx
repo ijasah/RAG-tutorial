@@ -14,6 +14,7 @@ import { TopKDemo } from '@/components/TopKDemo';
 import { TopPDemo } from '@/components/TopPDemo';
 import { VectorDBAnimation } from '@/components/VectorDBAnimation';
 import { SimilarityMetricsSimulator } from '@/components/SimilarityMetricsSimulator';
+import { LLMToRAGTimeline } from '@/components/LLMToRAGTimeline';
 
 
 import {
@@ -28,6 +29,7 @@ import {
   Bot,
   SlidersHorizontal,
   Database,
+  Route,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -35,6 +37,7 @@ import { CodeBlock } from '@/components/ui/code-block';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 const sections = [
+  { id: 'llm-to-rag', title: 'The Journey to RAG', icon: <Route className="h-8 w-8 text-primary" /> },
   { id: 'introduction', title: 'Introduction to RAG', icon: <BookOpen className="h-8 w-8 text-primary" /> },
   { id: 'vector-dbs', title: 'Vector Databases & Similarity', icon: <Database className="h-8 w-8 text-primary" /> },
   { id: 'chunking', title: 'RAG Chunking Strategies', icon: <Puzzle className="h-8 w-8 text-primary" /> },
@@ -115,6 +118,15 @@ const Index = () => {
             }}/>
           </div>
           <main className="lg:col-span-3 space-y-24">
+            <Section id="llm-to-rag" title="The Journey from LLMs to RAG" icon={<Route className="h-8 w-8 text-primary" />}>
+                <div className="space-y-6">
+                  <p className="text-muted-foreground mb-4">
+                    Large Language Models (LLMs) are powerful, but they have inherent limitations. They can be prone to making things up (hallucination) and their knowledge is frozen at the time they were trained. Retrieval-Augmented Generation (RAG) was developed to address these critical issues. This timeline shows why RAG is a necessary evolution.
+                  </p>
+                  <LLMToRAGTimeline />
+                </div>
+            </Section>
+
              <Section id="introduction" title="Introduction to RAG" icon={<BookOpen className="h-8 w-8 text-primary" />}>
               <div className="space-y-6">
                 <p className="text-muted-foreground mb-4">
