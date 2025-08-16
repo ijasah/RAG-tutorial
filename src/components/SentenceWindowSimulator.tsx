@@ -119,7 +119,7 @@ export const SentenceWindowSimulator = () => {
                      <AnimatePresence>
                     {step >= 1 && (
                          <motion.div initial={{opacity: 0}} animate={{opacity: 1}}>
-                            <FlowNode icon={<Database />} title="Vector Store" status={getStatus(1)} step={1} currentStep={step}>
+                            <FlowNode icon={<Database />} title="Vector Store" status={getStatus(3)} step={3} currentStep={step}>
                                 <AnimatePresence>
                                 {step >= 1 && documentChunks.map((chunk) => (
                                     <DocumentChunk key={chunk.id} id={chunk.id} text={chunk.text} currentStep={step} highlightStep={chunk.id === relevantChunk.id ? 3 : undefined} />
@@ -133,17 +133,19 @@ export const SentenceWindowSimulator = () => {
                      <FlowArrow step={3} currentStep={step} />
 
                     {/* Column 3: Wider Window */}
-                    <FlowNode icon={<GitMerge />} title="4. Wider Window of Context" status={getStatus(4)} step={4} currentStep={step}>
-                         <AnimatePresence>
-                         {step >= 4 && (
-                            <div className="space-y-1.5">
-                                 <motion.p initial={{opacity: 0}} animate={{opacity: 1}} className="p-2 border rounded bg-background opacity-60">{widerWindow[0].text}</motion.p>
-                                 <motion.p initial={{opacity: 0}} animate={{opacity: 1, transition:{delay: 0.1}}} className="p-2 border rounded bg-background border-primary">{widerWindow[1].text}</motion.p>
-                                 <motion.p initial={{opacity: 0}} animate={{opacity: 1, transition:{delay: 0.2}}} className="p-2 border rounded bg-background opacity-60">{widerWindow[2].text}</motion.p>
-                            </div>
-                         )}
-                         </AnimatePresence>
-                    </FlowNode>
+                     <AnimatePresence>
+                    {step >= 4 && (
+                        <motion.div initial={{opacity: 0}} animate={{opacity: 1}}>
+                            <FlowNode icon={<GitMerge />} title="4. Wider Window of Context" status={getStatus(4)} step={4} currentStep={step}>
+                                <div className="space-y-1.5">
+                                     <motion.p initial={{opacity: 0}} animate={{opacity: 1}} className="p-2 border rounded bg-background">{widerWindow[0].text}</motion.p>
+                                     <motion.p initial={{opacity: 0}} animate={{opacity: 1, transition:{delay: 0.1}}} className="p-2 border rounded bg-background border-primary">{widerWindow[1].text}</motion.p>
+                                     <motion.p initial={{opacity: 0}} animate={{opacity: 1, transition:{delay: 0.2}}} className="p-2 border rounded bg-background">{widerWindow[2].text}</motion.p>
+                                </div>
+                            </FlowNode>
+                        </motion.div>
+                     )}
+                    </AnimatePresence>
                     
                     <FlowArrow step={5} currentStep={step} />
 
