@@ -7,6 +7,7 @@ import { GitBranch, Lightbulb, Search, Database, Brain, Sparkles, Wand2, BrainCi
 import { HypotheticalQuestionsSimulator } from './HypotheticalQuestionsSimulator';
 import { HydeSimulator } from './HydeSimulator';
 import { Separator } from './ui/separator';
+import { SubQuerySimulator } from './SubQuerySimulator';
 
 const divideAndConquerTechniques = [
     {
@@ -51,23 +52,38 @@ export const RAGEnhancementTechniques = () => {
                     <p className="text-sm text-muted-foreground mb-4">
                         These techniques break down the RAG process into smaller parts and optimize each one individually.
                     </p>
-                    <Accordion type="single" collapsible className="w-full" defaultValue="item-0">
-                        <AccordionItem value="item-0">
+                    <Accordion type="multiple" className="w-full" defaultValue={['query-enhancement']}>
+                        <AccordionItem value="query-enhancement">
                             <AccordionTrigger>
                                 <div className="flex items-center gap-3">
                                     <Search className="h-5 w-5 text-blue-400" />
                                     <span className="font-medium">Query Enhancement</span>
                                 </div>
                             </AccordionTrigger>
-                            <AccordionContent className="pl-10 text-muted-foreground space-y-4">
-                                <p>
-                                    Improves the user's query before it hits the retrieval system. This can involve expanding the query with synonyms, correcting typos, or using advanced techniques like generating hypothetical documents or questions that the query might be asking. Explore the simulators for a couple such techniques below.
+                            <AccordionContent className="pl-4 pr-1 pt-4 text-muted-foreground space-y-4">
+                                <p className="text-sm">
+                                    Improve the user's query before it hits the retrieval system. This can involve expanding the query, correcting typos, or using advanced techniques like generating hypothetical questions or breaking the query into smaller pieces.
                                 </p>
-                                <div className="space-y-6 pt-4">
-                                    <HypotheticalQuestionsSimulator />
-                                    <Separator />
-                                    <HydeSimulator />
-                                </div>
+                                <Accordion type="single" collapsible className="w-full space-y-4">
+                                     <AccordionItem value="sub-query">
+                                        <AccordionTrigger className="p-4 bg-muted/30 rounded-lg">Method: Sub-Query Generation</AccordionTrigger>
+                                        <AccordionContent className="pt-4">
+                                             <SubQuerySimulator />
+                                        </AccordionContent>
+                                    </AccordionItem>
+                                    <AccordionItem value="hypothetical-questions">
+                                        <AccordionTrigger className="p-4 bg-muted/30 rounded-lg">Method: Hypothetical Questions</AccordionTrigger>
+                                        <AccordionContent className="pt-4">
+                                             <HypotheticalQuestionsSimulator />
+                                        </AccordionContent>
+                                    </AccordionItem>
+                                    <AccordionItem value="hyde">
+                                        <AccordionTrigger className="p-4 bg-muted/30 rounded-lg">Method: HyDE (Hypothetical Document Embeddings)</AccordionTrigger>
+                                        <AccordionContent className="pt-4">
+                                             <HydeSimulator />
+                                        </AccordionContent>
+                                    </AccordionItem>
+                                </Accordion>
                             </AccordionContent>
                         </AccordionItem>
                         {divideAndConquerTechniques.slice(1).map((item, index) => (
