@@ -34,10 +34,10 @@ const generatePoints = (num: number): Point[] =>
     }));
 
 // --- Algorithm Simulation ---
-const createTreeRecursive = (points: Point[], maxItemsInLeaf: number, depth: number, path: string, clipPath: string): TreeNode => {
+const createTreeRecursive = (points: Point[], maxItemsInLeaf: number, depth: number, path: string): TreeNode => {
     const id = `n-${path}`;
     if (points.length <= maxItemsInLeaf) {
-        return { id, points, isLeaf: true, depth, path, region: { path: path, clipPath: clipPath } };
+        return { id, points, isLeaf: true, depth, path };
     }
 
     const p1Index = Math.floor(Math.random() * points.length);
@@ -56,20 +56,11 @@ const createTreeRecursive = (points: Point[], maxItemsInLeaf: number, depth: num
     const rightPoints: Point[] = [];
 
     points.forEach(p => {
+        // Project point onto the line perpendicular to the split line
         const val = (p.x - midX) * Math.cos(angle) + (p.y - midY) * Math.sin(angle);
+        // Points on one side go to left child, others to right child
         (val > 0 ? leftPoints : rightPoints).push(p);
     });
-    
-    // Simplified region coloring via clipping paths (can be complex)
-    const R = 2000;
-    const perpAngle = angle + Math.PI/2;
-    const c = Math.cos(perpAngle);
-    const s = Math.sin(perpAngle);
-    const p1c = {x: midX - R*c, y: midY - R*s};
-    const p2c = {x: midX + R*c, y: midY + R*s};
-    
-    const leftClipPath = `M ${p1c.x} ${p1c.y} L ${p2c.x} ${p2c.y} L ${p2c.x + R*s} ${p2c.y - R*c} L ${p1c.x + R*s} ${p1c.y - R*c} Z`;
-    const rightClipPath = `M ${p1c.x} ${p1c.y} L ${p2c.x} ${p2c.y} L ${p2c.x - R*s} ${p2c.y + R*c} L ${p1c.x - R*s} ${p1c.y + R*c} Z`;
 
     return {
         id,
@@ -79,8 +70,8 @@ const createTreeRecursive = (points: Point[], maxItemsInLeaf: number, depth: num
         depth,
         path,
         children: [
-            createTreeRecursive(leftPoints, maxItemsInLeaf, depth + 1, path + 'L', `${clipPath} clip-path: path('${leftClipPath}');`),
-            createTreeRecursive(rightPoints, maxItemsInLeaf, depth + 1, path + 'R', `${clipPath} clip-path: path('${rightClipPath}');`),
+            createTreeRecursive(leftPoints, maxItemsInLeaf, depth + 1, path + 'L'),
+            createTreeRecursive(rightPoints, maxItemsInLeaf, depth + 1, path + 'R'),
         ],
     };
 };
@@ -115,7 +106,7 @@ const TreeVisualizer = ({ nodesByDepth, maxDepth, activePath }: { nodesByDepth: 
                             animate={{ opacity: 1, scale: 1 }}
                             transition={{ duration: 0.5 }}
                             className={cn(
-                                "w-6 h-6 rounded-md flex items-center justify-center text-xs border transition-all duration-300",
+                                "w-8 h-8 rounded-md flex items-center justify-center text-xs border transition-all duration-300",
                                 node.isLeaf ? "bg-primary/10 border-primary" : "bg-muted",
                                 activePath?.startsWith(node.path) && 'bg-amber-400 border-amber-600 text-black ring-2 ring-amber-400'
                             )}
@@ -138,9 +129,9 @@ export function ANNVisualization() {
     const queryPoint = useMemo(() => ({ id: 'query', x: WIDTH / 2, y: HEIGHT / 2 + 50 }), []);
 
     const regenerate = useCallback(() => {
-        const newPoints = generatePoints(200);
+        const newPoints = generatePoints(150);
         setPoints(newPoints);
-        const newTree = createTreeRecursive(newPoints, K, 0, 'R', `path('M 0 0 L ${WIDTH} 0 L ${WIDTH} ${HEIGHT} L 0 ${HEIGHT} Z')`);
+        const newTree = createTreeRecursive(newPoints, K, 0, 'R');
         setTree(newTree);
     }, []);
 
@@ -157,25 +148,10 @@ export function ANNVisualization() {
             if (node.split) splits.push({ ...node.split, path: node.path });
             if (node.children) queue.push(...node.children);
         }
-        // Sort by path length to ensure parent splits come first
         return splits.sort((a, b) => a.path.length - b.path.length);
     }, [tree]);
-
-    const allLeafRegions = useMemo(() => {
-        if (!tree) return [];
-        const regions: any[] = [];
-        const queue = [tree];
-        while(queue.length > 0) {
-            const node = queue.shift()!;
-            if (node.isLeaf && node.region) {
-                regions.push({ ...node.region, id: node.id });
-            }
-            if (node.children) queue.push(...node.children);
-        }
-        return regions;
-    }, [tree]);
     
-    const maxSteps = allSplits.length + 3;
+    const maxSteps = allSplits.length + 3; // Build steps + index ready + search + candidates
 
     const reset = () => {
         setStep(0);
@@ -190,9 +166,11 @@ export function ANNVisualization() {
         const nodes = getNodesByDepth(tree);
         const maxD = Math.max(...Object.keys(nodes).map(Number));
 
-        if (step < allSplits.length + 2) return { nodesByDepth: nodes, maxDepth: maxD };
+        // Don't calculate search path until the search step
+        if (step < allSplits.length + 2) {
+             return { nodesByDepth: nodes, maxDepth: maxD, activeSearchPath: undefined, finalLeaf: undefined };
+        }
         
-        // Find the search path
         let path = '';
         let currentNode = tree;
         while (!currentNode.isLeaf) {
@@ -202,7 +180,7 @@ export function ANNVisualization() {
             const val = (queryPoint.x - split.midX) * Math.cos(split.angle) + (queryPoint.y - split.midY) * Math.sin(split.angle);
             currentNode = val > 0 ? children[0] : children[1];
         }
-        path = currentNode.path; // final leaf path
+        path = currentNode.path;
 
         return { nodesByDepth: nodes, maxDepth: maxD, activeSearchPath: path, finalLeaf: currentNode };
 
@@ -222,7 +200,6 @@ export function ANNVisualization() {
     };
 
     const currentSplit = step > 0 && step <= allSplits.length ? allSplits[step - 1] : null;
-    const regionColors = ["hsla(220, 80%, 80%, 0.1)", "hsla(160, 80%, 80%, 0.1)"];
 
     return (
         <Card className="bg-card/50 mt-6">
@@ -235,28 +212,25 @@ export function ANNVisualization() {
                      <div className="relative border rounded-lg bg-background" style={{ width: WIDTH, height: HEIGHT }}>
                         <svg width={WIDTH} height={HEIGHT}>
                             <defs>
-                               {step > allSplits.length && allLeafRegions.map((region, i) => (
-                                 <clipPath key={`${region.id}-${i}`} id={`clip-${region.id}`}>
-                                    <path d={region.clipPath} />
-                                 </clipPath>
-                               ))}
+                               {allSplits.slice(0, step).map((split, i) => {
+                                    const R = 2000;
+                                    const perpAngle = split.angle + Math.PI/2;
+                                    const c = Math.cos(perpAngle);
+                                    const s = Math.sin(perpAngle);
+                                    const p1c = {x: split.midX - R*c, y: split.midY - R*s};
+                                    const p2c = {x: split.midX + R*c, y: split.midY + R*s};
+                                    const leftPath = `M ${p1c.x} ${p1c.y} L ${p2c.x} ${p2c.y} L ${p2c.x + R*s} ${p2c.y - R*c} L ${p1c.x + R*s} ${p1c.y - R*c} Z`;
+                                    const rightPath = `M ${p1c.x} ${p1c.y} L ${p2c.x} ${p2c.y} L ${p2c.x - R*s} ${p2c.y + R*c} L ${p1c.x - R*s} ${p1c.y + R*c} Z`;
+
+                                    return (
+                                        <React.Fragment key={`clip-${i}`}>
+                                            <clipPath id={`clip-left-${i}`}><path d={leftPath} /></clipPath>
+                                            <clipPath id={`clip-right-${i}`}><path d={rightPath} /></clipPath>
+                                        </React.Fragment>
+                                    )
+                               })}
                             </defs>
                             <AnimatePresence>
-                                {/* Background Regions */}
-                                {step > allSplits.length && allLeafRegions.map((region, i) => (
-                                    <motion.rect
-                                        key={`${region.id}-${i}`}
-                                        x={0} y={0} width={WIDTH} height={HEIGHT}
-                                        fill={cn(
-                                            finalLeaf?.id === region.id ? 'hsla(var(--primary), 0.2)' : regionColors[i % 2],
-                                        )}
-                                        initial={{opacity: 0}}
-                                        animate={{opacity: 1}}
-                                        transition={{delay: i * 0.01}}
-                                        style={{clipPath: `url(#clip-${region.id})`}}
-                                    />
-                                ))}
-
                                 {/* Data Points */}
                                 {points.map((p, i) => (
                                     <motion.circle key={`${p.id}-${i}`} cx={p.x} cy={p.y} r={2.5} className={cn("fill-muted-foreground/60 transition-colors duration-300", {
@@ -316,7 +290,7 @@ export function ANNVisualization() {
                         </Alert>
                         
                         <div className="space-y-2">
-                             <h4 className="font-semibold text-foreground mb-2 text-center">Binary Tree Index</h4>
+                             <h4 className="font-semibold text-foreground mb-2 text-center">Binary Tree</h4>
                              <div className="p-2 bg-muted/40 border rounded-md flex justify-center items-start overflow-x-auto min-h-[150px]">
                                 <AnimatePresence>
                                 {step > 0 && tree && nodesByDepth && maxDepth > 0 && 
