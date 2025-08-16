@@ -15,8 +15,7 @@ const documentChunks = [
     {id: 's2', text: 'It is developed by Zilliz, a leading AI vector database company.'},
     {id: 's3', text: 'Milvus enables users to store, manage, and search large-scale vector data.'},
 ];
-const relevantChunk = documentChunks[1];
-const widerWindow = documentChunks;
+const relevantChunkId = 's2';
 const finalAnswer = "Based on the provided context, Milvus was developed by Zilliz, a leading AI vector database company."
 
 const FlowNode = ({ icon, title, children, status, step, currentStep, className }: { icon: React.ReactNode, title: string, children: React.ReactNode, status: 'inactive' | 'active' | 'complete', step: number, currentStep: number, className?: string }) => (
@@ -51,17 +50,15 @@ const FlowArrow = ({ step, currentStep }: { step: number, currentStep: number })
     </motion.div>
 );
 
-const DocumentChunk = ({ text, id, currentStep, highlightStep }: { text: string; id: string; currentStep: number; highlightStep?: number }) => (
+const DocumentChunk = ({ text, isHighlighted }: { text: string; isHighlighted: boolean; }) => (
      <motion.div
         initial={{ opacity: 0, x: -10 }}
-        animate={{
-            opacity: 1,
-            x: 0,
-            backgroundColor: currentStep >= (highlightStep || 99) ? 'hsla(var(--primary), 0.1)' : 'hsl(var(--background))',
-            borderColor: currentStep >= (highlightStep || 99) ? 'hsla(var(--primary), 0.5)' : 'hsl(var(--border))'
-        }}
+        animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.3 }}
-        className="p-2 border rounded"
+        className={cn(
+            "p-2 border rounded bg-background transition-colors",
+            isHighlighted ? "border-primary" : "border-border"
+        )}
     >
         {text}
     </motion.div>
@@ -95,7 +92,7 @@ export const SentenceWindowSimulator = () => {
 
     return (
         <Card className="bg-card/60 border-primary/20">
-            <CardHeader>
+             <CardHeader>
                  <CardDescription className="pt-2 h-12 flex items-center justify-center text-center">
                     {getStepDescription()}
                 </CardDescription>
@@ -119,10 +116,10 @@ export const SentenceWindowSimulator = () => {
                      <AnimatePresence>
                     {step >= 1 && (
                          <motion.div initial={{opacity: 0}} animate={{opacity: 1}}>
-                            <FlowNode icon={<Database />} title="Vector Store" status={getStatus(3)} step={3} currentStep={step}>
+                            <FlowNode icon={<Database />} title="3. Vector Store" status={getStatus(3)} step={3} currentStep={step}>
                                 <AnimatePresence>
                                 {step >= 1 && documentChunks.map((chunk) => (
-                                    <DocumentChunk key={chunk.id} id={chunk.id} text={chunk.text} currentStep={step} highlightStep={chunk.id === relevantChunk.id ? 3 : undefined} />
+                                    <DocumentChunk key={chunk.id} text={chunk.text} isHighlighted={step >= 3 && chunk.id === relevantChunkId} />
                                 ))}
                                 </AnimatePresence>
                             </FlowNode>
@@ -130,7 +127,7 @@ export const SentenceWindowSimulator = () => {
                     )}
                     </AnimatePresence>
 
-                     <FlowArrow step={3} currentStep={step} />
+                     <FlowArrow step={4} currentStep={step} />
 
                     {/* Column 3: Wider Window */}
                      <AnimatePresence>
@@ -138,9 +135,18 @@ export const SentenceWindowSimulator = () => {
                         <motion.div initial={{opacity: 0}} animate={{opacity: 1}}>
                             <FlowNode icon={<GitMerge />} title="4. Wider Window of Context" status={getStatus(4)} step={4} currentStep={step}>
                                 <div className="space-y-1.5">
-                                     <motion.p initial={{opacity: 0}} animate={{opacity: 1}} className="p-2 border rounded bg-background">{widerWindow[0].text}</motion.p>
-                                     <motion.p initial={{opacity: 0}} animate={{opacity: 1, transition:{delay: 0.1}}} className="p-2 border rounded bg-background border-primary">{widerWindow[1].text}</motion.p>
-                                     <motion.p initial={{opacity: 0}} animate={{opacity: 1, transition:{delay: 0.2}}} className="p-2 border rounded bg-background">{widerWindow[2].text}</motion.p>
+                                    {documentChunks.map((chunk, i) => (
+                                         <motion.div
+                                            key={chunk.id}
+                                            initial={{opacity: 0}} animate={{opacity: 1, transition:{delay: i * 0.1}}}
+                                            className={cn(
+                                                "p-2 border rounded bg-background",
+                                                chunk.id === relevantChunkId && "border-primary"
+                                            )}
+                                        >
+                                            {chunk.text}
+                                        </motion.div>
+                                    ))}
                                 </div>
                             </FlowNode>
                         </motion.div>
