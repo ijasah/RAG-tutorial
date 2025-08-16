@@ -98,7 +98,7 @@ export const SentenceWindowSimulator = () => {
                 </CardDescription>
             </CardHeader>
             <CardContent className="p-4 pt-0 space-y-4">
-                 <div className="grid grid-cols-[1fr,auto,1.5fr,auto,1.5fr,auto,1fr] gap-4 items-center min-h-[250px]">
+                 <div className="grid grid-cols-[1fr,auto,1.5fr,auto,2fr,auto,1fr] gap-4 items-center min-h-[250px]">
                     {/* Column 1: Query */}
                     <AnimatePresence>
                     {step >= 2 && (
@@ -114,35 +114,36 @@ export const SentenceWindowSimulator = () => {
 
 
                     {/* Column 2: Vector Store */}
-                    <AnimatePresence>
-                    {step >= 1 && (
-                         <motion.div initial={{opacity: 0}} animate={{opacity: 1}}>
+                   <AnimatePresence>
+                    {step >= 3 && (
+                        <motion.div initial={{opacity: 0}} animate={{opacity: 1}}>
                             <FlowNode icon={<Database />} title="3. Vector Store" status={getStatus(3)} step={3} currentStep={step}>
-                                <AnimatePresence>
-                                {step >= 1 && documentChunks.map((chunk) => (
-                                    <DocumentChunk key={chunk.id} text={chunk.text} isHighlighted={step >= 3 && chunk.id === relevantChunkId} />
-                                ))}
-                                </AnimatePresence>
+                                <div className="space-y-1.5">
+                                    {documentChunks.map((chunk) => (
+                                        <DocumentChunk key={chunk.id} text={chunk.text} isHighlighted={step >= 3 && chunk.id === relevantChunkId} />
+                                    ))}
+                                </div>
                             </FlowNode>
                         </motion.div>
                     )}
                     </AnimatePresence>
 
+
                     <AnimatePresence>{step >= 4 && <FlowArrow step={4} currentStep={step} />}</AnimatePresence>
 
                     {/* Column 3: Wider Window */}
-                    <AnimatePresence>
+                     <AnimatePresence>
                     {step >= 4 && (
                         <motion.div initial={{opacity: 0}} animate={{opacity: 1}}>
                             <FlowNode icon={<GitMerge />} title="4. Wider Window of Context" status={getStatus(4)} step={4} currentStep={step}>
-                                <div className="space-y-1.5">
+                                <div className="p-2 bg-primary/10 border border-primary/20 rounded-md space-y-1.5">
                                     {documentChunks.map((chunk, i) => (
                                          <motion.div
                                             key={chunk.id}
                                             initial={{opacity: 0}} animate={{opacity: 1, transition:{delay: i * 0.1}}}
                                             className={cn(
                                                 "p-2 border rounded bg-background",
-                                                chunk.id === relevantChunkId && "border-primary border-2"
+                                                chunk.id === relevantChunkId && "border-primary border-2 shadow-lg"
                                             )}
                                         >
                                             {chunk.text}
