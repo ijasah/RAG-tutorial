@@ -33,7 +33,7 @@ const IndexTypeCard = ({ icon, title, children }: { icon: React.ReactNode, title
 const StepIndicator = ({ current, total }: { current: number, total: number }) => (
     <div className="flex justify-center gap-1.5 my-2">
         {Array.from({ length: total }).map((_, i) => (
-            <div key={i} className={cn("h-1.5 w-6 rounded-full transition-colors", i + 1 < current ? 'bg-primary' : 'bg-muted')}/>
+            <div key={i} className={cn("h-1.5 w-6 rounded-full transition-colors", i + 1 <= current ? 'bg-primary' : 'bg-muted')}/>
         ))}
     </div>
 );
@@ -59,19 +59,17 @@ export function ANNVisualization() {
     const { entryPoint, layer1Connections, layer0Connections, path, neighbors } = useMemo(() => {
         if (points.length === 0) return { entryPoint: null, layer1Connections: [], layer0Connections: [], path: [], neighbors: [] };
 
-        // Simplified HNSW-like structure
         const sortedByDistance = [...points].sort((a, b) => getEuclideanDistance({x: a.x, y: a.y}, {x:0,y:0}) - getEuclideanDistance({x: b.x, y: b.y}, {x:0,y:0}));
         const entryPoint = sortedByDistance[0];
+        if (!entryPoint) return { entryPoint: null, layer1Connections: [], layer0Connections: [], path: [], neighbors: [] };
 
-        // Layer 1: "Highway" connections
         const layer1Candidates = points.filter(p => p.id !== entryPoint.id).sort((a,b) => getEuclideanDistance(a, entryPoint) - getEuclideanDistance(b, entryPoint));
         const l1_neighbor_1 = layer1Candidates[15];
         const l1_neighbor_2 = layer1Candidates[35];
 
-        // Layer 0: Local connections
         const localNeighbors = points.filter(p => getEuclideanDistance(p, queryPoint) < 120).sort((a,b) => getEuclideanDistance(a, queryPoint) - getEuclideanDistance(b, queryPoint));
 
-        const path = [entryPoint, l1_neighbor_1, localNeighbors[5], localNeighbors[0]];
+        const pathPoints = [entryPoint, l1_neighbor_1, localNeighbors[5], localNeighbors[0]].filter(Boolean);
 
         return {
             entryPoint,
@@ -80,12 +78,12 @@ export function ANNVisualization() {
                 { source: entryPoint, target: layer1Candidates[10] },
                 { source: l1_neighbor_1, target: l1_neighbor_2 },
                 { source: l1_neighbor_2, target: layer1Candidates[45] },
-            ],
+            ].filter(conn => conn.source && conn.target),
             layer0Connections: points.flatMap((p) => {
                 const close = points.filter(other => p.id !== other.id && getEuclideanDistance(p, other) < 50).slice(0,1);
                 return close.map(c => ({ source: p, target: c }));
             }),
-            path,
+            path: pathPoints,
             neighbors: localNeighbors.slice(0, 5)
         };
     }, [points, queryPoint]);
@@ -96,16 +94,15 @@ export function ANNVisualization() {
         setStep(0);
         regeneratePoints();
     };
+    
+    const handleStart = () => {
+        setIsSimulating(true);
+        setStep(1);
+    }
 
     const handleNext = () => {
         if (!isSimulating) return;
-        setStep(s => Math.min(s + 1, 8));
-    }
-    
-    const handleStart = () => {
-        reset();
-        setIsSimulating(true);
-        setStep(1);
+        setStep(s => Math.min(s + 1, 9));
     }
 
     const getStepDescription = () => {
@@ -159,12 +156,12 @@ export function ANNVisualization() {
                                         <AnimatePresence>
                                         {/* Layer 0 Connections */}
                                         {step >= 4 && layer0Connections.map((conn, i) => (
-                                            <motion.line key={`l0-${conn.source.id}-${conn.target.id}`} x1={conn.source.x} y1={conn.source.y} x2={conn.target.x} y2={conn.target.y} stroke="hsl(var(--border))" strokeWidth="0.5" initial={{opacity:0}} animate={{opacity:1}} transition={{delay: i * 0.01}}/>
+                                            <motion.line key={`l0-${conn.source.id}-${conn.target.id}-${i}`} x1={conn.source.x} y1={conn.source.y} x2={conn.target.x} y2={conn.target.y} stroke="hsl(var(--border))" strokeWidth="0.5" initial={{opacity:0}} animate={{opacity:1}} transition={{delay: i * 0.01}}/>
                                         ))}
 
                                         {/* Layer 1 Connections */}
                                         {step >= 3 && layer1Connections.map((conn, i) => (
-                                            <motion.line key={`l1-${conn.source.id}-${conn.target.id}`} x1={conn.source.x} y1={conn.source.y} x2={conn.target.x} y2={conn.target.y} stroke="hsl(var(--primary) / 0.5)" strokeWidth="1.5" initial={{pathLength:0}} animate={{pathLength:1}} transition={{delay: i * 0.2}}/>
+                                            <motion.line key={`l1-${conn.source.id}-${conn.target.id}-${i}`} x1={conn.source.x} y1={conn.source.y} x2={conn.target.x} y2={conn.target.y} stroke="hsl(var(--primary) / 0.5)" strokeWidth="1.5" initial={{pathLength:0}} animate={{pathLength:1}} transition={{delay: i * 0.2}}/>
                                         ))}
                                         
                                         {/* Data Points */}
@@ -173,19 +170,19 @@ export function ANNVisualization() {
                                         ))}
                                         
                                         {/* Entry Point */}
-                                        {step >= 2 && entryPoint && <motion.circle cx={entryPoint.x} cy={entryPoint.y} r="6" className="fill-primary" initial={{scale:0}} animate={{scale:1}}/>}
+                                        {step >= 2 && entryPoint && <motion.circle cx={entryPoint.x} cy={entryPoint.y} r="6" className="fill-blue-500" initial={{scale:0}} animate={{scale:1}}/>}
 
                                         {/* Query Point */}
                                         {step >= 5 && <motion.circle cx={queryPoint.x} cy={queryPoint.y} r="5" className="fill-purple-500 stroke-background" strokeWidth={2} initial={{ scale: 0 }} animate={{ scale: 1 }} />}
 
                                         {/* Search Path */}
                                         {step >= 6 && path.map((p, i) => i > 0 && (
-                                            <motion.line key={`path-${path[i-1].id}-${p.id}`} x1={path[i-1].x} y1={path[i-1].y} x2={p.x} y2={p.y} stroke="hsl(var(--primary))" strokeWidth="2.5" strokeDasharray="4 4" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ delay: i * 0.5 }}/>
+                                            <motion.line key={`path-${path[i-1].id}-${p.id}-${i}`} x1={path[i-1].x} y1={path[i-1].y} x2={p.x} y2={p.y} stroke="hsl(var(--primary))" strokeWidth="2.5" strokeDasharray="4 4" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ delay: i * 0.5 }}/>
                                         ))}
 
                                         {/* Final Neighbors */}
-                                        {step >= 8 && neighbors.map((p) => (
-                                           <motion.g key={`neighbor-${p.id}`}>
+                                        {step >= 8 && neighbors.map((p, i) => (
+                                           <motion.g key={`neighbor-${p.id}-${i}`}>
                                                 <motion.line x1={queryPoint.x} y1={queryPoint.y} x2={p.x} y2={p.y} stroke="hsl(var(--primary))" strokeWidth={1} initial={{pathLength:0}} animate={{pathLength:1}} transition={{delay:0.5}} />
                                                 <motion.circle cx={p.x} cy={p.y} r={5} className="fill-primary/50 stroke-primary" strokeWidth={2} initial={{scale:0}} animate={{scale:1}} transition={{delay:0.5}}/>
                                            </motion.g>
@@ -194,7 +191,7 @@ export function ANNVisualization() {
                                     </svg>
                                 </div>
                                 <div className="flex justify-center gap-4 mt-4">
-                                    <Button onClick={handleStart} variant={isSimulating ? 'outline' : 'default'}>
+                                    <Button onClick={isSimulating ? reset : handleStart} variant={isSimulating ? 'outline' : 'default'}>
                                         {isSimulating ? <RefreshCw className="mr-2"/> : <Play className="mr-2"/>}
                                         {isSimulating ? 'Reset' : 'Start'}
                                     </Button>
