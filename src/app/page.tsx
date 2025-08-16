@@ -9,7 +9,6 @@ import { RAGFlowDiagram } from '@/components/RAGFlowDiagram';
 import { ChunkingSimulator } from '@/components/ChunkingSimulator';
 import { RagasMetricSimulator } from '@/components/RagasMetricSimulator';
 import { AgenticRAGSimulator } from '@/components/AgenticRAGSimulator';
-import { SelfReflectionSimulator } from '@/components/SelfReflectionSimulator';
 import { TemperatureDemo } from '@/components/TemperatureDemo';
 import { TopKDemo } from '@/components/TopKDemo';
 import { TopPDemo } from '@/components/TopPDemo';
@@ -218,13 +217,6 @@ const Index = () => {
                         Agentic RAG represents the next evolution of information retrieval, where an AI agent actively decides whether it needs to fetch external information to answer a query. Instead of retrieving information for every query, the agent analyzes the request and uses a "search" tool only when its internal knowledge is insufficient. It can also perform other actions, like self-correction.
                     </p>
                     <AgenticRAGSimulator />
-                    <div className='mt-8'>
-                      <h3 className="text-xl font-semibold mb-3 text-foreground">Agentic RAG Example: Self-Reflection</h3>
-                      <p className="text-muted-foreground mb-4">
-                        In a self-reflection model, the agent retrieves information and then critically assesses it. If a piece of information seems ambiguous or incomplete, the agent can use another tool (like a web search) to verify it before producing the final answer. This reduces the risk of generating answers based on flawed or out-of-context data.
-                      </p>
-                      <SelfReflectionSimulator />
-                    </div>
                 </div>
             </Section>
 

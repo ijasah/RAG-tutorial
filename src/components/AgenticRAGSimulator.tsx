@@ -6,69 +6,72 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Bot, Search, MessageSquare, CornerDownLeft, Sparkles, Play } from 'lucide-react';
+import { Bot, Search, MessageSquare, Sparkles, Play, Wand2, Database } from 'lucide-react';
 
 const exampleQueries = [
-    { value: "What is the capital of France?", needsSearch: false, label: "What is the capital of France?" },
-    { value: "What is RAGAS?", needsSearch: true, label: "What is RAGAS?" },
-    { value: "What are the latest AI trends?", needsSearch: true, label: "What are the latest AI trends?" },
+    { value: "What is the capital of France?", type: 'internal', label: "What is the capital of France?" },
+    { value: "What is RAGAS?", type: 'search', label: "What is RAGAS?" },
+    { value: "Who is the CEO of Databricks?", type: 'reflect', label: "Who is the CEO of Databricks?" },
 ];
 
 const AgenticRAGSimulator = () => {
     const [selectedQuery, setSelectedQuery] = useState(exampleQueries[0].value);
-    const [agentState, setAgentState] = useState<'idle' | 'thinking' | 'searching' | 'answering' | 'complete'>('idle');
+    const [agentState, setAgentState] = useState<'idle' | 'thinking' | 'retrieving' | 'reflecting' | 'verifying' | 'answering' | 'complete'>('idle');
     const [thought, setThought] = useState("");
-    const [searchResult, setSearchResult] = useState("");
+    const [retrievedChunk, setRetrievedChunk] = useState("");
+    const [verificationResult, setVerificationResult] = useState("");
     const [finalAnswer, setFinalAnswer] = useState("");
 
     const handleSimulate = () => {
         setAgentState('thinking');
         setThought("");
-        setSearchResult("");
+        setRetrievedChunk("");
+        setVerificationResult("");
         setFinalAnswer("");
 
         const queryData = exampleQueries.find(q => q.value === selectedQuery);
         if (!queryData) return;
 
-        const { needsSearch, value: query } = queryData;
-        const lowerCaseQuery = query.toLowerCase();
+        const { type, value: query } = queryData;
 
         setTimeout(() => {
-            if (needsSearch) {
-                // Path 1: Agent decides to use the search tool.
-                setThought("The user is asking about a specific or recent topic. I should use the search tool to get the latest information.");
-                setTimeout(() => {
-                    setAgentState('searching');
-                    // Simulate finding the information.
-                    let resultText = "";
-                    if (lowerCaseQuery.includes("ragas")) {
-                        resultText = `According to web sources, RAGAS is a framework for evaluating RAG applications, focusing on metrics like faithfulness and answer relevance.`;
-                    } else if (lowerCaseQuery.includes("latest ai trends")) {
-                         resultText = `According to web sources, the latest AI trends include multimodal models and agentic workflows.`;
-                    }
-                    setSearchResult(resultText);
-                    
-                    setTimeout(() => {
-                        setAgentState('answering');
-                        // Generate the final answer based on the search result.
-                        let answerText = "";
-                         if (lowerCaseQuery.includes("ragas")) {
-                            answerText = `Based on the search results, RAGAS is an evaluation framework for Retrieval-Augmented Generation systems, designed to measure the performance based on metrics like faithfulness and relevance.`;
-                        } else if (lowerCaseQuery.includes("latest ai trends")) {
-                            answerText = `Based on recent search results, some of the latest trends in AI include the development of advanced multimodal models that can process text, images, and audio, as well as the rise of sophisticated agentic AI workflows.`;
-                        }
-                        setFinalAnswer(answerText);
-                        setTimeout(() => setAgentState('complete'), 500);
-                    }, 2000);
-                }, 1500);
-            } else {
-                // Path 2: Agent uses its internal knowledge.
-                setThought("I know the answer to this question based on my internal knowledge. I don't need to use the search tool.");
+            if (type === 'internal') {
+                setThought("I know the answer to this question based on my internal knowledge. I don't need any tools.");
                 setTimeout(() => {
                     setAgentState('answering');
                     setFinalAnswer("The capital of France is Paris.");
                     setTimeout(() => setAgentState('complete'), 500);
                 }, 1500);
+            } else if (type === 'search') {
+                setThought("The user is asking about a specific or recent topic. I should use the search tool to get the latest information.");
+                setTimeout(() => {
+                    setAgentState('verifying');
+                    setVerificationResult("According to web sources, RAGAS is a framework for evaluating RAG applications, focusing on metrics like faithfulness and answer relevance.");
+                    setTimeout(() => {
+                        setAgentState('answering');
+                        setFinalAnswer("Based on the search results, RAGAS is an evaluation framework for Retrieval-Augmented Generation systems.");
+                        setTimeout(() => setAgentState('complete'), 500);
+                    }, 2000);
+                }, 1500);
+            } else if (type === 'reflect') {
+                setThought("The user is asking about a person. I should first check my internal knowledge base.");
+                 setTimeout(() => {
+                    setAgentState('retrieving');
+                    setRetrievedChunk("Internal document: Ali Ghodsi is a co-founder of Databricks.");
+                     setTimeout(() => {
+                        setAgentState('reflecting');
+                        setThought("The retrieved information mentions he is a co-founder, but not explicitly the CEO. This could be outdated. I need to verify this using an external tool to be sure.");
+                        setTimeout(() => {
+                            setAgentState('verifying');
+                            setVerificationResult("Web search result: Ali Ghodsi is the current CEO of Databricks.");
+                            setTimeout(() => {
+                                setAgentState('answering');
+                                setFinalAnswer("Based on verified information, Ali Ghodsi is the CEO of Databricks.");
+                                setTimeout(() => setAgentState('complete'), 500);
+                            }, 2000)
+                        }, 2000);
+                    }, 1500);
+                }, 1000);
             }
         }, 1000);
     };
@@ -76,7 +79,8 @@ const AgenticRAGSimulator = () => {
     const reset = () => {
         setAgentState('idle');
         setThought("");
-        setSearchResult("");
+        setRetrievedChunk("");
+        setVerificationResult("");
         setFinalAnswer("");
         setSelectedQuery(exampleQueries[0].value);
     }
@@ -88,7 +92,7 @@ const AgenticRAGSimulator = () => {
                     <Bot /> Agentic RAG Simulator
                 </CardTitle>
                 <CardDescription>
-                    See how an AI agent decides whether to use a search tool. Select a question from the dropdown to see how the agent responds differently based on the query.
+                    See how an AI agent decides which tools to use. It can use internal knowledge, perform a direct search, or even reflect on retrieved information and verify it.
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -99,7 +103,7 @@ const AgenticRAGSimulator = () => {
                         </SelectTrigger>
                         <SelectContent>
                             {exampleQueries.map((query) => (
-                            <SelectItem key={query.value} value={query.value}>{query.label}</SelectItem>
+                                <SelectItem key={query.value} value={query.value}>{query.label}</SelectItem>
                             ))}
                         </SelectContent>
                     </Select>
@@ -116,18 +120,28 @@ const AgenticRAGSimulator = () => {
                                 <p className="text-sm text-muted-foreground italic">{thought}</p>
                             </motion.div>
                         )}
-                        {agentState === 'searching' && searchResult.length === 0 && (
-                             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-4 bg-blue-500/10 rounded-lg border border-blue-500/30 flex items-center gap-2">
-                                <Search className="w-5 h-5 text-blue-400 animate-pulse" />
-                                <p className="text-sm text-blue-300">Using search tool to find information...</p>
+
+                        {retrievedChunk.length > 0 && (
+                            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-4 bg-purple-500/10 rounded-lg border border-purple-500/30">
+                                <h4 className="font-semibold text-sm mb-2 flex items-center gap-2"><Database className="text-purple-400" /> Retrieved from Knowledge Base</h4>
+                                <p className="text-sm text-muted-foreground">{retrievedChunk}</p>
                             </motion.div>
                         )}
-                        {searchResult.length > 0 && (
-                            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-4 bg-green-500/10 rounded-lg border border-green-500/30">
-                                <h4 className="font-semibold text-sm mb-2 flex items-center gap-2"><Search className="text-green-400" /> Search Result</h4>
-                                <p className="text-sm text-muted-foreground">{searchResult}</p>
+                        
+                        {agentState === 'reflecting' && (
+                             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-4 bg-amber-500/10 rounded-lg border border-amber-500/30 flex items-center gap-2">
+                                <Wand2 className="w-5 h-5 text-amber-400" />
+                                <p className="text-sm text-amber-300">Reflecting on retrieved information...</p>
                             </motion.div>
                         )}
+
+                        {verificationResult.length > 0 && (
+                            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-4 bg-blue-500/10 rounded-lg border border-blue-500/30">
+                                <h4 className="font-semibold text-sm mb-2 flex items-center gap-2"><Search className="text-blue-400" /> Verification Result</h4>
+                                <p className="text-sm text-muted-foreground">{verificationResult}</p>
+                            </motion.div>
+                        )}
+
                          {finalAnswer.length > 0 && (
                             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-4 bg-primary/10 rounded-lg border border-primary/30">
                                 <h4 className="font-semibold text-sm mb-2 flex items-center gap-2"><MessageSquare className="text-primary" /> Final Answer</h4>
