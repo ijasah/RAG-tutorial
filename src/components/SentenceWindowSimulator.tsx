@@ -16,6 +16,7 @@ const documentChunks = [
     {id: 's3', text: 'Milvus enables users to store, manage, and search large-scale vector data.'},
 ];
 const relevantChunkId = 's2';
+const relevantChunk = documentChunks.find(c => c.id === relevantChunkId)!;
 const finalAnswer = "Based on the provided context, Milvus was developed by Zilliz, a leading AI vector database company."
 
 const FlowNode = ({ icon, title, children, status, step, currentStep, className }: { icon: React.ReactNode, title: string, children: React.ReactNode, status: 'inactive' | 'active' | 'complete', step: number, currentStep: number, className?: string }) => (
@@ -99,29 +100,39 @@ export const SentenceWindowSimulator = () => {
             </CardHeader>
             <CardContent className="p-4 pt-0 space-y-4">
                  <div className="grid grid-cols-[1fr,auto,1.5fr,auto,1.5fr] gap-4 items-stretch min-h-[300px]">
-                    {/* Column 1: Query */}
-                    <AnimatePresence>
-                    {step >= 2 && (
-                        <motion.div initial={{opacity: 0}} animate={{opacity: 1}} className="flex items-center">
-                            <FlowNode icon={<HelpCircle />} title="2. User Query" status={getStatus(2)} step={2} currentStep={step}>
-                                <div className="p-2 border rounded bg-background text-xs">{userQuery}</div>
-                            </FlowNode>
-                        </motion.div>
-                    )}
-                    </AnimatePresence>
+                    {/* Column 1: Query & Docs */}
+                    <div className="flex flex-col gap-4 justify-center">
+                         <AnimatePresence>
+                        {step >= 1 && (
+                            <motion.div initial={{opacity:0}} animate={{opacity:1}}>
+                                <FlowNode icon={<Database />} title="1. Vector Store" status={getStatus(1)} step={1} currentStep={step}>
+                                    <p>Documents are stored as individual sentences.</p>
+                                    <div className="p-2 border rounded bg-background text-xs">...many sentences...</div>
+                                </FlowNode>
+                            </motion.div>
+                        )}
+                        </AnimatePresence>
+                        <AnimatePresence>
+                        {step >= 2 && (
+                            <motion.div initial={{opacity:0}} animate={{opacity:1}} className="flex items-center">
+                                <FlowNode icon={<HelpCircle />} title="2. User Query" status={getStatus(2)} step={2} currentStep={step}>
+                                    <div className="p-2 border rounded bg-background text-xs">{userQuery}</div>
+                                </FlowNode>
+                            </motion.div>
+                        )}
+                        </AnimatePresence>
+                    </div>
 
                     <AnimatePresence>{step >= 3 && <FlowArrow step={3} currentStep={step} />}</AnimatePresence>
 
 
-                    {/* Column 2: Vector Store */}
+                    {/* Column 2: Retrieved Sentence */}
                    <AnimatePresence>
                     {step >= 3 && (
                         <motion.div initial={{opacity: 0}} animate={{opacity: 1}} className="flex items-center">
-                            <FlowNode icon={<Database />} title="3. Vector Store" status={getStatus(3)} step={3} currentStep={step}>
+                            <FlowNode icon={<Search />} title="3. Retrieved Sentence" status={getStatus(3)} step={3} currentStep={step}>
                                 <div className="space-y-1.5">
-                                    {documentChunks.map((chunk) => (
-                                        <DocumentChunk key={chunk.id} text={chunk.text} isHighlighted={step >= 3 && chunk.id === relevantChunkId} />
-                                    ))}
+                                    <DocumentChunk text={relevantChunk.text} isHighlighted={true} />
                                 </div>
                             </FlowNode>
                         </motion.div>
