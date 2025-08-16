@@ -1,3 +1,4 @@
+
 // src/components/ANNVisualization.tsx
 "use client";
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
@@ -32,7 +33,7 @@ const IndexTypeCard = ({ icon, title, children }: { icon: React.ReactNode, title
 const StepIndicator = ({ current, total }: { current: number, total: number }) => (
     <div className="flex justify-center gap-1.5 my-2">
         {Array.from({ length: total }).map((_, i) => (
-            <div key={i} className={cn("h-1.5 w-6 rounded-full transition-colors", i < current ? 'bg-primary' : 'bg-muted')}/>
+            <div key={i} className={cn("h-1.5 w-6 rounded-full transition-colors", i + 1 < current ? 'bg-primary' : 'bg-muted')}/>
         ))}
     </div>
 );
@@ -97,26 +98,29 @@ export function ANNVisualization() {
     };
 
     const handleNext = () => {
-        setStep(s => s + 1);
+        if (!isSimulating) return;
+        setStep(s => Math.min(s + 1, 8));
     }
     
     const handleStart = () => {
+        reset();
         setIsSimulating(true);
         setStep(1);
     }
 
     const getStepDescription = () => {
         const descriptions = [
-            "This is a universe of 50 data points (e.g., documents). Finding the closest to a query requires checking all 50.",
-            "ANN builds an intelligent graph, connecting points into a multi-layer network. An entry point is chosen to start all searches.",
-            "Layer 1 contains long-range 'highway' links, allowing searches to quickly jump across the dataset.",
-            "Layer 0 contains short-range 'local street' links, connecting nearby points for fine-grained searching.",
-            "A query (purple) enters. Instead of checking all points, it starts at the entry point and navigates the graph.",
-            "The search follows the 'highway' links to traverse to the most promising region of the graph quickly.",
+            "Ready to see how ANN works? Click 'Start' to begin.",
+            "This is our dataset of 50 points. A brute-force search would have to check every single one against a query.",
+            "First, ANN builds an intelligent graph. An **entry point** (blue) is chosen to start all searches.",
+            "**Layer 1** (highways) is built, containing long-range links that let searches quickly jump across the dataset.",
+            "**Layer 0** (local streets) is built, containing short-range links that connect nearby points for fine-grained searching.",
+            "Now, a **query** (purple) enters. Instead of checking all points, it starts at the entry point.",
+            "The search follows the fast 'highway' links to traverse to the most promising region of the graph.",
             "Once in the right neighborhood, the search switches to the dense local links to find the exact nearest neighbors.",
-            "The approximate nearest neighbors are found after visiting only a fraction of the total points. This is the power of ANN search."
+            "Success! The nearest neighbors (highlighted) are found after visiting only a fraction of the total points."
         ];
-        return descriptions[step -1] || "Learn how ANN indexing and search works."
+        return descriptions[step] || "Learn how ANN indexing and search works."
     };
 
     return (
@@ -154,33 +158,33 @@ export function ANNVisualization() {
                                     <svg width={width} height={height}>
                                         <AnimatePresence>
                                         {/* Layer 0 Connections */}
-                                        {step >= 3 && layer0Connections.map((conn, i) => (
+                                        {step >= 4 && layer0Connections.map((conn, i) => (
                                             <motion.line key={`l0-${i}`} x1={conn.source.x} y1={conn.source.y} x2={conn.target.x} y2={conn.target.y} stroke="hsl(var(--border))" strokeWidth="0.5" initial={{opacity:0}} animate={{opacity:1}} transition={{delay: i * 0.01}}/>
                                         ))}
 
                                         {/* Layer 1 Connections */}
-                                        {step >= 2 && layer1Connections.map((conn, i) => (
+                                        {step >= 3 && layer1Connections.map((conn, i) => (
                                             <motion.line key={`l1-${i}`} x1={conn.source.x} y1={conn.source.y} x2={conn.target.x} y2={conn.target.y} stroke="hsl(var(--primary) / 0.5)" strokeWidth="1.5" initial={{pathLength:0}} animate={{pathLength:1}} transition={{delay: i * 0.2}}/>
                                         ))}
                                         
                                         {/* Data Points */}
-                                        {points.map((p) => (
+                                        {step >= 1 && points.map((p) => (
                                             <motion.circle key={p.id} cx={p.x} cy={p.y} r="3" className="fill-muted-foreground/50" />
                                         ))}
                                         
                                         {/* Entry Point */}
-                                        {step >= 1 && entryPoint && <motion.circle cx={entryPoint.x} cy={entryPoint.y} r="6" className="fill-primary" initial={{scale:0}} animate={{scale:1}}/>}
+                                        {step >= 2 && entryPoint && <motion.circle cx={entryPoint.x} cy={entryPoint.y} r="6" className="fill-primary" initial={{scale:0}} animate={{scale:1}}/>}
 
                                         {/* Query Point */}
-                                        {step >= 4 && <motion.circle cx={queryPoint.x} cy={queryPoint.y} r="5" className="fill-accent-foreground stroke-background" strokeWidth={2} initial={{ scale: 0 }} animate={{ scale: 1 }} />}
+                                        {step >= 5 && <motion.circle cx={queryPoint.x} cy={queryPoint.y} r="5" className="fill-purple-500 stroke-background" strokeWidth={2} initial={{ scale: 0 }} animate={{ scale: 1 }} />}
 
                                         {/* Search Path */}
-                                        {step >= 5 && path.map((p, i) => i > 0 && (
+                                        {step >= 6 && path.map((p, i) => i > 0 && (
                                             <motion.line key={`path-${i}`} x1={path[i-1].x} y1={path[i-1].y} x2={p.x} y2={p.y} stroke="hsl(var(--primary))" strokeWidth="2.5" strokeDasharray="4 4" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ delay: i * 0.5 }}/>
                                         ))}
 
                                         {/* Final Neighbors */}
-                                        {step >= 7 && neighbors.map((p, i) => (
+                                        {step >= 8 && neighbors.map((p, i) => (
                                            <motion.g key={`neighbor-${i}`}>
                                                 <motion.line x1={queryPoint.x} y1={queryPoint.y} x2={p.x} y2={p.y} stroke="hsl(var(--primary))" strokeWidth={1} initial={{pathLength:0}} animate={{pathLength:1}} transition={{delay:0.5 + i*0.1}} />
                                                 <motion.circle cx={p.x} cy={p.y} r={5} className="fill-primary/50 stroke-primary" strokeWidth={2} initial={{scale:0}} animate={{scale:1}} transition={{delay:0.5 + i*0.1}}/>
@@ -190,9 +194,11 @@ export function ANNVisualization() {
                                     </svg>
                                 </div>
                                 <div className="flex justify-center gap-4 mt-4">
-                                    {!isSimulating && <Button onClick={handleStart}><Play className="mr-2"/>Start</Button>}
-                                    {isSimulating && <Button variant="outline" onClick={reset}><RefreshCw className="mr-2"/>Reset</Button>}
-                                    {isSimulating && step < 8 && <Button onClick={handleNext}>Next <ArrowRight className="ml-2"/></Button>}
+                                    <Button onClick={handleStart} variant={isSimulating ? 'outline' : 'default'}>
+                                        {isSimulating ? <RefreshCw className="mr-2"/> : <Play className="mr-2"/>}
+                                        {isSimulating ? 'Reset' : 'Start'}
+                                    </Button>
+                                    {isSimulating && <Button onClick={handleNext} disabled={step >= 8}>Next <ArrowRight className="ml-2"/></Button>}
                                 </div>
                                 {step === 8 && (
                                     <motion.div initial={{opacity:0}} animate={{opacity:1}} className="text-center mt-4">
