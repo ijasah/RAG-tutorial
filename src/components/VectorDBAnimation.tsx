@@ -41,10 +41,6 @@ export const VectorDBAnimation = () => {
         setProcessedDocs([]);
     };
 
-    const handleNextStep = () => {
-        setStep(prev => Math.min(prev + 1, 6));
-    };
-
     useEffect(() => {
         if (step > 1 && step < 6 && processedDocs.length < documents.length) {
             const docId = documents[processedDocs.length].id;
@@ -54,7 +50,7 @@ export const VectorDBAnimation = () => {
             }, 500);
             return () => clearTimeout(timer);
         }
-    }, [step, processedDocs]);
+    }, [step, processedDocs, documents]);
 
 
     const getStepDescription = () => {

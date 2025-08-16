@@ -13,6 +13,8 @@ import { TemperatureDemo } from '@/components/TemperatureDemo';
 import { TopKDemo } from '@/components/TopKDemo';
 import { TopPDemo } from '@/components/TopPDemo';
 import { VectorDBAnimation } from '@/components/VectorDBAnimation';
+import { ANNVisualization } from '@/components/ANNVisualization';
+import { SimilarityMetricsSimulator } from '@/components/SimilarityMetricsSimulator';
 
 
 import {
@@ -167,6 +169,8 @@ const Index = () => {
                     Vector databases are specialized databases designed to store and manage high-dimensional vectors (embeddings) efficiently. These databases make it easier to perform similarity searches and retrieve relevant information for a given query.
                   </p>
                   <VectorDBAnimation />
+                  <ANNVisualization />
+                  <SimilarityMetricsSimulator />
                 </div>
 
               </div>
