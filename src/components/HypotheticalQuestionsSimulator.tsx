@@ -4,190 +4,219 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { Files, BrainCircuit, HelpCircle, FileText, Database, Search, MessageSquare, Play, RefreshCw, ArrowRight } from 'lucide-react';
+import { BrainCircuit, HelpCircle, FileText, Database, Search, ChevronRight, Play, RefreshCw, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from './ui/badge';
 import { Card, CardContent } from './ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+
 
 const initialChunks = {
     "chunk-1": "RAG enhances LLMs by grounding them in external knowledge, reducing hallucinations.",
     "chunk-2": "A key RAG component is the vector database, used for efficient similarity search.",
-    "chunk-3": "BERT and other Transformer models are often used for creating text embeddings."
 };
 
 const hypotheticalQuestions = {
     "chunk-1": "How does RAG improve LLM factuality?",
     "chunk-2": "What role do vector databases play in RAG?",
-    "chunk-3": "Which models create embeddings for RAG?"
 };
 
 const userQuery = "Why is RAG better than just using an LLM?";
 
-const FlowNode = ({ icon, title, children, highlighted = false, className = '' }: { icon: React.ReactNode, title: string, children?: React.ReactNode, highlighted?: boolean, className?: string }) => (
-    <div className={cn("relative text-center", className)}>
-        <div className="flex flex-col items-center">
-            {icon}
-            <h4 className="text-xs font-semibold mt-2 text-muted-foreground">{title}</h4>
-        </div>
-        <AnimatePresence>
-            {children && (
-                 <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                 >
-                    {children}
-                </motion.div>
-            )}
-        </AnimatePresence>
-    </div>
+const FlowCard = ({ title, icon, children, highlighted }: { title: string, icon: React.ReactNode, children: React.ReactNode, highlighted?: boolean }) => (
+    <Card className={cn(highlighted ? "border-primary bg-primary/10" : "")}>
+        <CardContent className="p-4">
+            <div className="flex items-center gap-3 mb-3">
+                {icon}
+                <h4 className="font-semibold text-sm">{title}</h4>
+            </div>
+            <div className="text-xs text-muted-foreground space-y-2">
+                {children}
+            </div>
+        </CardContent>
+    </Card>
 );
 
-const Arrow = ({ label, isDashed = false, className = '' }: { label: string, isDashed?: boolean, className?: string }) => (
-    <div className={cn("flex flex-col items-center justify-center text-center h-full", className)}>
-        <Badge variant="secondary" className="mb-2 z-10 text-xs">{label}</Badge>
-        <svg width="100%" height="20" viewBox="0 0 100 20" preserveAspectRatio="none" className="z-0">
-             <path d="M 0 10 L 100 10" stroke="hsl(var(--border))" strokeWidth="1.5" strokeDasharray={isDashed ? "4 4" : "none"} markerEnd="url(#arrowhead)" />
-        </svg>
-    </div>
-)
-
-const StepIndicator = ({ step, label, isActive }: { step: number, label: string, isActive: boolean }) => (
-    <div className={cn("flex items-center gap-2 transition-all", isActive ? "text-primary" : "text-muted-foreground/60")}>
-        <div className={cn("flex items-center justify-center w-5 h-5 rounded-full border-2 text-xs font-bold", isActive ? "border-primary" : "border-muted-foreground/60")}>
-            {step}
-        </div>
-        <span className={cn("text-sm", isActive && "font-semibold")}>{label}</span>
+const Arrow = () => (
+    <div className="flex justify-center items-center my-2">
+        <ChevronRight className="w-6 h-6 text-muted-foreground/50" />
     </div>
 );
 
 export const HypotheticalQuestionsSimulator = () => {
+    const [phase, setPhase] = useState<'indexing' | 'retrieval'>('indexing');
     const [step, setStep] = useState(0);
 
-    const handleNext = () => setStep(s => Math.min(s + 1, 7));
+    const handleNext = () => setStep(s => s + 1);
     const handleReset = () => setStep(0);
+
+    const isIndexing = phase === 'indexing';
+    const isRetrieval = phase === 'retrieval';
     const isRunning = step > 0;
+    const maxIndexingSteps = 3;
+    const maxRetrievalSteps = 4;
 
-    const renderStepContent = () => {
-        return (
-            <div className="grid grid-cols-[1fr_auto_1.5fr_auto_1.5fr_auto_1fr] items-center gap-x-2 w-full">
-                {/* Step 1: Documents to Chunks */}
-                <FlowNode icon={<Files className="w-8 h-8 text-primary" />} title="Documents">
-                    {step === 1 && <motion.div layoutId="doc-item" className="p-2 border rounded-md bg-muted text-xs mt-2 w-28">Doc 1</motion.div>}
-                </FlowNode>
-                <Arrow label="1. Chunk" />
-
-                {/* Step 2: Chunks to Hypothetical Questions */}
-                <FlowNode icon={<FileText className="w-8 h-8 text-primary" />} title="Document Chunks">
-                    <div className="space-y-1 mt-2 w-48">
-                         <AnimatePresence>
-                           {step >= 1 && <motion.div layoutId="doc-item" className={cn("p-2 border rounded-md text-xs", step === 2 && "border-blue-500 bg-blue-500/10")}>{initialChunks['chunk-1']}</motion.div>}
-                        </AnimatePresence>
-                    </div>
-                </FlowNode>
-                 <Arrow label="2. Generate" isDashed />
-
-                {/* Step 3: Store Hypothetical Questions */}
-                <FlowNode icon={<Database className="w-8 h-8 text-primary" />} title="Vector Store of Hypothetical Questions">
-                    <div className="space-y-1 mt-2 w-48">
-                        {Object.entries(hypotheticalQuestions).map(([key, q], i) => (
-                           <AnimatePresence key={key}>
-                             {step >= 2 && (
-                                <motion.div
-                                    initial={{ opacity: 0, x: -20 }}
-                                    animate={{ opacity: 1, x: 0, transition: { delay: i * 0.2, when: 'beforeChildren' } }}
-                                    className={cn("p-2 border rounded-md text-xs", (step === 4 && key==='chunk-1') && "border-red-500 bg-red-500/10" )}
-                                >
-                                    {q}
-                                </motion.div>
-                             )}
-                            </AnimatePresence>
-                        ))}
-                    </div>
-                </FlowNode>
-
-                {/* Step 6 & 7: LLM to Answer */}
-                 <Arrow label="6. Augment" />
-                <FlowNode icon={<BrainCircuit className="w-8 h-8 text-primary" />} title="LLM">
-                    <AnimatePresence>
-                        {step >= 7 && (
-                           <motion.div
-                             className="p-2 border rounded-md text-xs mt-2 w-48 space-y-2 bg-green-500/10 border-green-500"
-                           >
-                            <p className="font-bold">Answer:</p>
-                            <p>RAG is better because it grounds the LLM in real-time, external facts, which significantly reduces the chance of making up incorrect information (hallucination).</p>
-                           </motion.div>
-                        )}
-                    </AnimatePresence>
-                </FlowNode>
-                
-                {/* Query Path */}
-                <div className="col-start-1 col-span-1 mt-16">
-                     <FlowNode icon={<HelpCircle className="w-8 h-8 text-primary" />} title="User Query">
-                       {step >= 3 && <motion.div className="p-2 border rounded-md bg-muted text-xs mt-2 w-48">{userQuery}</motion.div>}
-                    </FlowNode>
-                </div>
-                <div className="col-start-2 col-span-1 mt-16">
-                     <Arrow label="3. Search" />
-                </div>
-
-                <div className="col-start-3 col-span-3 items-center flex justify-center mt-16 relative">
-                    {step >= 5 &&
-                        <motion.div
-                         className="absolute flex items-center"
-                         initial={{opacity: 0}}
-                         animate={{opacity: 1}}
-                        >
-                            <Arrow label="4. Retrieve Chunk" />
-                            <div className={cn("p-2 border rounded-md text-xs w-48 border-red-500 bg-red-500/10")}>{initialChunks['chunk-1']}</div>
-                             <Arrow label="5. Pass to LLM" />
-                        </motion.div>
-                    }
-                </div>
-            </div>
-        )
+    const getIndexingDescription = () => {
+        const descriptions = [
+            "Click 'Start' to begin the indexing phase.",
+            "1. Original documents are split into smaller chunks.",
+            "2. An LLM generates a hypothetical question that each chunk could answer.",
+            "3. The generated questions and their corresponding chunk IDs are stored.",
+        ];
+        return descriptions[step] || descriptions[descriptions.length -1];
     }
-
-    const getStepLabel = () => {
-       const labels = [
-           "Ready to start.",
-           "1. Documents are broken into smaller, manageable chunks.",
-           "2. An LLM generates a hypothetical question that each chunk could answer.",
-           "3. The user's query is vectorized and used to search the hypothetical questions.",
-           "4. The most semantically similar hypothetical question is found.",
-           "5. The original document chunk associated with the winning question is retrieved.",
-           "6. The chunk and the original query are passed to the LLM as context.",
-           "7. The LLM generates a final, factually-grounded answer."
-       ];
-       return labels[step];
+    
+    const getRetrievalDescription = () => {
+        const descriptions = [
+            "Now, let's see how a user query is handled.",
+            "1. A user asks a question.",
+            "2. The user's query is used to search for the most similar *hypothetical question* in our store.",
+            "3. The hypothetical question with the highest similarity score is found ('chunk-1').",
+            "4. The original chunk corresponding to the winning question is retrieved to answer the user's query."
+        ];
+        return descriptions[step] || descriptions[descriptions.length -1];
+    }
+    
+    const resetAndSwitch = (newPhase: 'indexing' | 'retrieval') => {
+        setPhase(newPhase);
+        setStep(0);
     }
 
     return (
         <Card className="bg-card/60 mt-4 border-primary/20">
-            <svg width="0" height="0" className="absolute">
-                <defs>
-                    <marker id="arrowhead" markerWidth="5" markerHeight="3.5" refX="0" refY="1.75" orient="auto">
-                        <polygon points="0 0, 5 1.75, 0 3.5" fill="hsl(var(--border))" />
-                    </marker>
-                </defs>
-            </svg>
             <CardContent className="p-4">
-                 <div className="flex justify-between items-center mb-4">
-                     <p className="text-sm text-muted-foreground flex-1 pr-4">{getStepLabel()}</p>
-                     <div className="flex gap-2">
-                        <Button onClick={handleReset} variant="outline" size="sm" disabled={!isRunning}>
-                            <RefreshCw className="mr-2 h-4 w-4" /> Reset
-                        </Button>
-                        <Button onClick={handleNext} size="sm" disabled={step >= 7}>
-                            {isRunning ? 'Next' : 'Start'} <ArrowRight className="ml-2 h-4 w-4" />
-                        </Button>
-                    </div>
-                </div>
+                <Tabs value={phase} onValueChange={(v) => resetAndSwitch(v as any)} className="w-full">
+                    <TabsList className="grid w-full grid-cols-2">
+                        <TabsTrigger value="indexing">Phase 1: Indexing</TabsTrigger>
+                        <TabsTrigger value="retrieval">Phase 2: Retrieval</TabsTrigger>
+                    </TabsList>
+                    <AnimatePresence mode="wait">
+                        <motion.div
+                            key={phase}
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: 10 }}
+                        >
+                            <div className="p-2 text-center mt-4">
+                                <p className="text-sm text-muted-foreground h-10 flex items-center justify-center">
+                                    {isIndexing ? getIndexingDescription() : getRetrievalDescription()}
+                                </p>
+                            </div>
+                            
+                            {isIndexing && (
+                                <div className="p-2 space-y-4 md:space-y-0 md:grid md:grid-cols-[1fr_auto_1fr_auto_1fr] md:items-start md:gap-4">
+                                    {/* Chunks */}
+                                    <AnimatePresence>
+                                        {step >= 1 && (
+                                             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+                                                <FlowCard title="Document Chunks" icon={<FileText className="w-5 h-5 text-primary"/>}>
+                                                    <p className="p-2 border rounded bg-background">{initialChunks['chunk-1']}</p>
+                                                    <p className="p-2 border rounded bg-background">{initialChunks['chunk-2']}</p>
+                                                </FlowCard>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                   
+                                    {/* Arrow 1 */}
+                                    {step >= 2 && <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}><Arrow /></motion.div>}
+                                    
+                                    {/* Hypothetical Questions */}
+                                    <AnimatePresence>
+                                        {step >= 2 && (
+                                            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+                                                <FlowCard title="Generated Questions" icon={<BrainCircuit className="w-5 h-5 text-primary"/>}>
+                                                    <p className="p-2 border rounded bg-background">{hypotheticalQuestions['chunk-1']}</p>
+                                                    <p className="p-2 border rounded bg-background">{hypotheticalQuestions['chunk-2']}</p>
+                                                </FlowCard>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                    
+                                    {/* Arrow 2 */}
+                                    {step >= 3 && <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}><Arrow /></motion.div>}
 
-                <div className="relative p-6 border bg-muted/30 rounded-lg min-h-[400px] flex items-center justify-center overflow-hidden">
-                   {renderStepContent()}
-                </div>
+                                    {/* Vector Store */}
+                                    <AnimatePresence>
+                                    {step >= 3 && (
+                                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+                                            <FlowCard title="Stored Content" icon={<Database className="w-5 h-5 text-primary"/>}>
+                                                <div>
+                                                    <Badge>chunk-1</Badge>
+                                                    <p className="p-2 mt-1 border rounded bg-background">{hypotheticalQuestions['chunk-1']}</p>
+                                                </div>
+                                                 <div>
+                                                    <Badge>chunk-2</Badge>
+                                                    <p className="p-2 mt-1 border rounded bg-background">{hypotheticalQuestions['chunk-2']}</p>
+                                                </div>
+                                            </FlowCard>
+                                        </motion.div>
+                                    )}
+                                    </AnimatePresence>
+                                </div>
+                            )}
 
+                            {isRetrieval && (
+                                 <div className="p-2 space-y-4 md:space-y-0 md:grid md:grid-cols-[1fr_auto_1fr_auto_1fr] md:items-start md:gap-4">
+                                     {/* User Query */}
+                                    <AnimatePresence>
+                                     {step >= 1 && (
+                                         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+                                            <FlowCard title="User Query" icon={<HelpCircle className="w-5 h-5 text-primary" />}>
+                                                <p className="p-2 border rounded bg-background">{userQuery}</p>
+                                            </FlowCard>
+                                         </motion.div>
+                                     )}
+                                     </AnimatePresence>
+                                     
+                                     {/* Arrow 1 */}
+                                     {step >= 2 && <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}><Arrow /></motion.div>}
+
+                                     {/* Search */}
+                                     <AnimatePresence>
+                                     {step >= 2 && (
+                                         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+                                            <FlowCard title="Similarity Search" icon={<Search className="w-5 h-5 text-primary"/>} highlighted={step >=3}>
+                                                 <div>
+                                                    <p className="p-2 border rounded bg-background">{hypotheticalQuestions['chunk-1']}</p>
+                                                    <div className="text-right pr-2">{step >= 3 && <Badge variant={step >= 3 ? "default" : "secondary"}>Score: 0.91</Badge>}</div>
+                                                </div>
+                                                 <div>
+                                                    <p className="p-2 border rounded bg-background">{hypotheticalQuestions['chunk-2']}</p>
+                                                    <div className="text-right pr-2">{step >= 3 && <Badge variant="secondary">Score: 0.62</Badge>}</div>
+                                                </div>
+                                            </FlowCard>
+                                         </motion.div>
+                                     )}
+                                     </AnimatePresence>
+                                     
+                                      {/* Arrow 2 */}
+                                     {step >= 4 && <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}><Arrow /></motion.div>}
+                                     
+                                     {/* Retrieved Chunk */}
+                                     <AnimatePresence>
+                                     {step >= 4 && (
+                                         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+                                            <FlowCard title="Retrieved Chunk" icon={<FileText className="w-5 h-5 text-primary"/>}>
+                                                <p className="p-2 border rounded bg-background">{initialChunks['chunk-1']}</p>
+                                            </FlowCard>
+                                         </motion.div>
+                                     )}
+                                     </AnimatePresence>
+                                 </div>
+                            )}
+
+                        </motion.div>
+                    </AnimatePresence>
+                </Tabs>
+                
+                 <div className="flex justify-center items-center mt-4 pt-4 border-t">
+                     <Button onClick={handleReset} variant="outline" size="sm" disabled={!isRunning}>
+                         <RefreshCw className="mr-2 h-4 w-4" /> Reset
+                     </Button>
+                     <Button onClick={handleNext} size="sm" className="ml-2 w-28" disabled={isIndexing ? step >= maxIndexingSteps : step >= maxRetrievalSteps}>
+                         {isRunning ? 'Next' : 'Start'} <ArrowRight className="ml-2 h-4 w-4" />
+                     </Button>
+                </div>
             </CardContent>
         </Card>
     );
