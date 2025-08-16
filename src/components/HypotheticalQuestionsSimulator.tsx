@@ -4,12 +4,10 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { BrainCircuit, HelpCircle, FileText, Database, Search, ChevronRight, RefreshCw, ArrowRight, ArrowDown, GitMerge } from 'lucide-react';
+import { BrainCircuit, HelpCircle, FileText, Database, Search, RefreshCw, ArrowRight, GitMerge, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from './ui/badge';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-
 
 const initialChunks = {
     "chunk-1": "RAG enhances LLMs by grounding them in external knowledge, reducing hallucinations.",
@@ -22,176 +20,149 @@ const hypotheticalQuestions = {
 };
 
 const userQuery = "Why is RAG better than just using an LLM?";
+const finalAnswer = "RAG is better than a standalone LLM because it grounds the model in external knowledge, which reduces hallucinations and improves factuality. This is achieved by retrieving relevant information before generating an answer."
 
-const FlowCard = ({ title, icon, children, highlighted, className }: { title: string, icon: React.ReactNode, children: React.ReactNode, highlighted?: boolean, className?: string }) => (
-    <Card className={cn("transition-all h-full", highlighted ? "border-primary bg-primary/10" : "", className)}>
-        <CardHeader className="p-3">
-             <CardTitle className="flex items-center gap-2 text-sm">
-                {icon}
-                <h4 className="font-semibold">{title}</h4>
-             </CardTitle>
-        </CardHeader>
-        <CardContent className="p-3 pt-0">
-            <div className="text-xs text-muted-foreground space-y-1.5">
-                {children}
-            </div>
-        </CardContent>
-    </Card>
+const FlowNode = ({ title, icon, children, highlighted, step, currentStep }: { title: string, icon: React.ReactNode, children: React.ReactNode, highlighted?: boolean, step: number, currentStep: number }) => (
+    <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: currentStep >= step ? 1 : 0.4, y: 0 }}
+        transition={{ duration: 0.3 }}
+    >
+        <Card className={cn("transition-all h-full", highlighted ? "border-primary bg-primary/10" : "")}>
+            <CardHeader className="p-3">
+                <CardTitle className="flex items-center gap-2 text-sm">
+                    {icon}
+                    <h4 className="font-semibold">{title}</h4>
+                </CardTitle>
+            </CardHeader>
+            <CardContent className="p-3 pt-0">
+                <div className="text-xs text-muted-foreground space-y-1.5">
+                    {children}
+                </div>
+            </CardContent>
+        </Card>
+    </motion.div>
 );
 
-const Arrow = ({vertical = false}) => (
-    <motion.div 
-        initial={{opacity:0}} animate={{opacity:1}} transition={{delay: 0.5}}
+const Arrow = ({ step, currentStep }: { step: number, currentStep: number }) => (
+     <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: currentStep >= step ? 1 : 0.4 }}
+        transition={{ duration: 0.3 }}
         className="flex justify-center items-center my-auto"
     >
-       {vertical ? <ArrowDown className="w-5 h-5 text-muted-foreground/50" /> : <ChevronRight className="w-6 h-6 text-muted-foreground/50" />}
+       <ArrowRight className="w-6 h-6 text-muted-foreground/50" />
     </motion.div>
 );
 
 export const HypotheticalQuestionsSimulator = () => {
-    const [phase, setPhase] = useState<'indexing' | 'retrieval'>('indexing');
     const [step, setStep] = useState(0);
+    const maxSteps = 7;
 
-    const handleNext = () => setStep(s => s + 1);
+    const handleNext = () => setStep(s => Math.min(s + 1, maxSteps));
     const handleReset = () => setStep(0);
 
-    const isIndexing = phase === 'indexing';
-    const isRetrieval = phase === 'retrieval';
-    const isRunning = step > 0;
-    const maxIndexingSteps = 3;
-    const maxRetrievalSteps = 4;
-
-    const getIndexingDescription = () => {
+    const getStepDescription = () => {
         const descriptions = [
-            "Click 'Start' to begin the indexing phase, where we prepare our data.",
-            "1. First, original documents are split into smaller, manageable chunks.",
+            "Click 'Start' to walk through the Hypothetical Questions method.",
+            "1. First, documents are split into smaller, manageable chunks.",
             "2. An LLM generates a hypothetical question that each specific chunk could answer.",
-            "3. The generated questions and links to their original chunks are stored and indexed.",
+            "3. The generated questions are indexed, with a link back to their original document chunk.",
+            "4. A new user query arrives. This query may be phrased differently than the document text.",
+            "5. The user's query is used to perform a similarity search against the *hypothetical questions*.",
+            "6. The original chunk linked to the most similar question is retrieved.",
+            "7. The LLM uses the original query and the retrieved chunk to synthesize a final, grounded answer."
         ];
-        return descriptions[step] || descriptions[descriptions.length -1];
-    }
-    
-    const getRetrievalDescription = () => {
-        const descriptions = [
-            "Now, let's see how a new user query is handled using our special index.",
-            "1. A user asks a new question. This query may be phrased differently than our documents.",
-            "2. The user's query is used to search for the most similar *hypothetical question* in our store.",
-            "3. The hypothetical question with the highest similarity score is found.",
-            "4. The system retrieves the original chunk linked to that winning question to answer the query."
-        ];
-        return descriptions[step] || descriptions[descriptions.length -1];
-    }
-    
-    const resetAndSwitch = (newPhase: 'indexing' | 'retrieval') => {
-        setPhase(newPhase);
-        setStep(0);
-    }
-    
-    const renderNode = (s: number, children: React.ReactNode) => {
-        return <AnimatePresence>{step >= s && <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0, transition: {delay: (s-1) * 0.2} }}>{children}</motion.div>}</AnimatePresence>
+        return descriptions[step];
     }
 
     return (
         <Card className="bg-card/60 border-primary/20">
             <CardHeader>
                 <CardTitle className="text-base">Method: Hypothetical Questions</CardTitle>
+                 <CardDescription className="pt-2 h-12 flex items-center justify-center text-center">
+                    {getStepDescription()}
+                </CardDescription>
             </CardHeader>
             <CardContent className="p-4 pt-0">
-                <Tabs value={phase} onValueChange={(v) => resetAndSwitch(v as any)} className="w-full">
-                    <TabsList className="grid w-full grid-cols-2">
-                        <TabsTrigger value="indexing">Phase 1: Indexing</TabsTrigger>
-                        <TabsTrigger value="retrieval">Phase 2: Retrieval</TabsTrigger>
-                    </TabsList>
-                    <AnimatePresence mode="wait">
-                        <motion.div
-                            key={phase}
-                            initial={{ opacity: 0, x: -10 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: 10 }}
-                            className="mt-4"
+                <div className="space-y-4">
+                    {/* Top Row: Indexing Path */}
+                    <div className="grid grid-cols-[1fr,auto,1fr,auto,1fr] gap-4 items-stretch">
+                        <FlowNode title="Document Chunks" icon={<FileText className="w-5 h-5 text-primary"/>} step={1} currentStep={step}>
+                            <p className="p-2 border rounded bg-background">{initialChunks['chunk-1']}</p>
+                            <p className="p-2 border rounded bg-background">{initialChunks['chunk-2']}</p>
+                        </FlowNode>
+                        
+                        <Arrow step={2} currentStep={step} />
+                        
+                        <FlowNode title="Generate Questions" icon={<BrainCircuit className="w-5 h-5 text-primary"/>} step={2} currentStep={step}>
+                            <p className="p-2 border rounded bg-background">{hypotheticalQuestions['chunk-1']}</p>
+                            <p className="p-2 border rounded bg-background">{hypotheticalQuestions['chunk-2']}</p>
+                        </FlowNode>
+                        
+                        <Arrow step={3} currentStep={step} />
+
+                        <FlowNode title="Indexed Store" icon={<Database className="w-5 h-5 text-primary"/>} step={3} currentStep={step} highlighted={step === 5}>
+                             <div>
+                                <Badge variant={step >= 5 ? "default" : "secondary"}>Similarity: {step >= 5 ? 0.91 : 'N/A'}</Badge>
+                                <p className="p-1 mt-1 border rounded bg-background">{hypotheticalQuestions['chunk-1']}</p>
+                            </div>
+                             <div>
+                                <Badge variant="secondary">Similarity: {step >= 5 ? 0.62 : 'N/A'}</Badge>
+                                <p className="p-1 mt-1 border rounded bg-background">{hypotheticalQuestions['chunk-2']}</p>
+                            </div>
+                        </FlowNode>
+                    </div>
+
+                    {/* Bottom Row: Retrieval Path */}
+                     <AnimatePresence>
+                    {step >= 4 && (
+                        <motion.div 
+                            initial={{opacity: 0, y: 10}} 
+                            animate={{opacity: 1, y: 0}}
+                            className="grid grid-cols-[1fr,auto,1fr,auto,1fr] gap-4 items-stretch mt-4"
                         >
-                             <CardDescription className="pt-2 h-12 flex items-center justify-center text-center mb-4">
-                                {isIndexing ? getIndexingDescription() : getRetrievalDescription()}
-                            </CardDescription>
+                            <FlowNode title="User Query" icon={<HelpCircle className="w-5 h-5 text-primary"/>} step={4} currentStep={step}>
+                                <p className="p-2 border rounded bg-background">{userQuery}</p>
+                            </FlowNode>
                             
-                            {isIndexing && (
-                                <div className="p-2 grid grid-cols-[1fr,auto,1fr,auto,1fr] gap-4 items-stretch min-h-[220px]">
-                                    {renderNode(1, 
-                                        <FlowCard title="Document Chunks" icon={<FileText className="w-5 h-5 text-primary"/>}>
-                                            <p className="p-2 border rounded bg-background">{initialChunks['chunk-1']}</p>
-                                            <p className="p-2 border rounded bg-background">{initialChunks['chunk-2']}</p>
-                                        </FlowCard>
-                                    )}
-                                   
-                                    {step >= 2 && <Arrow />}
-                                    
-                                    {renderNode(2,
-                                        <FlowCard title="Generated Questions" icon={<BrainCircuit className="w-5 h-5 text-primary"/>}>
-                                            <p className="p-2 border rounded bg-background">{hypotheticalQuestions['chunk-1']}</p>
-                                            <p className="p-2 border rounded bg-background">{hypotheticalQuestions['chunk-2']}</p>
-                                        </FlowCard>
-                                    )}
+                            <Arrow step={5} currentStep={step} />
 
-                                    {step >= 3 && <Arrow />}
+                            <FlowNode title="Similarity Search" icon={<Search className="w-5 h-5 text-primary"/>} step={5} currentStep={step}>
+                                <p>Search against the indexed questions to find the most semantically similar one.</p>
+                            </FlowNode>
+                            
+                            <Arrow step={6} currentStep={step} />
 
-                                    {renderNode(3,
-                                        <FlowCard title="Indexed Store" icon={<Database className="w-5 h-5 text-primary"/>}>
-                                            <div>
-                                                <Badge>Ref: chunk-1</Badge>
-                                                <p className="p-1 mt-1 border rounded bg-background">{hypotheticalQuestions['chunk-1']}</p>
-                                            </div>
-                                             <div>
-                                                <Badge>Ref: chunk-2</Badge>
-                                                <p className="p-1 mt-1 border rounded bg-background">{hypotheticalQuestions['chunk-2']}</p>
-                                            </div>
-                                        </FlowCard>
-                                    )}
-                                </div>
-                            )}
-
-                            {isRetrieval && (
-                                 <div className="p-2 grid grid-cols-[1fr,auto,1fr,auto,1fr] gap-4 items-stretch min-h-[220px]">
-                                     {renderNode(1,
-                                        <FlowCard title="User Query" icon={<HelpCircle className="w-5 h-5 text-primary" />}>
-                                            <p className="p-2 border rounded bg-background">{userQuery}</p>
-                                        </FlowCard>
-                                     )}
-                                     
-                                     {step >= 2 && <Arrow />}
-
-                                     {renderNode(2,
-                                        <FlowCard title="Similarity Search" icon={<Search className="w-5 h-5 text-primary"/>} highlighted={step >=3}>
-                                             <div>
-                                                <p className="p-2 border rounded bg-background">{hypotheticalQuestions['chunk-1']}</p>
-                                                <div className="text-right pr-2 mt-1">{step >= 3 && <Badge variant={step >= 3 ? "default" : "secondary"}>Similarity: 0.91</Badge>}</div>
-                                            </div>
-                                             <div>
-                                                <p className="p-2 border rounded bg-background">{hypotheticalQuestions['chunk-2']}</p>
-                                                <div className="text-right pr-2 mt-1">{step >= 3 && <Badge variant="secondary">Similarity: 0.62</Badge>}</div>
-                                            </div>
-                                        </FlowCard>
-                                     )}
-                                     
-                                      {step >= 4 && <Arrow />}
-                                     
-                                     {renderNode(4,
-                                        <FlowCard title="Retrieved Chunk" icon={<FileText className="w-5 h-5 text-primary"/>}>
-                                            <p className="p-2 border rounded bg-background">{initialChunks['chunk-1']}</p>
-                                        </FlowCard>
-                                     )}
-                                 </div>
-                            )}
-
+                            <FlowNode title="Retrieved Chunk" icon={<GitMerge className="w-5 h-5 text-primary"/>} step={6} currentStep={step}>
+                                <p className="p-2 border rounded bg-background">{initialChunks['chunk-1']}</p>
+                            </FlowNode>
                         </motion.div>
+                    )}
                     </AnimatePresence>
-                </Tabs>
+
+                    {/* Final Answer */}
+                    <AnimatePresence>
+                    {step >= 7 && (
+                        <motion.div
+                           initial={{opacity: 0, y: 10}} 
+                           animate={{opacity: 1, y: 0}}
+                           className="mt-4"
+                        >
+                            <FlowNode title="Final Synthesized Answer" icon={<Sparkles className="w-5 h-5 text-primary"/>} step={7} currentStep={step}>
+                                <p className="p-2 border rounded bg-background">{finalAnswer}</p>
+                            </FlowNode>
+                        </motion.div>
+                    )}
+                    </AnimatePresence>
+                </div>
                 
-                 <div className="flex justify-center items-center mt-4 pt-4 border-t">
-                     <Button onClick={handleReset} variant="outline" size="sm" disabled={!isRunning}>
+                 <div className="flex justify-center items-center mt-6 pt-4 border-t">
+                     <Button onClick={handleReset} variant="outline" size="sm" disabled={step === 0}>
                          <RefreshCw className="mr-2 h-4 w-4" /> Reset
                      </Button>
-                     <Button onClick={handleNext} size="sm" className="ml-2 w-28" disabled={isIndexing ? step >= maxIndexingSteps : step >= maxRetrievalSteps}>
-                         {isRunning ? 'Next' : 'Start'} <ArrowRight className="ml-2 h-4 w-4" />
+                     <Button onClick={handleNext} size="sm" className="ml-4 w-28" disabled={step >= maxSteps}>
+                         {step > 0 ? 'Next' : 'Start'} <ArrowRight className="ml-2 h-4 w-4" />
                      </Button>
                 </div>
             </CardContent>
