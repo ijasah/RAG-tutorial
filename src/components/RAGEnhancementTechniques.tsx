@@ -9,6 +9,7 @@ import { HydeSimulator } from './HydeSimulator';
 import { SubQuerySimulator } from './SubQuerySimulator';
 import { StepbackPromptSimulator } from './StepbackPromptSimulator';
 import { HierarchicalIndexSimulator } from './HierarchicalIndexSimulator';
+import { HybridRetrieveSimulator } from './HybridRetrieveSimulator';
 
 
 const techniqueCategories = [
@@ -67,7 +68,15 @@ const indexingEnhancementMethods = [
         value: "hierarchical-index",
         component: <HierarchicalIndexSimulator />
     }
-]
+];
+
+const retrieverEnhancementMethods = [
+    {
+        title: "Hybrid Retrieve & Rerank",
+        value: "hybrid-retrieve",
+        component: <HybridRetrieveSimulator />
+    }
+];
 
 
 export const RAGEnhancementTechniques = () => {
@@ -123,6 +132,24 @@ export const RAGEnhancementTechniques = () => {
                                      {category.value === 'indexing-enhancement' && (
                                          <Accordion type="single" collapsible className="w-full space-y-2">
                                             {indexingEnhancementMethods.map((method) => (
+                                                 <AccordionItem key={method.value} value={method.value} className="border-b-0">
+                                                    <AccordionTrigger className="p-3 text-sm bg-muted/40 hover:bg-muted/60 rounded-lg">
+                                                        <div className="flex items-center gap-2">
+                                                           <CornerDownLeft className="w-4 h-4" /> 
+                                                           {method.title}
+                                                        </div>
+                                                    </AccordionTrigger>
+                                                    <AccordionContent className="pt-4">
+                                                        {method.component}
+                                                    </AccordionContent>
+                                                </AccordionItem>
+                                            ))}
+                                        </Accordion>
+                                     )}
+
+                                     {category.value === 'retriever-enhancement' && (
+                                         <Accordion type="single" collapsible className="w-full space-y-2">
+                                            {retrieverEnhancementMethods.map((method) => (
                                                  <AccordionItem key={method.value} value={method.value} className="border-b-0">
                                                     <AccordionTrigger className="p-3 text-sm bg-muted/40 hover:bg-muted/60 rounded-lg">
                                                         <div className="flex items-center gap-2">
