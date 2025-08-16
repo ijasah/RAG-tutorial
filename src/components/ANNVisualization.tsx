@@ -191,7 +191,7 @@ export function ANNVisualization() {
                         <svg width={width} height={height}>
                             <AnimatePresence>
                                 {points.map((p, i) => (
-                                    <motion.circle key={`${p.id}-${i}`} cx={p.x} cy={p.y} r={2.5} className={cn("fill-muted-foreground/60", {
+                                    <motion.circle key={`point-${p.id}-${i}`} cx={p.x} cy={p.y} r={2.5} className={cn("fill-muted-foreground/60", {
                                         "fill-primary stroke-primary/50 stroke-2": step >= 8 && finalLeaf?.points.some(lp => lp.id === p.id),
                                     })} />
                                 ))}
@@ -204,7 +204,7 @@ export function ANNVisualization() {
                                     const lineY2 = split.midY - length/2 * Math.cos(split.angle);
                                     
                                     return (
-                                        <motion.g key={`split-${i}`}>
+                                        <motion.g key={`split-${split.p1.id}-${split.p2.id}-${i}`}>
                                             <motion.line
                                                 x1={lineX1} y1={lineY1}
                                                 x2={lineX2} y2={lineY2}
@@ -217,10 +217,11 @@ export function ANNVisualization() {
                                     );
                                 })}
 
-                                {step >= 5 && <motion.path d="M10 10 L-10 -10 M-10 10 L10 -10" stroke="hsl(var(--destructive))" strokeWidth={2} initial={{scale:0}} animate={{scale:1}} transform={`translate(${queryPoint.x} ${queryPoint.y})`} />}
+                                {step >= 5 && <motion.path key="query-x" d="M10 10 L-10 -10 M-10 10 L10 -10" stroke="hsl(var(--destructive))" strokeWidth={2} initial={{scale:0}} animate={{scale:1}} transform={`translate(${queryPoint.x} ${queryPoint.y})`} />}
                             
                                 {step >= 7 && finalLeaf && (
                                      <motion.polygon 
+                                        key="final-leaf-polygon"
                                         points={`${finalLeaf.bounds.minX},${finalLeaf.bounds.minY} ${finalLeaf.bounds.maxX},${finalLeaf.bounds.minY} ${finalLeaf.bounds.maxX},${finalLeaf.bounds.maxY} ${finalLeaf.bounds.minX},${finalLeaf.bounds.maxY}`}
                                         className="fill-primary/10 stroke-primary/50"
                                         strokeWidth={2}
