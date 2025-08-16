@@ -52,23 +52,19 @@ const FlowArrow = ({ step, currentStep }: { step: number, currentStep: number })
 );
 
 const DocumentChunk = ({ text, id, currentStep, highlightStep }: { text: string; id: string; currentStep: number; highlightStep?: number }) => (
-    <AnimatePresence>
-        {currentStep >= 2 &&
-            <motion.div
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ 
-                    opacity: 1, 
-                    x: 0,
-                    backgroundColor: currentStep >= (highlightStep || 99) ? 'hsla(var(--primary), 0.1)' : 'hsl(var(--background))',
-                    borderColor: currentStep >= (highlightStep || 99) ? 'hsla(var(--primary), 0.5)' : 'hsl(var(--border))'
-                }}
-                transition={{ duration: 0.3 }}
-                className="p-2 border rounded bg-background"
-            >
-                {text}
-            </motion.div>
-        }
-    </AnimatePresence>
+     <motion.div
+        initial={{ opacity: 0, x: -10 }}
+        animate={{
+            opacity: 1,
+            x: 0,
+            backgroundColor: currentStep >= (highlightStep || 99) ? 'hsla(var(--primary), 0.1)' : 'hsl(var(--background))',
+            borderColor: currentStep >= (highlightStep || 99) ? 'hsla(var(--primary), 0.5)' : 'hsl(var(--border))'
+        }}
+        transition={{ duration: 0.3 }}
+        className="p-2 border rounded"
+    >
+        {text}
+    </motion.div>
 )
 
 export const SentenceWindowSimulator = () => {
@@ -120,11 +116,19 @@ export const SentenceWindowSimulator = () => {
                     <FlowArrow step={2} currentStep={step} />
 
                     {/* Column 2: Vector Store */}
-                    <FlowNode icon={<Database />} title="1. Vector Store" status={getStatus(1)} step={1} currentStep={step}>
-                       <DocumentChunk id="s1" text={documentChunks[0].text} currentStep={step} highlightStep={3}/>
-                       <DocumentChunk id="s2" text={documentChunks[1].text} currentStep={step} highlightStep={3}/>
-                       <DocumentChunk id="s3" text={documentChunks[2].text} currentStep={step} highlightStep={3}/>
-                    </FlowNode>
+                     <AnimatePresence>
+                    {step >= 1 && (
+                         <motion.div initial={{opacity: 0}} animate={{opacity: 1}}>
+                            <FlowNode icon={<Database />} title="Vector Store" status={getStatus(1)} step={1} currentStep={step}>
+                                <AnimatePresence>
+                                {step >= 1 && documentChunks.map((chunk) => (
+                                    <DocumentChunk key={chunk.id} id={chunk.id} text={chunk.text} currentStep={step} highlightStep={chunk.id === relevantChunk.id ? 3 : undefined} />
+                                ))}
+                                </AnimatePresence>
+                            </FlowNode>
+                        </motion.div>
+                    )}
+                    </AnimatePresence>
 
                      <FlowArrow step={3} currentStep={step} />
 
