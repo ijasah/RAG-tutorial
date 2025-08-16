@@ -32,7 +32,7 @@ const FlowNode = ({ title, icon, children, highlighted, step, currentStep }: { t
             <CardHeader className="p-3">
                 <CardTitle className="flex items-center gap-2 text-sm">
                     {icon}
-                    <h4 className="font-semibold">{title}</h4>
+                    <span className="font-semibold">{title}</span>
                 </CardTitle>
             </CardHeader>
             <CardContent className="p-3 pt-0">
