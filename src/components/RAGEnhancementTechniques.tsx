@@ -6,31 +6,53 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { GitBranch, Lightbulb, Search, Database, Brain, Sparkles, Wand2, BrainCircuit } from 'lucide-react';
 import { HypotheticalQuestionsSimulator } from './HypotheticalQuestionsSimulator';
 import { HydeSimulator } from './HydeSimulator';
-import { Separator } from './ui/separator';
 import { SubQuerySimulator } from './SubQuerySimulator';
 
-const divideAndConquerTechniques = [
+const techniqueCategories = [
     {
         icon: <Search className="h-5 w-5 text-blue-400" />,
         title: "Query Enhancement",
-        content: "Improves the user's query before it hits the retrieval system. This can involve expanding the query with synonyms, correcting typos, or using advanced techniques like generating hypothetical documents or questions that the query might be asking.",
+        description: "Improve the user's query before retrieval. This includes expanding it, correcting typos, or breaking it into smaller pieces.",
+        value: "query-enhancement",
     },
     {
         icon: <Database className="h-5 w-5 text-green-400" />,
         title: "Indexing Enhancement",
-        content: "Focuses on improving the quality of the data that the retriever searches through. This includes data cleanup, using a better text parser, and implementing more sophisticated chunking strategies (like semantic chunking).",
+        description: "Improve the quality of the data being searched. This involves better data cleanup, parsing, and chunking strategies.",
+        value: "indexing-enhancement",
     },
     {
         icon: <GitBranch className="h-5 w-5 text-amber-400" />,
         title: "Retriever Enhancement",
-        content: "Goes beyond simple vector search. This can involve using multiple retrievers (e.g., one for keywords, one for semantics) and then merging the results with a hybrid search strategy to get the best of both worlds.",
+        description: "Go beyond simple vector search. This can involve using multiple retrievers (e.g., keyword and semantic) and merging the results.",
+        value: "retriever-enhancement",
     },
     {
         icon: <Brain className="h-5 w-5 text-rose-400" />,
         title: "Generator Enhancement",
-        content: "Improves the final answer generation. This involves advanced prompt engineering techniques to better guide the LLM, or using a more powerful, fine-tuned LLM for the generation step.",
+        description: "Improve the final answer generation. This involves advanced prompt engineering or using a more powerful, fine-tuned LLM.",
+        value: "generator-enhancement",
     }
 ];
+
+const queryEnhancementMethods = [
+    {
+        title: "Method: Sub-Query Generation",
+        value: "sub-query",
+        component: <SubQuerySimulator />
+    },
+    {
+        title: "Method: Hypothetical Questions",
+        value: "hypothetical-questions",
+        component: <HypotheticalQuestionsSimulator />
+    },
+    {
+        title: "Method: HyDE (Hypothetical Document Embeddings)",
+        value: "hyde",
+        component: <HydeSimulator />
+    }
+];
+
 
 export const RAGEnhancementTechniques = () => {
     return (
@@ -52,50 +74,32 @@ export const RAGEnhancementTechniques = () => {
                     <p className="text-sm text-muted-foreground mb-4">
                         These techniques break down the RAG process into smaller parts and optimize each one individually.
                     </p>
-                    <Accordion type="multiple" className="w-full" defaultValue={['query-enhancement']}>
-                        <AccordionItem value="query-enhancement">
-                            <AccordionTrigger>
-                                <div className="flex items-center gap-3">
-                                    <Search className="h-5 w-5 text-blue-400" />
-                                    <span className="font-medium">Query Enhancement</span>
-                                </div>
-                            </AccordionTrigger>
-                            <AccordionContent className="pl-4 pr-1 pt-4 text-muted-foreground space-y-4">
-                                <p className="text-sm">
-                                    Improve the user's query before it hits the retrieval system. This can involve expanding the query, correcting typos, or using advanced techniques like generating hypothetical questions or breaking the query into smaller pieces.
-                                </p>
-                                <Accordion type="single" collapsible className="w-full space-y-4">
-                                     <AccordionItem value="sub-query">
-                                        <AccordionTrigger className="p-4 bg-muted/30 rounded-lg">Method: Sub-Query Generation</AccordionTrigger>
-                                        <AccordionContent className="pt-4">
-                                             <SubQuerySimulator />
-                                        </AccordionContent>
-                                    </AccordionItem>
-                                    <AccordionItem value="hypothetical-questions">
-                                        <AccordionTrigger className="p-4 bg-muted/30 rounded-lg">Method: Hypothetical Questions</AccordionTrigger>
-                                        <AccordionContent className="pt-4">
-                                             <HypotheticalQuestionsSimulator />
-                                        </AccordionContent>
-                                    </AccordionItem>
-                                    <AccordionItem value="hyde">
-                                        <AccordionTrigger className="p-4 bg-muted/30 rounded-lg">Method: HyDE (Hypothetical Document Embeddings)</AccordionTrigger>
-                                        <AccordionContent className="pt-4">
-                                             <HydeSimulator />
-                                        </AccordionContent>
-                                    </AccordionItem>
-                                </Accordion>
-                            </AccordionContent>
-                        </AccordionItem>
-                        {divideAndConquerTechniques.slice(1).map((item, index) => (
-                            <AccordionItem key={index} value={`item-${index+1}`}>
-                                <AccordionTrigger>
+                    <Accordion type="multiple" className="w-full space-y-2" defaultValue={['query-enhancement']}>
+                        {techniqueCategories.map((category) => (
+                             <AccordionItem key={category.value} value={category.value} className="border-b-0">
+                                <AccordionTrigger className="p-4 bg-muted/30 hover:bg-muted/50 rounded-lg">
                                     <div className="flex items-center gap-3">
-                                        {item.icon}
-                                        <span className="font-medium">{item.title}</span>
+                                        {category.icon}
+                                        <span className="font-medium">{category.title}</span>
                                     </div>
                                 </AccordionTrigger>
-                                <AccordionContent className="pl-10 text-muted-foreground">
-                                    {item.content}
+                                <AccordionContent className="pt-4 text-muted-foreground space-y-4">
+                                     <p className="text-sm px-2">{category.description}</p>
+                                    
+                                     {category.value === 'query-enhancement' && (
+                                         <Accordion type="single" collapsible className="w-full space-y-2">
+                                            {queryEnhancementMethods.map((method) => (
+                                                 <AccordionItem key={method.value} value={method.value} className="border-b-0">
+                                                    <AccordionTrigger className="p-3 text-sm bg-muted/40 hover:bg-muted/60 rounded-lg">
+                                                        {method.title}
+                                                    </AccordionTrigger>
+                                                    <AccordionContent className="pt-4">
+                                                        {method.component}
+                                                    </AccordionContent>
+                                                </AccordionItem>
+                                            ))}
+                                        </Accordion>
+                                     )}
                                 </AccordionContent>
                             </AccordionItem>
                         ))}

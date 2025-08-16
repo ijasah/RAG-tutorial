@@ -4,10 +4,10 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { BrainCircuit, HelpCircle, FileText, Database, Search, ChevronRight, RefreshCw, ArrowRight } from 'lucide-react';
+import { BrainCircuit, HelpCircle, FileText, Database, Search, ChevronRight, RefreshCw, ArrowRight, ArrowDown, GitMerge } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from './ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 
@@ -23,23 +23,23 @@ const hypotheticalQuestions = {
 
 const userQuery = "Why is RAG better than just using an LLM?";
 
-const FlowCard = ({ title, icon, children, highlighted }: { title: string, icon: React.ReactNode, children: React.ReactNode, highlighted?: boolean }) => (
-    <Card className={cn("transition-all", highlighted ? "border-primary bg-primary/10" : "")}>
-        <CardContent className="p-4">
-            <div className="flex items-center gap-3 mb-3">
+const FlowCard = ({ title, icon, children, highlighted, className }: { title: string, icon: React.ReactNode, children: React.ReactNode, highlighted?: boolean, className?: string }) => (
+    <Card className={cn("transition-all h-full", highlighted ? "border-primary bg-primary/10" : "", className)}>
+        <CardContent className="p-3">
+            <div className="flex items-center gap-2 mb-2">
                 {icon}
                 <h4 className="font-semibold text-sm">{title}</h4>
             </div>
-            <div className="text-xs text-muted-foreground space-y-2">
+            <div className="text-xs text-muted-foreground space-y-1.5">
                 {children}
             </div>
         </CardContent>
     </Card>
 );
 
-const Arrow = () => (
-    <div className="flex justify-center items-center my-2 md:rotate-90 md:my-0 md:mx-auto">
-        <ChevronRight className="w-6 h-6 text-muted-foreground/50" />
+const Arrow = ({vertical = false}) => (
+    <div className="flex justify-center items-center my-auto">
+       {vertical ? <ArrowDown className="w-5 h-5 text-muted-foreground/50" /> : <ChevronRight className="w-6 h-6 text-muted-foreground/50" />}
     </div>
 );
 
@@ -71,8 +71,8 @@ export const HypotheticalQuestionsSimulator = () => {
             "Now, let's see how a new user query is handled using our special index.",
             "1. A user asks a new question. This query may be phrased differently than our documents.",
             "2. The user's query is used to search for the most similar *hypothetical question* in our store.",
-            "3. The hypothetical question with the highest similarity score is found (in this case, for 'chunk-1').",
-            "4. The system retrieves the original chunk linked to that winning question to answer the user's query."
+            "3. The hypothetical question with the highest similarity score is found.",
+            "4. The system retrieves the original chunk linked to that winning question to answer the query."
         ];
         return descriptions[step] || descriptions[descriptions.length -1];
     }
@@ -101,14 +101,12 @@ export const HypotheticalQuestionsSimulator = () => {
                             exit={{ opacity: 0, x: 10 }}
                             className="mt-4"
                         >
-                            <div className="p-2 text-center">
-                                <p className="text-sm text-muted-foreground h-12 flex items-center justify-center">
-                                    {isIndexing ? getIndexingDescription() : getRetrievalDescription()}
-                                </p>
-                            </div>
+                             <CardDescription className="pt-2 h-12 flex items-center justify-center text-center mb-4">
+                                {isIndexing ? getIndexingDescription() : getRetrievalDescription()}
+                            </CardDescription>
                             
                             {isIndexing && (
-                                <div className="p-2 grid grid-cols-1 md:grid-cols-3 md:gap-4 items-start">
+                                <div className="p-2 grid grid-cols-1 md:grid-cols-[1fr,auto,1fr] lg:grid-cols-[1fr,auto,1fr,auto,1fr] gap-4 items-stretch">
                                     <AnimatePresence>
                                         {step >= 1 && (
                                              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
@@ -141,11 +139,11 @@ export const HypotheticalQuestionsSimulator = () => {
                                             <FlowCard title="Indexed Store" icon={<Database className="w-5 h-5 text-primary"/>}>
                                                 <div>
                                                     <Badge>Ref: chunk-1</Badge>
-                                                    <p className="p-2 mt-1 border rounded bg-background">{hypotheticalQuestions['chunk-1']}</p>
+                                                    <p className="p-1 mt-1 border rounded bg-background">{hypotheticalQuestions['chunk-1']}</p>
                                                 </div>
                                                  <div>
                                                     <Badge>Ref: chunk-2</Badge>
-                                                    <p className="p-2 mt-1 border rounded bg-background">{hypotheticalQuestions['chunk-2']}</p>
+                                                    <p className="p-1 mt-1 border rounded bg-background">{hypotheticalQuestions['chunk-2']}</p>
                                                 </div>
                                             </FlowCard>
                                         </motion.div>
@@ -155,7 +153,7 @@ export const HypotheticalQuestionsSimulator = () => {
                             )}
 
                             {isRetrieval && (
-                                 <div className="p-2 grid grid-cols-1 md:grid-cols-[1fr,auto,1fr,auto,1fr] items-start md:gap-4">
+                                 <div className="p-2 grid grid-cols-1 md:grid-cols-[1fr,auto,1fr] lg:grid-cols-[1fr,auto,1fr,auto,1fr] gap-4 items-stretch">
                                      <AnimatePresence>
                                      {step >= 1 && (
                                          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
