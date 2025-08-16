@@ -195,12 +195,12 @@ export const SimilarityMetricsSimulator = () => {
                             </div>
                             <div className="w-full max-w-[200px] mx-auto">
                                 <svg viewBox="0 0 100 100">
-                                    <path d="M 10 90 H 80" stroke="currentColor" stroke-dasharray="2 2" />
-                                    <path d="M 80 90 V 20" stroke="currentColor" stroke-dasharray="2 2" />
-                                    <path d="M 10 90 L 80 20" stroke="hsl(var(--primary))" stroke-width="2" />
-                                    <text x="45" y="95" text-anchor="middle" font-size="8">x</text>
-                                    <text x="85" y="55" text-anchor="middle" font-size="8">y</text>
-                                    <text x="35" y="50" fill="hsl(var(--primary))" font-size="8" transform="rotate(-35, 40, 50)">||v||</text>
+                                    <path d="M 10 90 H 80" stroke="currentColor" strokeDasharray="2 2" />
+                                    <path d="M 80 90 V 20" stroke="currentColor" strokeDasharray="2 2" />
+                                    <path d="M 10 90 L 80 20" stroke="hsl(var(--primary))" strokeWidth="2" />
+                                    <text x="45" y="95" textAnchor="middle" fontSize="8">x</text>
+                                    <text x="85" y="55" textAnchor="middle" fontSize="8">y</text>
+                                    <text x="35" y="50" fill="hsl(var(--primary))" fontSize="8" transform="rotate(-35, 40, 50)">||v||</text>
                                 </svg>
                             </div>
                         </div>
