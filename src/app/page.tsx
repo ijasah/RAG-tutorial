@@ -9,6 +9,7 @@ import { RAGFlowDiagram } from '@/components/RAGFlowDiagram';
 import { ChunkingSimulator } from '@/components/ChunkingSimulator';
 import { RagasMetricSimulator } from '@/components/RagasMetricSimulator';
 import { AgenticRAGSimulator } from '@/components/AgenticRAGSimulator';
+import { BasicReflectionSimulator } from '@/components/BasicReflectionSimulator';
 import { TemperatureDemo } from '@/components/TemperatureDemo';
 import { TopKDemo } from '@/components/TopKDemo';
 import { TopPDemo } from '@/components/TopPDemo';
@@ -214,9 +215,12 @@ const Index = () => {
             <Section id="agentic-rag" title="Agentic RAG" icon={<Bot className="h-8 w-8 text-primary" />}>
                 <div className="space-y-6">
                     <p className="text-muted-foreground">
-                        Agentic RAG represents the next evolution of information retrieval, where an AI agent actively decides whether it needs to fetch external information to answer a query. Instead of retrieving information for every query, the agent analyzes the request and uses a "search" tool only when its internal knowledge is insufficient. It can also perform other actions, like self-correction.
+                        Agentic RAG represents the next evolution of information retrieval, where an AI agent actively decides whether it needs to fetch external information to answer a query. Instead of retrieving information for every query, the agent analyzes the request and uses a "search" tool only when its internal knowledge is insufficient. It can also perform other actions, like self-correction or reflection.
                     </p>
                     <AgenticRAGSimulator />
+                    <div className="mt-8">
+                        <BasicReflectionSimulator />
+                    </div>
                 </div>
             </Section>
 
