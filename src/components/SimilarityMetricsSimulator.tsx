@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Calculator, Scaling, Info } from 'lucide-react';
+import { Calculator, Scaling, Info, Orbit } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 
 type Vector = { x: number; y: number; label: string; };
@@ -19,7 +19,7 @@ const vectors: Vector[] = [
 
 const queryVector: Vector = { x: 5, y: 3.75, label: 'What is RAG?' };
 const width = 500;
-const height = 280; // Reduced height
+const height = 300;
 const scale = 25; 
 const origin = { x: 40, y: height - 40 };
 
@@ -98,18 +98,29 @@ export const SimilarityMetricsSimulator = () => {
                                <p className="text-center text-xs font-semibold uppercase text-primary/80">{title}</p>
                            </CardContent>
                         </Card>
-                         <Alert className="h-full border-primary/30 bg-primary/10">
-                            <AlertTitle className="text-primary flex items-center gap-2"><Info className="h-4 w-4" />Why is Cosine Similarity Preferred?</AlertTitle>
-                            <AlertDescription className="text-xs space-y-2 mt-2">
-                                <p>In text analysis, we care more about the **semantic topic** (the vector's direction) than document length (the vector's magnitude). LLM embeddings encode meaning in **direction**.</p>
-                                <p>Compare the two "RAG" documents. Notice their Cosine Similarity score is **1.000**. Their directions are identical, even though one is longer. Euclidean Distance gives them different scores because it's sensitive to this length, which can be misleading.</p>
-                            </AlertDescription>
-                        </Alert>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <Card className="bg-muted/50 border-primary/20">
+                                <CardHeader className="pb-2">
+                                    <CardTitle className="text-sm flex items-center gap-2"><Orbit className="text-primary"/> The "Why"</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <p className="text-xs text-muted-foreground">LLM embeddings encode meaning in **direction**, not magnitude. We care about the topic, not how long the text is.</p>
+                                </CardContent>
+                            </Card>
+                             <Card className="bg-muted/50 border-green-500/20">
+                                <CardHeader className="pb-2">
+                                     <CardTitle className="text-sm flex items-center gap-2"><Info className="text-green-400"/> The "Proof"</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <p className="text-xs text-muted-foreground">Compare the two "RAG" docs. Their cosine score is **1.000** (identical direction), but Euclidean distance differs due to length. </p>
+                                </CardContent>
+                            </Card>
+                        </div>
                     </div>
-                     <div className="relative border rounded-lg bg-muted/30 overflow-hidden">
-                        <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto" style={{ fontSize: '10px' }}>
+                     <div className="relative border rounded-lg bg-muted/30 overflow-hidden" style={{height: '450px'}}>
+                        <svg viewBox={`0 0 ${width} ${height + 150}`} className="w-full h-auto" style={{ fontSize: '10px' }}>
                             {/* Grid lines and axes */}
-                            <path d={`M ${origin.x} 0 V ${height} M 0 ${origin.y} H ${width}`} stroke="hsl(var(--border))" strokeWidth="0.5" />
+                            <path d={`M ${origin.x} 0 V ${height + 150} M 0 ${origin.y} H ${width}`} stroke="hsl(var(--border))" strokeWidth="0.5" />
 
                             {/* Other Vectors (de-emphasized) */}
                             {vectors.map((v, i) => i !== selectedIndex && (
