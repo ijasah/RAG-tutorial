@@ -9,11 +9,11 @@ import { HelpCircle, FileText, Bot, Search, RefreshCw, ArrowRight, ArrowDown, Me
 import { cn } from '@/lib/utils';
 import { Badge } from './ui/badge';
 
-const originalQuery = "Which country's leader is visiting the US in April 2024 for a state dinner?";
-const stepbackQuery = "Which leaders are visiting the US in April 2024?";
-const retrievedContext = "In April 2024, the Prime Minister of Japan is scheduled for a state visit to the US.";
-const stepbackAnswer = "The Prime Minister of Japan is visiting the US in April 2024.";
-const finalAnswer = "The leader visiting the US in April 2024 for a state dinner is the Prime Minister of Japan.";
+const originalQuery = "What is the RAGAS metric that evaluates if the generated answer is grounded in the retrieved context?";
+const stepbackQuery = "What are the evaluation metrics in RAGAS?";
+const retrievedContext = "RAGAS includes metrics like Faithfulness, which assesses if the answer is supported by the context, and Answer Relevancy, which checks if the answer is pertinent to the question.";
+const stepbackAnswer = "RAGAS includes metrics like Faithfulness and Answer Relevancy.";
+const finalAnswer = "The RAGAS metric that evaluates if the generated answer is grounded in the retrieved context is called Faithfulness.";
 
 const FlowNode = ({ icon, title, children, status, step, currentStep, className }: { icon: React.ReactNode, title: string, children: React.ReactNode, status: 'inactive' | 'active' | 'complete', step: number, currentStep: number, className?: string }) => (
     <motion.div
@@ -105,7 +105,7 @@ export const StepbackPromptSimulator = () => {
                      {/* Arrow Down */}
                      <AnimatePresence>
                         {step >= 3 && (
-                            <motion.div initial={{opacity: 0}} animate={{opacity: 1, transition: {delay: 0.3}}} className="flex justify-end pr-8">
+                            <motion.div initial={{opacity: 0}} animate={{opacity: 1, transition: {delay: 0.3}}} className="flex justify-end pr-[calc(50%_-_1.25rem)]">
                                 <ArrowDown className="w-6 h-6 text-muted-foreground/60"/>
                             </motion.div>
                         )}
@@ -115,6 +115,12 @@ export const StepbackPromptSimulator = () => {
                      <AnimatePresence>
                      {step >= 3 && (
                          <motion.div className="grid grid-cols-[1fr,auto,1fr,auto,1fr] gap-4 items-stretch">
+                             <FlowNode icon={<Sparkles />} title="5. Final Answer" status={getStatus(5)} step={5} currentStep={step}>
+                                <p className="p-2 bg-background rounded border">{finalAnswer}</p>
+                            </FlowNode>
+                            
+                            <Arrow step={5} currentStep={step} className="rotate-180" />
+
                             <FlowNode icon={<GitMerge />} title="4. Final Context" status={getStatus(4)} step={4} currentStep={step}>
                                 <p className="font-semibold text-foreground">Original Query:</p>
                                 <p className="p-2 bg-background rounded border mb-2">{originalQuery}</p>
@@ -122,12 +128,6 @@ export const StepbackPromptSimulator = () => {
                                 <p className="p-2 bg-background rounded border">{stepbackAnswer}</p>
                             </FlowNode>
 
-                            <Arrow step={5} currentStep={step} />
-
-                            <FlowNode icon={<Sparkles />} title="5. Final Answer" status={getStatus(5)} step={5} currentStep={step}>
-                                <p className="p-2 bg-background rounded border">{finalAnswer}</p>
-                            </FlowNode>
-                            
                             <Arrow step={4} currentStep={step} className="rotate-180" />
 
                             <FlowNode icon={<MessageSquare />} title="3. Step-back Answer" status={getStatus(3)} step={3} currentStep={step}>
