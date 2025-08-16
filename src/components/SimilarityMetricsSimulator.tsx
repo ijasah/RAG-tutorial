@@ -76,7 +76,6 @@ const VectorVisualization = ({ selectedVec, metric }: { selectedVec: Vector, met
     
     const getTextPosition = (vec: Vector, isQuery: boolean) => {
         const coords = getCoords(vec);
-        // Basic logic to prevent overlap, can be improved
         const yOffset = isQuery ? -15 : 15;
         const xOffset = isQuery ? 15 : 0;
 
@@ -183,15 +182,24 @@ export const SimilarityMetricsSimulator = () => {
                 <Alert className="mt-8 border-primary/30 bg-primary/10">
                     <Orbit className="h-4 w-4" />
                     <AlertTitle>Why Cosine Similarity is Preferred for RAG</AlertTitle>
-                     <AlertDescription className="mt-2 space-y-2">
-                        <div className="space-y-1">
-                            <p>In semantic search, we care more about the <strong>topic</strong> (the vector's direction) than the document's length (the vector's magnitude). LLM embeddings encode meaning in <strong>direction</strong>. The formula for this is:</p>
-                             <p><strong className="text-primary">A · B</strong> is the dot product, measuring how much one vector goes in the direction of another.</p>
-                             <p><strong className="text-primary">||A|| & ||B||</strong> are the magnitudes (or lengths) of the vectors. Dividing by the magnitudes normalizes for length, isolating the angle.</p>
+                     <AlertDescription className="mt-2 space-y-4">
+                        <div>
+                            <h4 className="font-semibold text-foreground mb-2">What is it?</h4>
+                            <p>In semantic search, we care more about the <strong>topic</strong> (the vector's direction) than the document's length (the vector's magnitude). Cosine Similarity excels because it measures the cosine of the angle between two vectors, effectively judging their orientation irrespective of their length.</p>
                         </div>
-                       <p>
-                           Select the other "RAG" document and notice that the two RAG documents have a very high Cosine Similarity score because their vectors point in almost the same direction, even though one sentence is much longer. Euclidean Distance is misled by the difference in magnitude (length). This <strong>scale-invariance</strong> is crucial for finding the best context.
-                       </p>
+                        <div>
+                            <h4 className="font-semibold text-foreground mb-2">How is it Formulated?</h4>
+                            <div className="space-y-1">
+                                <p><strong className="text-primary">A · B</strong> (the dot product) measures how much one vector goes in the direction of another.</p>
+                                <p><strong className="text-primary">||A|| & ||B||</strong> (the magnitudes) are the lengths of the vectors. Dividing by the magnitudes normalizes the vectors, isolating the angle as the core of the comparison.</p>
+                            </div>
+                        </div>
+                       <div>
+                            <h4 className="font-semibold text-foreground mb-2">Try it yourself:</h4>
+                            <p>
+                               Select the other "RAG" document and notice that the two RAG documents have a very high Cosine Similarity score because their vectors point in almost the same direction, even though one sentence is much longer. Euclidean Distance is misled by the difference in magnitude (length). This <strong>scale-invariance</strong> is crucial for finding the best context.
+                           </p>
+                       </div>
                     </AlertDescription>
                 </Alert>
             </CardContent>
