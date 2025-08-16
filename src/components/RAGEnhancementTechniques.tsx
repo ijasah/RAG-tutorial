@@ -111,7 +111,7 @@ export const RAGEnhancementTechniques = () => {
                     <p className="text-sm text-muted-foreground mb-4">
                         These techniques break down the RAG process into smaller parts and optimize each one individually.
                     </p>
-                    <Accordion type="multiple" className="w-full space-y-2" defaultValue={['query-enhancement']}>
+                    <Accordion type="multiple" className="w-full space-y-2" defaultValue={[]}>
                         {techniqueCategories.map((category) => (
                              <AccordionItem key={category.value} value={category.value} className="border-b-0">
                                 <AccordionTrigger className="p-4 bg-muted/30 hover:bg-muted/50 rounded-lg">
