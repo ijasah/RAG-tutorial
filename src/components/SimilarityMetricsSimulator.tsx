@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Calculator, Info, Orbit } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 type Vector = { x: number; y: number; label: string; };
 
@@ -17,10 +18,11 @@ const vectors: Vector[] = [
 ];
 
 const queryVector: Vector = { x: 5, y: 3.75, label: 'What is RAG?' };
+
 const width = 500;
-const height = 450; // Increased height for the visualization
+const height = 450;
 const scale = 25; 
-const origin = { x: 40, y: height - 100 }; // Adjusted origin for more space
+const origin = { x: 40, y: height - 100 };
 
 const getCoords = (vec: Vector) => ({
     x: origin.x + vec.x * scale,
@@ -70,6 +72,7 @@ export const SimilarityMetricsSimulator = () => {
             </CardHeader>
             <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                    {/* Left Column: Controls & Info */}
                     <div className="space-y-4">
                         <Tabs value={metric} onValueChange={(v) => setMetric(v as any)} className="w-full">
                             <TabsList className="grid w-full grid-cols-2">
@@ -89,12 +92,11 @@ export const SimilarityMetricsSimulator = () => {
                             </div>
                         </div>
 
-                        <Card className="bg-muted/30">
+                        <Card className="bg-muted/30 text-center">
                            <CardContent className="p-4 space-y-2">
-                               <p className="font-mono text-primary text-sm text-center">{formula}</p>
-                               <p className="text-xs text-muted-foreground text-center">{explanation}</p>
-                               <div className="text-center font-bold text-4xl pt-2 text-primary">{result}</div>
-                               <p className="text-center text-xs font-semibold uppercase text-primary/80">{title}</p>
+                               <p className="font-mono text-primary text-sm">{formula}</p>
+                               <div className="font-bold text-4xl pt-2 text-primary">{result}</div>
+                               <p className="text-xs font-semibold uppercase text-primary/80">{title}</p>
                            </CardContent>
                         </Card>
                         
@@ -117,6 +119,7 @@ export const SimilarityMetricsSimulator = () => {
                             </Card>
                         </div>
                     </div>
+                    {/* Right Column: Visualization */}
                      <div className="relative border rounded-lg bg-muted/30 overflow-hidden" style={{height: `${height}px`}}>
                         <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-full" style={{ fontSize: '10px' }}>
                             {/* Grid lines and axes */}
