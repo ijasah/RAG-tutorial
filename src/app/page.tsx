@@ -1,3 +1,4 @@
+
 // src/app/page.tsx
 'use client';
 
@@ -23,6 +24,8 @@ import { ResponseRelevancySimulator } from '@/components/ResponseRelevancySimula
 import { FaithfulnessSimulator } from '@/components/FaithfulnessSimulator';
 import { EvaluationMetricsTable } from '@/components/EvaluationMetricsTable';
 import { RAGEcosystemDiagram } from '@/components/RAGEcosystemDiagram';
+import { FurtherReadingTable } from '@/components/FurtherReadingTable';
+
 
 import {
   BookOpen,
@@ -44,7 +47,8 @@ import {
   ClipboardCheck,
   CheckCircle,
   XCircle,
-  Grid
+  Grid,
+  BookMarked
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -104,6 +108,11 @@ const sections = [
     title: 'The RAG Ecosystem', 
     icon: <Grid className="h-8 w-8 text-primary" /> 
   },
+  {
+    id: 'further-reading',
+    title: 'Further Reading & Conclusion',
+    icon: <BookMarked className="h-8 w-8 text-primary" />
+  }
 ];
 
 const allSectionIds = sections.flatMap(s => [s.id, ...(s.subsections ? s.subsections.map(sub => sub.id) : [])]);
@@ -441,6 +450,19 @@ const Index = () => {
                     The world of Retrieval-Augmented Generation is vast and constantly evolving. This diagram provides a high-level overview of the key concepts, technologies, challenges, and evaluation methods that make up the RAG ecosystem.
                   </p>
                   <RAGEcosystemDiagram />
+                </div>
+            </Section>
+
+            <Section id="further-reading" title="Further Reading & Conclusion" icon={<BookMarked className="h-8 w-8 text-primary" />}>
+                <div className="space-y-6">
+                  <p className="text-muted-foreground mb-4">
+                    The field of RAG is rapidly advancing. The following table includes some of the influential papers that have shaped the current landscape. Exploring these will provide deeper insight into the various techniques and their applications.
+                  </p>
+                  <FurtherReadingTable />
+                  <h3 className="text-2xl font-semibold mt-12 text-foreground">Final Conclusion</h3>
+                  <p className="text-muted-foreground">
+                    This journey through Retrieval-Augmented Generation has taken us from foundational concepts to advanced techniques and robust evaluation. We've seen how RAG transforms standard LLMs into powerful, fact-grounded knowledge systems. By understanding and applying these principles—from chunking and similarity metrics to agentic workflows and enhancement techniques—you are now equipped to build more accurate, reliable, and intelligent AI applications. The RAG ecosystem continues to evolve, and we encourage you to keep exploring, experimenting, and contributing to this exciting field.
+                  </p>
                 </div>
             </Section>
           </main>
