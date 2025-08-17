@@ -14,7 +14,7 @@ import { Badge } from './ui/badge';
 const scenarios = {
     llm_based: {
         name: "LLM-based Recall",
-        description: "An LLM breaks the reference answer into 'claims' and checks if each claim is supported by the retrieved context.",
+        description: "The LLM breaks the **Ground Truth** answer into 'claims' and checks if each claim is supported by the retrieved context. This evaluates the retriever's performance.",
         data: {
             question: "Who is the lead author of the RAG paper and where did they work?",
             retrieved_contexts: [
@@ -173,7 +173,7 @@ export const ContextRecallSimulator = () => {
       <CardHeader>
         <CardTitle>Context Recall Simulator</CardTitle>
         <CardDescription>
-          Explore methods for calculating Context Recall, which measures if all necessary information was retrieved to answer the query. High recall means we aren't missing important facts.
+          Explore methods for calculating Context Recall, which measures if the retrieved context was sufficient to answer the query. High recall means we aren't missing important facts.
         </CardDescription>
       </CardHeader>
       <CardContent>

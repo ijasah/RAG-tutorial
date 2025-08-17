@@ -109,14 +109,14 @@ export const FaithfulnessSimulator = () => {
         setEvaluatedClaims([]);
     };
     
-    const formula = `Faithfulness = (Supported Claims) / (Total Claims)\n\n= ${supportedClaims} / ${exampleData.claims.length} = ${score.toFixed(2)}`;
+    const formula = `Faithfulness = (Number of claims in the answer that are supported by the context) / (Total number of claims in the answer)\n\n= ${supportedClaims} / ${exampleData.claims.length} = ${score.toFixed(2)}`;
 
     return (
         <Card className="bg-card/50 transition-all hover:shadow-lg hover:-translate-y-1">
              <CardHeader>
                 <CardTitle>Faithfulness Simulator</CardTitle>
                 <CardDescription>
-                     See how Faithfulness is calculated by checking if the generated answer is grounded in the retrieved context.
+                     This metric evaluates the generator (LLM) by checking if the claims in the **generated answer** are factually supported by the **retrieved context**. This is crucial for preventing hallucinations.
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -159,7 +159,7 @@ export const FaithfulnessSimulator = () => {
                          {!isRunning && evaluatedClaims.length === 0 && <><Play className="mr-2" />Run Evaluation</>}
                          {isRunning && 'Evaluating...'}
                          {!isRunning && evaluatedClaims.length > 0 && <><RefreshCw className="mr-2" />Re-run Evaluation</>}
-                    </Button>
+                     </Button>
                 </div>
             </CardContent>
         </Card>
