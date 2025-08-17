@@ -5,7 +5,7 @@ import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
-import { HelpCircle, RefreshCw, MessageSquare, BrainCircuit, CheckCircle, Target, Play } from 'lucide-react';
+import { HelpCircle, RefreshCw, MessageSquare, BrainCircuit, Target, Play } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from './ui/badge';
 import { CodeBlock } from './ui/code-block';
@@ -67,6 +67,7 @@ export const ResponseRelevancySimulator = () => {
     const [isRunning, setIsRunning] = useState(false);
 
     const totalScore = useMemo(() => {
+        if(evaluatedQuestions.length === 0) return 0;
         return evaluatedQuestions.reduce((acc, i) => acc + exampleData.generatedQuestions[i].score, 0);
     }, [evaluatedQuestions]);
 
@@ -74,9 +75,6 @@ export const ResponseRelevancySimulator = () => {
         if (evaluatedQuestions.length === 0) return 0;
         return totalScore / evaluatedQuestions.length;
     }, [totalScore, evaluatedQuestions]);
-
-    const isEvaluating = isRunning && evaluatedQuestions.length < exampleData.generatedQuestions.length;
-
 
     const handleSimulate = () => {
         setIsRunning(true);
@@ -97,7 +95,7 @@ export const ResponseRelevancySimulator = () => {
         setEvaluatedQuestions([]);
     };
     
-    const formula = `Response Relevancy = average(${exampleData.generatedQuestions.map(q => q.score.toFixed(2)).join(', ')})\n\n= ${finalScore.toFixed(3)}`;
+    const formula = `Response Relevancy = average(${exampleData.generatedQuestions.filter((q, i) => evaluatedQuestions.includes(i)).map(q => q.score.toFixed(2)).join(', ')})\n\n= ${finalScore.toFixed(3)}`;
 
     return (
         <Card className="bg-card/50 transition-all hover:shadow-lg hover:-translate-y-1">
@@ -142,10 +140,10 @@ export const ResponseRelevancySimulator = () => {
                 </div>
 
                 <div className="flex justify-center mt-6 pt-4 border-t">
-                    <Button onClick={!isRunning ? handleSimulate : handleReset} className="w-40">
+                    <Button onClick={!isRunning ? handleSimulate : handleReset} className="w-48">
                          {!isRunning && evaluatedQuestions.length === 0 && <><Play className="mr-2" />Run Evaluation</>}
                          {isRunning && 'Evaluating...'}
-                         {!isRunning && evaluatedQuestions.length > 0 && <><RefreshCw className="mr-2" />Re-run</>}
+                         {!isRunning && evaluatedQuestions.length > 0 && <><RefreshCw className="mr-2" />Re-run Evaluation</>}
                      </Button>
                 </div>
             </CardContent>

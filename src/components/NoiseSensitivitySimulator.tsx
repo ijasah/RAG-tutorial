@@ -94,9 +94,8 @@ export const NoiseSensitivitySimulator = () => {
         if (evaluatedClaims.length === 0) return 0;
         const totalClaims = exampleData.claims.length > 0 ? exampleData.claims.length : 1;
         return incorrectClaims / totalClaims;
-    }, [incorrectClaims, evaluatedClaims]);
+    }, [incorrectClaims, evaluatedClaims, exampleData.claims.length]);
     
-    const isEvaluating = isRunning && evaluatedClaims.length < exampleData.claims.length;
 
     const handleSimulate = () => {
         setIsRunning(true);
@@ -171,10 +170,10 @@ export const NoiseSensitivitySimulator = () => {
                 </div>
 
                  <div className="flex justify-center mt-6 pt-4 border-t">
-                     <Button onClick={!isRunning ? handleSimulate : handleReset} className="w-40">
+                     <Button onClick={!isRunning ? handleSimulate : handleReset} className="w-48">
                          {!isRunning && evaluatedClaims.length === 0 && <><Play className="mr-2" />Run Evaluation</>}
                          {isRunning && 'Evaluating...'}
-                         {!isRunning && evaluatedClaims.length > 0 && <><RefreshCw className="mr-2" />Re-run</>}
+                         {!isRunning && evaluatedClaims.length > 0 && <><RefreshCw className="mr-2" />Re-run Evaluation</>}
                      </Button>
                 </div>
             </CardContent>

@@ -5,7 +5,7 @@ import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
-import { HelpCircle, FileText, RefreshCw, ArrowRight, MessageSquare, Sparkles, BrainCircuit, CheckCircle, XCircle, Play } from 'lucide-react';
+import { HelpCircle, FileText, RefreshCw, MessageSquare, Sparkles, BrainCircuit, CheckCircle, XCircle, Play } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { CodeBlock } from './ui/code-block';
 
@@ -85,7 +85,7 @@ export const FaithfulnessSimulator = () => {
 
     const score = useMemo(() => {
         if (evaluatedClaims.length === 0) return 0;
-        return supportedClaims / evaluatedClaims.length;
+        return supportedClaims / exampleData.claims.length;
     }, [supportedClaims, evaluatedClaims]);
 
 
@@ -154,10 +154,10 @@ export const FaithfulnessSimulator = () => {
                 </div>
 
                 <div className="flex justify-center mt-6 pt-4 border-t">
-                    <Button onClick={!isRunning ? handleSimulate : handleReset} className="w-40">
+                    <Button onClick={!isRunning ? handleSimulate : handleReset} className="w-48">
                          {!isRunning && evaluatedClaims.length === 0 && <><Play className="mr-2" />Run Evaluation</>}
                          {isRunning && 'Evaluating...'}
-                         {!isRunning && evaluatedClaims.length > 0 && <><RefreshCw className="mr-2" />Re-run</>}
+                         {!isRunning && evaluatedClaims.length > 0 && <><RefreshCw className="mr-2" />Re-run Evaluation</>}
                     </Button>
                 </div>
             </CardContent>
