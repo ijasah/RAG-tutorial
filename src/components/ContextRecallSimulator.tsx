@@ -178,7 +178,7 @@ export const ContextRecallSimulator = () => {
       <CardHeader>
         <CardTitle>Context Recall Simulator</CardTitle>
         <CardDescription>
-          This metric evaluates the **Retriever**. It measures if the retrieved context was sufficient to support all the claims in the **ground truth answer**. High recall means we aren't missing important facts.
+          This metric evaluates the <strong>Retriever</strong>. It measures if the retrieved context was sufficient to support all the claims in the <strong>ground truth answer</strong>. High recall means we aren't missing important facts.
         </CardDescription>
       </CardHeader>
       <CardContent>
