@@ -3,7 +3,9 @@ import type {NextConfig} from 'next';
 const nextConfig: NextConfig = {
   /* config options here */
   output: 'export',
-  distDir: 'build', // Add this line
+  basePath: '/RAG-tutorial',
+  assetPrefix: '/RAG-tutorial/',
+  trailingSlash: true,
   typescript: {
     ignoreBuildErrors: true,
   },
@@ -40,5 +42,5 @@ const nextConfig: NextConfig = {
     ],
   },
 };
-
+module.exports = nextConfig;
 export default nextConfig;
