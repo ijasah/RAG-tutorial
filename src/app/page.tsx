@@ -438,8 +438,7 @@ const Index = () => {
                 </div>
 
                 <div>
-                    <h3 className="text-xl font-semibold mb-3 mt-8 text-foreground">Conclusion</h3>
-                    <p className="text-muted-foreground">Incorporating robust evaluation into the RAG workflow is crucial for building reliable and accurate AI systems. By using metrics like Context Precision, Context Recall, and Noise Sensitivity, we can quantify the performance of our pipeline and ensure the final answers are grounded in high-quality, relevant information.</p>
+                    <p className="text-muted-foreground mt-8">Incorporating robust evaluation into the RAG workflow is crucial for building reliable and accurate AI systems. By using metrics like Context Precision, Context Recall, and Noise Sensitivity, we can quantify the performance of our pipeline and ensure the final answers are grounded in high-quality, relevant information.</p>
                 </div>
               </div>
             </Section>
