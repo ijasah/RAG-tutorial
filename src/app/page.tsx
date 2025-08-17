@@ -199,7 +199,7 @@ const Index = () => {
       <Hero />
       <div id="content" className="container mx-auto px-4 py-16">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-12">
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1 mt-16">
             <TableOfContents 
               activeSectionId={activeSection} 
               activeSubSectionId={activeSubSectionId}
