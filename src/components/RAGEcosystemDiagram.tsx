@@ -2,9 +2,7 @@
 "use client";
 
 import { motion } from 'framer-motion';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { ArrowRight, ChevronRight } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const containerVariants = {
@@ -12,14 +10,14 @@ const containerVariants = {
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.1,
+      staggerChildren: 0.05,
       delayChildren: 0.2,
     }
   }
 };
 
 const itemVariants = {
-  hidden: { y: 20, opacity: 0 },
+  hidden: { y: 10, opacity: 0 },
   visible: {
     y: 0,
     opacity: 1,
@@ -30,108 +28,184 @@ const itemVariants = {
   }
 };
 
-const badgeVariants = {
-    hidden: { scale: 0.5, opacity: 0 },
-    visible: (i: number) => ({
-      scale: 1,
-      opacity: 1,
-      transition: {
-        delay: i * 0.05,
-      }
-    })
-};
-
-const DiagramSection = ({ title, icon, children, className, gridArea }: { title: string, icon: React.ReactNode, children: React.ReactNode, className?: string, gridArea?: string }) => (
-    <motion.div variants={itemVariants} className="h-full" style={gridArea ? { gridArea } : {}}>
-        <div className={cn("h-full bg-background/30 border-border p-4 rounded-3xl", className)}>
-            <h3 className="font-semibold text-sm flex items-center gap-2 text-primary mb-3">
-                {icon}
-                {title}
-            </h3>
-            {children}
-        </div>
+const Section = ({ title, children, className }: { title: string, children: React.ReactNode, className?: string }) => (
+    <motion.div variants={itemVariants} className={cn("w-full", className)}>
+        <h3 className="font-semibold text-sm flex items-center gap-1.5 text-blue-500 mb-3">
+            <ChevronRight className="w-5 h-5" />
+            {title}
+        </h3>
+        {children}
     </motion.div>
 );
 
-const SubSection = ({title, children, className}: {title?: string, children: React.ReactNode, className?: string}) => (
-    <div className={cn("bg-muted/40 p-3 rounded-2xl", className)}>
+const SubSection = ({ title, children, className }: { title?: string, children: React.ReactNode, className?: string }) => (
+    <div className={className}>
         {title && <h4 className="text-xs font-semibold text-muted-foreground mb-2">{title}</h4>}
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex flex-wrap gap-2">
             {children}
         </div>
     </div>
-)
-
-const AnimatedBadge = ({ children, custom, className, size="default" }: { children: React.ReactNode, custom: number, className?: string, size?: "sm" | "default" }) => (
-    <motion.custom
-        variants={badgeVariants}
-        custom={custom}
-        whileHover={{ y: -2, boxShadow: "0px 2px 8px hsla(var(--foreground), 0.1)" }}
-    >
-        <Badge variant="secondary" className={cn("text-xs font-normal border-border/50 transition-all rounded-lg", size === 'sm' && "px-2 py-0.5", className)}>
-            {children}
-        </Badge>
-    </motion.custom>
 );
 
+const Badge = ({ children, className }: { children: React.ReactNode, className?: string }) => (
+    <motion.div 
+        variants={itemVariants} 
+        whileHover={{ y: -2, boxShadow: "0px 4px 10px hsla(var(--primary), 0.1)"}}
+        className={cn("bg-white dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800/50 rounded-lg px-3 py-1.5 text-xs text-center", className)}>
+        {children}
+    </motion.div>
+);
+
+const DashedContainer = ({children, className}: {children: React.ReactNode, className?:string}) => (
+    <motion.div variants={itemVariants} className={cn("border-2 border-dashed border-blue-300/50 dark:border-blue-800/50 rounded-2xl p-4 space-y-6", className)}>
+        {children}
+    </motion.div>
+)
 
 export const RAGEcosystemDiagram = () => {
-    let badgeCounter = 0;
-    
     return (
         <motion.div 
             variants={containerVariants}
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: true, amount: 0.2 }}
-            className="grid grid-cols-1 lg:grid-cols-5 gap-4 auto-rows-auto"
+            viewport={{ once: true, amount: 0.1 }}
+            className="w-full bg-blue-50 dark:bg-blue-950/10 border border-blue-200/50 dark:border-blue-900/50 rounded-3xl p-6"
         >
-            <div className="lg:col-span-3 space-y-4">
-                 <DiagramSection title="RAG Ecosystem" icon={<ChevronRight />}>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <SubSection title="Downstream Tasks">
-                            {["Dialogue", "Question answering", "Summarization", "Fact verification"].map(item => <AnimatedBadge key={item} custom={badgeCounter++}>{item}</AnimatedBadge>)}
-                        </SubSection>
-                        <SubSection title="Technology Stacks">
-                            {["Langchain", "LlamaIndex", "FlowiseAI", "AutoGen"].map(item => <AnimatedBadge key={item} custom={badgeCounter++}>{item}</AnimatedBadge>)}
-                        </SubSection>
-                    </div>
-                </DiagramSection>
-                <DiagramSection title="The RAG Paradigm" icon={<ChevronRight />} className="flex flex-col justify-center">
-                     <SubSection>
-                        <div className="w-full flex items-center justify-around gap-2 py-4">
-                            <AnimatedBadge custom={badgeCounter++} className="py-2 px-4 bg-background">Naive RAG</AnimatedBadge>
-                            <div className="flex items-center gap-1 text-xs font-medium text-muted-foreground">
-                                <ArrowRight className="w-4 h-4"/>
-                                <span>Advanced RAG</span>
-                                <ArrowRight className="w-4 h-4"/>
-                            </div>
-                            <AnimatedBadge custom={badgeCounter++} className="py-2 px-4 bg-background">Modular RAG</AnimatedBadge>
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+
+                {/* Left Column */}
+                <div className="lg:col-span-3 space-y-6">
+                    <Section title="RAG Ecosystem">
+                        <div className="grid grid-cols-1 md:grid-cols-[1fr,auto,1fr] gap-4">
+                            <SubSection title="Downstream Tasks">
+                                <Badge>Dialogue</Badge>
+                                <Badge>Question answering</Badge>
+                                <Badge>Summarization</Badge>
+                                <Badge>Fact verification</Badge>
+                            </SubSection>
+                             <div className="border-l border-blue-200 dark:border-blue-800/30"></div>
+                            <SubSection title="Technology Stacks">
+                                <Badge>Langchain</Badge>
+                                <Badge>Llamalndex</Badge>
+                                <Badge>FlowiseAI</Badge>
+                                <Badge>AutoGen</Badge>
+                            </SubSection>
                         </div>
-                     </SubSection>
-                 </DiagramSection>
-            </div>
+                    </Section>
 
+                    <DashedContainer className="bg-blue-100/30 dark:bg-blue-950/20">
+                        <Section title="The RAG Paradigm">
+                            <div className="bg-white dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/40 rounded-xl p-4 flex items-center justify-around text-sm font-medium">
+                                <Badge>Naive RAG</Badge>
+                                <motion.div variants={itemVariants} className="flex items-center gap-1 text-muted-foreground"><ChevronRight className="w-4 h-4"/> Advanced RAG <ChevronRight className="w-4 h-4"/></motion.div>
+                                <Badge>Modular RAG</Badge>
+                            </div>
+                        </Section>
+                    </DashedContainer>
 
-            <div className="lg:col-span-2 space-y-4">
-                <DiagramSection title="RAG Prospect" icon={<ChevronRight />}>
-                    <div className="space-y-3">
-                        <SubSection title="Challenges">
-                            {["RAG in Long Context Length", "Hybrid", "Robustness", "Scaling-laws for RAG", "Production-ready RAG"].map(item => <AnimatedBadge key={item} custom={badgeCounter++}>{item}</AnimatedBadge>)}
-                        </SubSection>
-                        <SubSection title="Modality Extension">
-                            {["Image", "Audio", "Video", "Code"].map(item => <AnimatedBadge key={item} custom={badgeCounter++}>{item}</AnimatedBadge>)}
-                        </SubSection>
-                        <SubSection title="Ecosystem">
-                            {["Customization", "Simplification", "Specialization"].map(item => <AnimatedBadge key={item} custom={badgeCounter++}>{item}</AnimatedBadge>)}
-                        </SubSection>
-                    </div>
-                </DiagramSection>
-                <DiagramSection title="Evaluation of RAG" icon={<ChevronRight />}>
-                    <SubSection title="Evaluation Target">
-                        {["Retrieval Quality", "Generation Quality"].map(item => <AnimatedBadge key={item} custom={badgeCounter++}>{item}</AnimatedBadge>)}
-                    </SubSection>
-                </DiagramSection>
+                    <DashedContainer className="bg-yellow-50/30 dark:bg-yellow-950/10 border-yellow-300/50 dark:border-yellow-800/30">
+                        <Section title="Techniques for Better RAG">
+                             <div className="grid grid-cols-3 gap-2">
+                                <Badge>Chunk Optimization</Badge>
+                                <Badge>Iterative Retrieval</Badge>
+                                <Badge>Retriever Fine-tuning</Badge>
+                                <Badge>Query Transformation</Badge>
+                                <Badge>Recursive Retrieval</Badge>
+                                <Badge>Generator Fine-tuning</Badge>
+                                <Badge>Context Selection</Badge>
+                                <Badge>Adaptive Retrieval</Badge>
+                                <Badge>Dual Fine-tuning</Badge>
+                             </div>
+                        </Section>
+                    </DashedContainer>
+
+                     <DashedContainer className="bg-purple-50/30 dark:bg-purple-950/10 border-purple-300/50 dark:border-purple-800/30">
+                        <Section title="Key Issues of RAG">
+                            <div className="relative flex justify-center items-center h-16">
+                                <motion.div 
+                                    variants={itemVariants}
+                                    className="absolute flex items-center justify-center w-32 h-16 bg-pink-200/50 dark:bg-pink-500/10 text-pink-800 dark:text-pink-200 rounded-full blur-sm" style={{ transform: 'translateX(-30%) rotate(-10deg)'}} />
+                                <motion.div 
+                                    variants={itemVariants}
+                                    className="absolute flex items-center justify-center w-32 h-16 bg-purple-200/50 dark:bg-purple-500/10 text-purple-800 dark:text-purple-200 rounded-full blur-sm" style={{ transform: 'translateX(0%) rotate(5deg)'}} />
+                                <motion.div 
+                                    variants={itemVariants}
+                                    className="absolute flex items-center justify-center w-32 h-16 bg-blue-200/50 dark:bg-blue-500/10 text-blue-800 dark:text-blue-200 rounded-full blur-sm" style={{ transform: 'translateX(30%) rotate(-5deg)'}} />
+
+                                 <div className="absolute flex justify-around w-full text-xs font-semibold">
+                                     <motion.p variants={itemVariants}>What to retrieve</motion.p>
+                                     <motion.p variants={itemVariants}>When to retrieve</motion.p>
+                                     <motion.p variants={itemVariants}>How to use Retrieval</motion.p>
+                                 </div>
+                            </div>
+                        </Section>
+                     </DashedContainer>
+                </div>
+
+                {/* Right Column */}
+                <div className="lg:col-span-2 space-y-6">
+                    <Section title="RAG Prospect">
+                         <div className="grid grid-cols-1 md:grid-cols-[1.2fr,auto,1fr,auto,1fr] gap-4">
+                            <SubSection title="Challenges">
+                                <Badge>RAG in Long Context Length</Badge>
+                                <Badge>Hybrid</Badge>
+                                <Badge>Robustness</Badge>
+                                <Badge>Scaling-laws for RAG</Badge>
+                                <Badge>Production-ready RAG</Badge>
+                            </SubSection>
+                             <div className="border-l border-blue-200 dark:border-blue-800/30"></div>
+                            <SubSection title="Modality Extension">
+                                <Badge>Image</Badge>
+                                <Badge>Audio</Badge>
+                                <Badge>Video</Badge>
+                                <Badge>Code</Badge>
+                            </SubSection>
+                             <div className="border-l border-blue-200 dark:border-blue-800/30"></div>
+                             <SubSection title="Ecosystem">
+                                <Badge>Customization</Badge>
+                                <Badge>Simplification</Badge>
+                                <Badge>Specialization</Badge>
+                            </SubSection>
+                        </div>
+                    </Section>
+
+                     <DashedContainer className="bg-green-50/30 dark:bg-green-950/10 border-green-300/50 dark:border-green-800/30">
+                        <Section title="Evaluation of RAG">
+                            <div className="space-y-4">
+                                <SubSection title="Evaluation Target">
+                                    <Badge>Retrieval Quality</Badge>
+                                    <Badge>Generation Quality</Badge>
+                                </SubSection>
+                                 <SubSection title="Evaluation Aspects">
+                                    <div className="grid grid-cols-2 gap-2 w-full">
+                                        <Badge>Answer Relevance</Badge>
+                                        <Badge>Noise Robustness</Badge>
+                                        <Badge>Context Relevance</Badge>
+                                        <Badge>Negation Rejection</Badge>
+                                        <Badge>Answer Faithfulness</Badge>
+                                        <Badge>Information Integration</Badge>
+                                        <Badge>Counterfactual Robustness</Badge>
+                                    </div>
+                                </SubSection>
+                                 <SubSection title="Evaluation Framework">
+                                     <div className="grid grid-cols-1 md:grid-cols-[1fr,auto,1fr] gap-4 w-full">
+                                        <SubSection title="Benchmarks">
+                                            <Badge>CRUD</Badge>
+                                            <Badge>RGB</Badge>
+                                            <Badge>RECALL</Badge>
+                                        </SubSection>
+                                         <div className="border-l border-green-200 dark:border-green-800/30"></div>
+                                         <SubSection title="Tools">
+                                            <Badge>TruLens</Badge>
+                                            <Badge>RAGAS</Badge>
+                                            <Badge>ARES</Badge>
+                                        </SubSection>
+                                     </div>
+                                </SubSection>
+                            </div>
+                        </Section>
+                    </DashedContainer>
+                </div>
             </div>
         </motion.div>
     );
