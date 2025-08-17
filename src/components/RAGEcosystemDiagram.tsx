@@ -30,7 +30,7 @@ const itemVariants = {
 
 const Section = ({ title, children, className }: { title: string, children: React.ReactNode, className?: string }) => (
     <motion.div variants={itemVariants} className={cn("w-full", className)}>
-        <h3 className="font-semibold text-sm flex items-center gap-1.5 text-blue-500 mb-3">
+        <h3 className="font-semibold text-sm flex items-center gap-1.5 text-blue-500 mb-2">
             <ChevronRight className="w-5 h-5" />
             {title}
         </h3>
@@ -40,8 +40,8 @@ const Section = ({ title, children, className }: { title: string, children: Reac
 
 const SubSection = ({ title, children, className }: { title?: string, children: React.ReactNode, className?: string }) => (
     <div className={className}>
-        {title && <h4 className="text-xs font-semibold text-muted-foreground mb-2">{title}</h4>}
-        <div className="flex flex-wrap gap-2">
+        {title && <h4 className="text-xs font-semibold text-muted-foreground mb-1.5">{title}</h4>}
+        <div className="flex flex-wrap gap-1.5">
             {children}
         </div>
     </div>
@@ -51,13 +51,13 @@ const Badge = ({ children, className }: { children: React.ReactNode, className?:
     <motion.div 
         variants={itemVariants} 
         whileHover={{ y: -2, boxShadow: "0px 4px 10px hsla(var(--primary), 0.1)"}}
-        className={cn("bg-white dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800/50 rounded-lg px-3 py-1.5 text-xs text-center", className)}>
+        className={cn("bg-white dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800/50 rounded-lg px-2.5 py-1 text-xs text-center", className)}>
         {children}
     </motion.div>
 );
 
 const DashedContainer = ({children, className}: {children: React.ReactNode, className?:string}) => (
-    <motion.div variants={itemVariants} className={cn("border-2 border-dashed border-blue-300/50 dark:border-blue-800/50 rounded-2xl p-4 space-y-6", className)}>
+    <motion.div variants={itemVariants} className={cn("border-2 border-dashed border-blue-300/50 dark:border-blue-800/50 rounded-2xl p-4 space-y-4", className)}>
         {children}
     </motion.div>
 )
@@ -69,12 +69,12 @@ export const RAGEcosystemDiagram = () => {
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, amount: 0.1 }}
-            className="w-full bg-blue-50 dark:bg-blue-950/10 border border-blue-200/50 dark:border-blue-900/50 rounded-3xl p-6"
+            className="w-full bg-blue-50 dark:bg-blue-950/10 border border-blue-200/50 dark:border-blue-900/50 rounded-3xl p-5"
         >
-            <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
 
                 {/* Left Column */}
-                <div className="lg:col-span-3 space-y-6">
+                <div className="lg:col-span-3 space-y-4">
                     <Section title="RAG Ecosystem">
                         <div className="grid grid-cols-1 md:grid-cols-[1fr,auto,1fr] gap-4">
                             <SubSection title="Downstream Tasks">
@@ -95,9 +95,9 @@ export const RAGEcosystemDiagram = () => {
 
                     <DashedContainer className="bg-blue-100/30 dark:bg-blue-950/20">
                         <Section title="The RAG Paradigm">
-                            <div className="bg-white dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/40 rounded-xl p-4 flex items-center justify-around text-sm font-medium">
+                            <div className="bg-white dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/40 rounded-xl p-3 flex items-center justify-around text-sm font-medium">
                                 <Badge>Naive RAG</Badge>
-                                <motion.div variants={itemVariants} className="flex items-center gap-1 text-muted-foreground"><ChevronRight className="w-4 h-4"/> Advanced RAG <ChevronRight className="w-4 h-4"/></motion.div>
+                                <motion.div variants={itemVariants} className="flex items-center gap-1 text-muted-foreground text-xs"><ChevronRight className="w-4 h-4"/> Advanced RAG <ChevronRight className="w-4 h-4"/></motion.div>
                                 <Badge>Modular RAG</Badge>
                             </div>
                         </Section>
@@ -105,7 +105,7 @@ export const RAGEcosystemDiagram = () => {
 
                     <DashedContainer className="bg-yellow-50/30 dark:bg-yellow-950/10 border-yellow-300/50 dark:border-yellow-800/30">
                         <Section title="Techniques for Better RAG">
-                             <div className="grid grid-cols-3 gap-2">
+                             <div className="grid grid-cols-3 gap-1.5">
                                 <Badge>Chunk Optimization</Badge>
                                 <Badge>Iterative Retrieval</Badge>
                                 <Badge>Retriever Fine-tuning</Badge>
@@ -121,16 +121,16 @@ export const RAGEcosystemDiagram = () => {
 
                      <DashedContainer className="bg-purple-50/30 dark:bg-purple-950/10 border-purple-300/50 dark:border-purple-800/30">
                         <Section title="Key Issues of RAG">
-                            <div className="relative flex justify-center items-center h-16">
+                            <div className="relative flex justify-center items-center h-14">
                                 <motion.div 
                                     variants={itemVariants}
-                                    className="absolute flex items-center justify-center w-32 h-16 bg-pink-200/50 dark:bg-pink-500/10 text-pink-800 dark:text-pink-200 rounded-full blur-sm" style={{ transform: 'translateX(-30%) rotate(-10deg)'}} />
+                                    className="absolute flex items-center justify-center w-28 h-14 bg-pink-200/50 dark:bg-pink-500/10 text-pink-800 dark:text-pink-200 rounded-full blur-sm" style={{ transform: 'translateX(-30%) rotate(-10deg)'}} />
                                 <motion.div 
                                     variants={itemVariants}
-                                    className="absolute flex items-center justify-center w-32 h-16 bg-purple-200/50 dark:bg-purple-500/10 text-purple-800 dark:text-purple-200 rounded-full blur-sm" style={{ transform: 'translateX(0%) rotate(5deg)'}} />
+                                    className="absolute flex items-center justify-center w-28 h-14 bg-purple-200/50 dark:bg-purple-500/10 text-purple-800 dark:text-purple-200 rounded-full blur-sm" style={{ transform: 'translateX(0%) rotate(5deg)'}} />
                                 <motion.div 
                                     variants={itemVariants}
-                                    className="absolute flex items-center justify-center w-32 h-16 bg-blue-200/50 dark:bg-blue-500/10 text-blue-800 dark:text-blue-200 rounded-full blur-sm" style={{ transform: 'translateX(30%) rotate(-5deg)'}} />
+                                    className="absolute flex items-center justify-center w-28 h-14 bg-blue-200/50 dark:bg-blue-500/10 text-blue-800 dark:text-blue-200 rounded-full blur-sm" style={{ transform: 'translateX(30%) rotate(-5deg)'}} />
 
                                  <div className="absolute flex justify-around w-full text-xs font-semibold">
                                      <motion.p variants={itemVariants}>What to retrieve</motion.p>
@@ -143,7 +143,7 @@ export const RAGEcosystemDiagram = () => {
                 </div>
 
                 {/* Right Column */}
-                <div className="lg:col-span-2 space-y-6">
+                <div className="lg:col-span-2 space-y-4">
                     <Section title="RAG Prospect">
                          <div className="grid grid-cols-1 md:grid-cols-[1.2fr,auto,1fr,auto,1fr] gap-4">
                             <SubSection title="Challenges">
@@ -177,7 +177,7 @@ export const RAGEcosystemDiagram = () => {
                                     <Badge>Generation Quality</Badge>
                                 </SubSection>
                                  <SubSection title="Evaluation Aspects">
-                                    <div className="grid grid-cols-2 gap-2 w-full">
+                                    <div className="grid grid-cols-2 gap-1.5 w-full">
                                         <Badge>Answer Relevance</Badge>
                                         <Badge>Noise Robustness</Badge>
                                         <Badge>Context Relevance</Badge>
