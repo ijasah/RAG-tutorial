@@ -254,20 +254,21 @@ export const RAGEcosystemDiagram = () => {
                         <DashedContainer className="bg-purple-50/30 dark:bg-purple-950/10 border-purple-300/50 dark:border-purple-800/30 flex-grow">
                             <Section title="Key issues of RAG">
                                 <div className="relative flex justify-center items-center h-full min-h-[100px]">
-                                    <motion.div
-                                        variants={itemVariants}
-                                        className="absolute flex items-center justify-center w-24 h-12 bg-pink-200/50 dark:bg-pink-500/10 text-pink-800 dark:text-pink-200 rounded-full blur-sm" style={{ transform: 'translateX(-30%) rotate(-10deg)' }} />
-                                    <motion.div
-                                        variants={itemVariants}
-                                        className="absolute flex items-center justify-center w-24 h-12 bg-purple-200/50 dark:bg-purple-500/10 text-purple-800 dark:text-purple-200 rounded-full blur-sm" style={{ transform: 'translateX(0%) rotate(5deg)' }} />
-                                    <motion.div
-                                        variants={itemVariants}
-                                        className="absolute flex items-center justify-center w-24 h-12 bg-blue-200/50 dark:bg-blue-500/10 text-blue-800 dark:text-blue-200 rounded-full blur-sm" style={{ transform: 'translateX(30%) rotate(-5deg)' }} />
-
-                                    <div className="absolute flex justify-around w-full text-xs font-semibold">
-                                        <motion.p variants={itemVariants}>What to retrieve</motion.p>
-                                        <motion.p variants={itemVariants}>When to retrieve</motion.p>
-                                        <motion.p variants={itemVariants}>How to use Retrieval</motion.p>
+                                    <div className="absolute w-full h-full flex items-center justify-center">
+                                        <motion.div
+                                            variants={itemVariants}
+                                            className="absolute flex items-center justify-center w-32 h-16 bg-pink-200/50 dark:bg-pink-500/10 text-pink-800 dark:text-pink-200 rounded-full blur-md" style={{ transform: 'translateX(-40%) rotate(-15deg)' }} />
+                                        <motion.div
+                                            variants={itemVariants}
+                                            className="absolute flex items-center justify-center w-32 h-16 bg-purple-200/50 dark:bg-purple-500/10 text-purple-800 dark:text-purple-200 rounded-full blur-md" style={{ transform: 'translateX(0%) rotate(5deg)' }} />
+                                        <motion.div
+                                            variants={itemVariants}
+                                            className="absolute flex items-center justify-center w-32 h-16 bg-blue-200/50 dark:bg-blue-500/10 text-blue-800 dark:text-blue-200 rounded-full blur-md" style={{ transform: 'translateX(40%) rotate(-10deg)' }} />
+                                    </div>
+                                    <div className="relative flex justify-around w-full text-xs font-semibold text-foreground">
+                                        <motion.div variants={itemVariants} className="p-2">What to retrieve</motion.div>
+                                        <motion.div variants={itemVariants} className="p-2">When to retrieve</motion.div>
+                                        <motion.div variants={itemVariants} className="p-2">How to use Retrieval</motion.div>
                                     </div>
                                 </div>
                             </Section>
