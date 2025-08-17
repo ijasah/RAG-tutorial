@@ -17,7 +17,6 @@ const sections = [
         { id: 'intro-pro-con', title: 'Advantages & Challenges' },
     ]
   },
-  { id: 'ecosystem', title: 'RAG Ecosystem', icon: <Grid className="w-4 h-4" /> },
   { 
     id: 'vector-dbs', 
     title: 'Vector DBs & Similarity', 
@@ -54,6 +53,7 @@ const sections = [
         { id: 'eval-summary', title: 'Metrics Summary' },
     ]
   },
+  { id: 'ecosystem', title: 'RAG Ecosystem', icon: <Grid className="w-4 h-4" /> },
 ];
 
 interface TableOfContentsProps {

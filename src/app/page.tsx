@@ -64,11 +64,6 @@ const sections = [
     ]
   },
   { 
-    id: 'ecosystem', 
-    title: 'The RAG Ecosystem', 
-    icon: <Grid className="h-8 w-8 text-primary" /> 
-  },
-  { 
     id: 'vector-dbs', 
     title: 'Vector DBs & Similarity', 
     icon: <Database className="h-8 w-8 text-primary" />,
@@ -103,6 +98,11 @@ const sections = [
         { id: 'eval-relevancy', title: 'Response Relevancy' },
         { id: 'eval-summary', title: 'Metrics Summary' },
     ]
+  },
+  { 
+    id: 'ecosystem', 
+    title: 'The RAG Ecosystem', 
+    icon: <Grid className="h-8 w-8 text-primary" /> 
   },
 ];
 
@@ -260,15 +260,6 @@ const Index = () => {
                   </div>
                 </div>
               </div>
-            </Section>
-
-            <Section id="ecosystem" title="The RAG Ecosystem at a Glance" icon={<Grid className="h-8 w-8 text-primary" />}>
-                <div className="space-y-6">
-                  <p className="text-muted-foreground mb-4">
-                    The world of Retrieval-Augmented Generation is vast and constantly evolving. This diagram provides a high-level overview of the key concepts, technologies, challenges, and evaluation methods that make up the RAG ecosystem.
-                  </p>
-                  <RAGEcosystemDiagram />
-                </div>
             </Section>
             
             <Section id="vector-dbs" title="Vector Databases & Similarity" icon={<Database className="h-8 w-8 text-primary" />}>
@@ -442,6 +433,15 @@ const Index = () => {
                     <p className="text-muted-foreground">Incorporating robust evaluation into the RAG workflow is crucial for building reliable and accurate AI systems. By using metrics like Context Precision, Context Recall, and Noise Sensitivity, we can quantify the performance of our pipeline and ensure the final answers are grounded in high-quality, relevant information.</p>
                 </div>
               </div>
+            </Section>
+            
+            <Section id="ecosystem" title="The RAG Ecosystem at a Glance" icon={<Grid className="h-8 w-8 text-primary" />}>
+                <div className="space-y-6">
+                  <p className="text-muted-foreground mb-4">
+                    The world of Retrieval-Augmented Generation is vast and constantly evolving. This diagram provides a high-level overview of the key concepts, technologies, challenges, and evaluation methods that make up the RAG ecosystem.
+                  </p>
+                  <RAGEcosystemDiagram />
+                </div>
             </Section>
           </main>
         </div>
