@@ -21,6 +21,7 @@ import { ContextRecallSimulator } from '@/components/ContextRecallSimulator';
 import { NoiseSensitivitySimulator } from '@/components/NoiseSensitivitySimulator';
 import { ResponseRelevancySimulator } from '@/components/ResponseRelevancySimulator';
 import { FaithfulnessSimulator } from '@/components/FaithfulnessSimulator';
+import { EvaluationMetricsTable } from '@/components/EvaluationMetricsTable';
 
 import {
   BookOpen,
@@ -335,6 +336,14 @@ const Index = () => {
                   Response Relevancy measures how well the generated answer addresses the user's original query. It uses a clever trick: if the answer is relevant, you should be able to reverse-engineer the original question from it. This metric penalizes incomplete or redundant answers.
                 </p>
                 <ResponseRelevancySimulator />
+                
+                <div>
+                    <h3 className="text-xl font-semibold mb-3 mt-8 text-foreground">Metrics at a Glance</h3>
+                    <p className="text-muted-foreground mb-4">
+                        This table provides a quick summary of the RAG evaluation metrics, helping you compare their focus and application at a glance.
+                    </p>
+                    <EvaluationMetricsTable />
+                </div>
 
                 <div>
                     <h3 className="text-xl font-semibold mb-3 mt-8 text-foreground">Conclusion</h3>
