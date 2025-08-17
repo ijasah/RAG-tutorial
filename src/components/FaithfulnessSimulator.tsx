@@ -87,7 +87,7 @@ export const FaithfulnessSimulator = () => {
         if (evaluatedClaims.length === 0) return 0;
         const totalClaims = exampleData.claims.length > 0 ? exampleData.claims.length : 1;
         return supportedClaims / totalClaims;
-    }, [supportedClaims, evaluatedClaims, exampleData.claims.length]);
+    }, [supportedClaims, evaluatedClaims]);
 
 
     const handleSimulate = () => {
@@ -116,7 +116,7 @@ export const FaithfulnessSimulator = () => {
              <CardHeader>
                 <CardTitle>Faithfulness Simulator</CardTitle>
                 <CardDescription>
-                     This metric evaluates the generator (LLM) by checking if the claims in the **generated answer** are factually supported by the **retrieved context**. This is crucial for preventing hallucinations.
+                     This metric evaluates the generator (LLM) by checking if the claims in the <strong>generated answer</strong> are factually supported by the <strong>retrieved context</strong>. This is crucial for preventing hallucinations.
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -155,10 +155,8 @@ export const FaithfulnessSimulator = () => {
                 </div>
 
                 <div className="flex justify-center mt-6 pt-4 border-t">
-                    <Button onClick={!isRunning ? handleSimulate : handleReset} className="w-48">
-                         {!isRunning && evaluatedClaims.length === 0 && <><Play className="mr-2" />Run Evaluation</>}
-                         {isRunning && 'Evaluating...'}
-                         {!isRunning && evaluatedClaims.length > 0 && <><RefreshCw className="mr-2" />Re-run Evaluation</>}
+                    <Button onClick={!isRunning && evaluatedClaims.length === 0 ? handleSimulate : handleReset} className="w-48">
+                         {isRunning ? ('Evaluating...') : (evaluatedClaims.length === 0 ? <><Play className="mr-2" />Run Evaluation</> : <><RefreshCw className="mr-2" />Re-run Evaluation</>)}
                      </Button>
                 </div>
             </CardContent>

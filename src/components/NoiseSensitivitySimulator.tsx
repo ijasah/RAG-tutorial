@@ -94,7 +94,7 @@ export const NoiseSensitivitySimulator = () => {
         if (evaluatedClaims.length === 0) return 0;
         const totalClaims = exampleData.claims.length > 0 ? exampleData.claims.length : 1;
         return incorrectClaims / totalClaims;
-    }, [incorrectClaims, evaluatedClaims, exampleData.claims.length]);
+    }, [incorrectClaims, evaluatedClaims]);
     
 
     const handleSimulate = () => {
@@ -123,7 +123,7 @@ export const NoiseSensitivitySimulator = () => {
              <CardHeader>
                 <CardTitle>Noise Sensitivity Simulator</CardTitle>
                 <CardDescription>
-                     See how Noise Sensitivity is calculated by checking if the LLM generates claims that are not supported by the ground truth.
+                     See how Noise Sensitivity is calculated by checking if the LLM generates claims that are not supported by the <strong>ground truth answer</strong>.
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">

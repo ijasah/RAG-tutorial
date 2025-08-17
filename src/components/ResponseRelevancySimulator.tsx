@@ -95,14 +95,14 @@ export const ResponseRelevancySimulator = () => {
         setEvaluatedQuestions([]);
     };
     
-    const formula = `Response Relevancy = average(${exampleData.generatedQuestions.filter((q, i) => evaluatedQuestions.includes(i)).map(q => q.score.toFixed(2)).join(', ') || '...'})\n\n= ${finalScore.toFixed(3)}`;
+    const formula = `Response Relevancy = average({${exampleData.generatedQuestions.filter((q, i) => evaluatedQuestions.includes(i)).map(q => q.score.toFixed(2)).join(', ') || '...'}})\n\n= ${finalScore.toFixed(3)}`;
 
     return (
         <Card className="bg-card/50 transition-all hover:shadow-lg hover:-translate-y-1">
              <CardHeader>
                 <CardTitle>Response Relevancy Simulator</CardTitle>
                 <CardDescription>
-                     See how Response Relevancy is calculated by generating questions from the answer and comparing them to the original query.
+                     See how Response Relevancy is calculated by generating questions from the <strong>generated answer</strong> and comparing them to the <strong>original user query</strong>.
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -140,10 +140,8 @@ export const ResponseRelevancySimulator = () => {
                 </div>
 
                 <div className="flex justify-center mt-6 pt-4 border-t">
-                    <Button onClick={!isRunning ? handleSimulate : handleReset} className="w-48">
-                         {!isRunning && evaluatedQuestions.length === 0 && <><Play className="mr-2" />Run Evaluation</>}
-                         {isRunning && 'Evaluating...'}
-                         {!isRunning && evaluatedQuestions.length > 0 && <><RefreshCw className="mr-2" />Re-run Evaluation</>}
+                    <Button onClick={!isRunning && evaluatedQuestions.length === 0 ? handleSimulate : handleReset} className="w-48">
+                         {isRunning ? ('Evaluating...') : (evaluatedQuestions.length === 0 ? <><Play className="mr-2" />Run Evaluation</> : <><RefreshCw className="mr-2" />Re-run Evaluation</>)}
                      </Button>
                 </div>
             </CardContent>
