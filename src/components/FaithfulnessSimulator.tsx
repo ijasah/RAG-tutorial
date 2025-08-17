@@ -1,11 +1,11 @@
 // src/components/FaithfulnessSimulator.tsx
 "use client";
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
-import { HelpCircle, FileText, RefreshCw, ArrowRight, MessageSquare, Sparkles, BrainCircuit, CheckCircle, XCircle } from 'lucide-react';
+import { HelpCircle, FileText, RefreshCw, ArrowRight, MessageSquare, Sparkles, BrainCircuit, CheckCircle, XCircle, Play } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { CodeBlock } from './ui/code-block';
 
@@ -76,106 +76,89 @@ const ClaimCard = ({ claim, isEvaluated }: { claim: any; isEvaluated: boolean })
 );
 
 export const FaithfulnessSimulator = () => {
-    const [step, setStep] = useState(0);
-    const maxSteps = 4;
     const [evaluatedClaims, setEvaluatedClaims] = useState<number[]>([]);
+    const [isRunning, setIsRunning] = useState(false);
 
-    const handleNext = () => {
-        if (step === 2) { // Start evaluation animation
-            exampleData.claims.forEach((_, index) => {
-                setTimeout(() => {
-                    setEvaluatedClaims(prev => [...prev, index]);
-                }, (index + 1) * 1500);
-            });
-        }
-        setStep(s => Math.min(maxSteps, s + 1));
+    const supportedClaims = useMemo(() => {
+        return evaluatedClaims.filter(i => exampleData.claims[i].supported).length;
+    }, [evaluatedClaims]);
+
+    const score = useMemo(() => {
+        if (evaluatedClaims.length === 0) return 0;
+        return supportedClaims / evaluatedClaims.length;
+    }, [supportedClaims, evaluatedClaims]);
+
+
+    const handleSimulate = () => {
+        setIsRunning(true);
+        setEvaluatedClaims([]);
+
+        exampleData.claims.forEach((_, index) => {
+            setTimeout(() => {
+                setEvaluatedClaims(prev => [...prev, index]);
+                if (index === exampleData.claims.length - 1) {
+                    setIsRunning(false);
+                }
+            }, (index + 1) * 1500);
+        });
     };
 
     const handleReset = () => {
-        setStep(0);
+        setIsRunning(false);
         setEvaluatedClaims([]);
     };
     
-    const getStepDescription = () => {
-        const descriptions = [
-            "Click 'Start Simulation' to begin the Faithfulness simulation.",
-            "1. First, we examine the inputs: the user's question, the retrieved context, and the generated answer.",
-            "2. Next, the generated answer is broken down into individual claims.",
-            "3. Each claim is fact-checked against the retrieved context to verify its accuracy.",
-            "4. Finally, the Faithfulness score is calculated based on the ratio of supported claims."
-        ];
-        return descriptions[step] || descriptions[descriptions.length - 1];
-    }
-    
-    const supportedClaims = evaluatedClaims.filter(i => exampleData.claims[i].supported).length;
-    const totalClaims = exampleData.claims.length;
-    const score = totalClaims > 0 ? supportedClaims / totalClaims : 0;
-    const isEvaluating = step === 3 && evaluatedClaims.length < totalClaims;
+    const formula = `Faithfulness Score = (Supported Claims) / (Total Claims)\n\n= ${supportedClaims} / ${exampleData.claims.length} = ${score.toFixed(2)}`;
 
     return (
         <Card className="bg-card/50 transition-all hover:shadow-lg hover:-translate-y-1">
              <CardHeader>
                 <CardTitle>Faithfulness Simulator</CardTitle>
                 <CardDescription>
-                     {getStepDescription()}
+                     See how Faithfulness is calculated by checking if the generated answer is grounded in the retrieved context.
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-                <AnimatePresence mode="wait">
-                    <motion.div
-                        key={step}
-                        initial={{ opacity: 0, y: 15 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -15 }}
-                        transition={{duration: 0.3}}
-                    >
-                        {step === 1 && (
-                             <div className="grid grid-cols-1 gap-4">
-                                <InfoCard icon={<HelpCircle className="text-primary"/>} title="User Question" content={exampleData.question} />
-                                <InfoCard icon={<FileText className="text-primary"/>} title="Retrieved Context" content={exampleData.context} />
-                                 <InfoCard icon={<MessageSquare className="text-primary"/>} title="Generated Answer" content={exampleData.answer} className="border-amber-500/30 bg-amber-500/10"/>
-                            </div>
-                        )}
-                        {step === 2 && (
-                            <InfoCard icon={<MessageSquare className="text-primary"/>} title="Generated Answer" content={exampleData.answer} />
-                        )}
-                        {step === 3 && (
-                             <Card>
-                                <CardHeader>
-                                     <CardTitle className="text-base flex items-center gap-2"><BrainCircuit className="text-primary"/>Claim Verification</CardTitle>
-                                     <CardDescription>Each claim in the generated answer is checked against the retrieved context.</CardDescription>
-                                </CardHeader>
-                                <CardContent className="space-y-3">
-                                    {exampleData.claims.map((claim, index) => (
-                                        <ClaimCard
-                                            key={index}
-                                            claim={claim}
-                                            isEvaluated={evaluatedClaims.includes(index)}
-                                        />
-                                    ))}
-                                </CardContent>
-                            </Card>
-                        )}
-                         {step === 4 && (
-                            <div className="text-center p-4">
-                                <h3 className="text-xl font-semibold mb-3 text-foreground">Final Score</h3>
-                                 <p className="text-muted-foreground mb-4">The Faithfulness score is the ratio of supported claims to the total number of claims.</p>
-                                <CodeBlock code={`Faithfulness Score = (Number of claims in the response supported by the retrieved context) / (Total number of claims in the response)\n\n= ${supportedClaims} / ${totalClaims} = ${score.toFixed(2)}`} />
-                                 <p className="text-muted-foreground mt-4">A higher score is better, indicating the model is generating answers that are factually grounded in the context.</p>
-                            </div>
-                        )}
-                    </motion.div>
-                </AnimatePresence>
+                 <div className="p-4 mb-6 bg-muted/40 rounded-lg border text-center space-y-2">
+                    <h3 className="text-lg font-semibold text-primary">LLM-based Faithfulness</h3>
+                    <p className="text-sm text-muted-foreground max-w-2xl mx-auto">The LLM deconstructs the answer into claims and verifies each one against the retrieved context.</p>
+                   <CodeBlock className="text-left !bg-background/50" code={formula} />
+                </div>
 
-                 <div className="flex justify-center items-center mt-6 pt-4 border-t">
-                     <Button onClick={handleReset} variant="outline" size="sm" disabled={step === 0}>
-                         <RefreshCw className="mr-2 h-4 w-4" /> Reset
-                     </Button>
-                     <Button onClick={handleNext} size="sm" className="ml-4 w-40" disabled={step >= maxSteps || isEvaluating}>
-                         {step === 0 && 'Start Simulation'}
-                         {step > 0 && (isEvaluating ? 'Evaluating...' : 'Next')} 
-                         {step > 0 && !isEvaluating && <ArrowRight className="ml-2 h-4 w-4" />}
-                     </Button>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Left Column */}
+                    <div className="space-y-4">
+                        <InfoCard icon={<HelpCircle className="text-primary"/>} title="User Question" content={exampleData.question} />
+                        <InfoCard icon={<FileText className="text-primary"/>} title="Retrieved Context" content={exampleData.context} />
+                        <InfoCard icon={<MessageSquare className="text-primary"/>} title="Generated Answer" content={exampleData.answer} className="border-amber-500/30 bg-amber-500/10"/>
+                    </div>
+                    
+                    {/* Right Column */}
+                    <div className="space-y-4">
+                         <Card className="sticky top-24">
+                            <CardHeader>
+                                 <CardTitle className="text-base flex items-center gap-2"><BrainCircuit className="text-primary"/>Claim Verification</CardTitle>
+                                 <CardDescription>Each claim in the answer is checked against the context. Click "Run" to start.</CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-3">
+                                {exampleData.claims.map((claim, index) => (
+                                    <ClaimCard
+                                        key={index}
+                                        claim={claim}
+                                        isEvaluated={evaluatedClaims.includes(index)}
+                                    />
+                                ))}
+                            </CardContent>
+                        </Card>
+                    </div>
+                </div>
+
+                <div className="flex justify-center mt-6 pt-4 border-t">
+                    <Button onClick={!isRunning ? handleSimulate : handleReset} className="w-40">
+                         {!isRunning && evaluatedClaims.length === 0 && <><Play className="mr-2" />Run Evaluation</>}
+                         {isRunning && 'Evaluating...'}
+                         {!isRunning && evaluatedClaims.length > 0 && <><RefreshCw className="mr-2" />Re-run</>}
+                    </Button>
                 </div>
             </CardContent>
         </Card>

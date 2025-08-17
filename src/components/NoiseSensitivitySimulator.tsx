@@ -1,11 +1,11 @@
 // src/components/NoiseSensitivitySimulator.tsx
 "use client";
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
-import { HelpCircle, FileText, Bot, Search, RefreshCw, ArrowRight, MessageSquare, Sparkles, GitMerge, BrainCircuit, Waves, CheckCircle, XCircle, ClipboardCheck } from 'lucide-react';
+import { HelpCircle, FileText, Bot, Search, RefreshCw, Play, MessageSquare, Sparkles, GitMerge, BrainCircuit, Waves, CheckCircle, XCircle, ClipboardCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from './ui/badge';
 import { CodeBlock } from './ui/code-block';
@@ -83,112 +83,95 @@ const ClaimCard = ({ claim, isEvaluated }: { claim: any; isEvaluated: boolean })
 )
 
 export const NoiseSensitivitySimulator = () => {
-    const [step, setStep] = useState(0);
-    const maxSteps = 4;
     const [evaluatedClaims, setEvaluatedClaims] = useState<number[]>([]);
+    const [isRunning, setIsRunning] = useState(false);
 
-    const handleNext = () => {
-        if (step === 2) { // Start evaluation animation
-            exampleData.claims.forEach((_, index) => {
-                setTimeout(() => {
-                    setEvaluatedClaims(prev => [...prev, index]);
-                }, (index + 1) * 1500);
-            });
-        }
-        setStep(s => Math.min(maxSteps, s + 1));
+    const incorrectClaims = useMemo(() => {
+        return evaluatedClaims.filter(i => !exampleData.claims[i].correct).length;
+    }, [evaluatedClaims]);
+    
+    const score = useMemo(() => {
+        if (evaluatedClaims.length === 0) return 0;
+        return incorrectClaims / evaluatedClaims.length;
+    }, [incorrectClaims, evaluatedClaims]);
+    
+    const isEvaluating = isRunning && evaluatedClaims.length < exampleData.claims.length;
+
+    const handleSimulate = () => {
+        setIsRunning(true);
+        setEvaluatedClaims([]);
+        
+        exampleData.claims.forEach((_, index) => {
+            setTimeout(() => {
+                setEvaluatedClaims(prev => [...prev, index]);
+                if (index === exampleData.claims.length - 1) {
+                    setIsRunning(false);
+                }
+            }, (index + 1) * 1500);
+        });
     };
 
     const handleReset = () => {
-        setStep(0);
+        setIsRunning(false);
         setEvaluatedClaims([]);
     };
     
-    const getStepDescription = () => {
-        const descriptions = [
-            "Click 'Start Simulation' to begin the Noise Sensitivity simulation.",
-            "1. First, we examine the inputs: the user's question, the ground truth, and the contexts retrieved by the RAG system.",
-            "2. Next, the LLM generates an answer based on the retrieved contexts.",
-            "3. Now, we break the answer into individual claims and check if each one is supported by the ground truth.",
-            "4. Finally, we calculate the Noise Sensitivity score based on how many incorrect claims were found."
-        ];
-        return descriptions[step];
-    }
-    
-    const incorrectClaims = evaluatedClaims.filter(i => !exampleData.claims[i].correct).length;
-    const totalClaims = exampleData.claims.length;
-    const score = totalClaims > 0 ? incorrectClaims / totalClaims : 0;
-    const isEvaluating = step === 3 && evaluatedClaims.length < totalClaims;
+    const formula = `Noise Sensitivity = (Incorrect Claims) / (Total Claims)\n\n= ${incorrectClaims} / ${exampleData.claims.length} = ${score.toFixed(2)}`;
 
     return (
         <Card className="bg-card/50 transition-all hover:shadow-lg hover:-translate-y-1">
              <CardHeader>
                 <CardTitle>Noise Sensitivity Simulator</CardTitle>
                 <CardDescription>
-                     {getStepDescription()}
+                     See how Noise Sensitivity is calculated by checking if the LLM generates claims that are not supported by the ground truth.
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-                <AnimatePresence mode="wait">
-                    <motion.div
-                        key={step}
-                        initial={{ opacity: 0, y: 15 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -15 }}
-                    >
-                        {step === 1 && (
-                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                                <InfoCard icon={<HelpCircle className="text-primary"/>} title="User Question" content={exampleData.question} />
-                                <InfoCard icon={<ClipboardCheck className="text-primary"/>} title="Ground Truth" content={exampleData.ground_truth} />
-                                <div className="lg:col-span-2">
-                                    <InfoCard icon={<Search className="text-primary"/>} title="Retrieved Contexts" content={
-                                        <div className="space-y-2">
-                                            {exampleData.retrieved_contexts.map((ctx, i) => (
-                                                <p key={i} className={cn("p-1.5 rounded-md border", ctx.relevant ? "bg-green-500/10 border-green-500/30" : "bg-destructive/10 border-destructive/30")}>{ctx.text}</p>
-                                            ))}
-                                        </div>
-                                    } />
-                                </div>
-                            </div>
-                        )}
-                        {step === 2 && (
-                             <InfoCard icon={<MessageSquare className="text-primary"/>} title="Generated Answer" content={exampleData.generated_answer} />
-                        )}
-                        {step === 3 && (
-                             <Card>
-                                <CardHeader>
-                                     <CardTitle className="text-base flex items-center gap-2"><BrainCircuit className="text-primary"/>Claim Verification</CardTitle>
-                                     <CardDescription>Each claim in the generated answer is checked against the ground truth.</CardDescription>
-                                </CardHeader>
-                                <CardContent className="space-y-3">
-                                    {exampleData.claims.map((claim, index) => (
-                                        <ClaimCard
-                                            key={index}
-                                            claim={claim}
-                                            isEvaluated={evaluatedClaims.includes(index)}
-                                        />
-                                    ))}
-                                </CardContent>
-                            </Card>
-                        )}
-                         {step === 4 && (
-                            <div className="text-center p-4">
-                                <h3 className="text-xl font-semibold mb-3 text-foreground">Final Score</h3>
-                                 <p className="text-muted-foreground mb-4">The noise sensitivity is the ratio of incorrect claims to the total number of claims.</p>
-                                <CodeBlock code={`Noise Sensitivity = (Incorrect Claims) / (Total Claims)\n= ${incorrectClaims} / ${totalClaims} = ${score.toFixed(3)}`} />
-                                 <p className="text-muted-foreground mt-4">A lower score is better, indicating the model is less sensitive to noise and generates more factual answers.</p>
-                            </div>
-                        )}
-                    </motion.div>
-                </AnimatePresence>
+                <div className="p-4 mb-6 bg-muted/40 rounded-lg border text-center space-y-2">
+                    <h3 className="text-lg font-semibold text-primary">LLM-based Noise Sensitivity</h3>
+                    <p className="text-sm text-muted-foreground max-w-2xl mx-auto">The LLM deconstructs the answer into claims and verifies each one against the ground truth answer.</p>
+                   <CodeBlock className="text-left !bg-background/50" code={formula} />
+                </div>
 
-                 <div className="flex justify-center items-center mt-6 pt-4 border-t">
-                     <Button onClick={handleReset} variant="outline" size="sm" disabled={step === 0}>
-                         <RefreshCw className="mr-2 h-4 w-4" /> Reset
-                     </Button>
-                     <Button onClick={handleNext} size="sm" className="ml-4 w-40" disabled={step >= maxSteps || isEvaluating}>
-                         {step === 0 && 'Start Simulation'}
-                         {step > 0 && (isEvaluating ? 'Evaluating...' : 'Next')} 
-                         {step > 0 && !isEvaluating && <ArrowRight className="ml-2 h-4 w-4" />}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                     {/* Left Column */}
+                    <div className="space-y-4">
+                        <InfoCard icon={<HelpCircle className="text-primary"/>} title="User Question" content={exampleData.question} />
+                        <InfoCard icon={<ClipboardCheck className="text-primary"/>} title="Ground Truth" content={exampleData.ground_truth} />
+                         <InfoCard icon={<Search className="text-primary"/>} title="Retrieved Contexts" content={
+                            <div className="space-y-2">
+                                {exampleData.retrieved_contexts.map((ctx, i) => (
+                                    <p key={i} className={cn("p-1.5 rounded-md border", ctx.relevant ? "bg-green-500/10 border-green-500/30" : "bg-destructive/10 border-destructive/30")}>{ctx.text}</p>
+                                ))}
+                            </div>
+                        } />
+                        <InfoCard icon={<MessageSquare className="text-primary"/>} title="Generated Answer" content={exampleData.generated_answer} />
+                    </div>
+                    {/* Right Column */}
+                     <div className="space-y-4">
+                         <Card className="sticky top-24">
+                            <CardHeader>
+                                 <CardTitle className="text-base flex items-center gap-2"><BrainCircuit className="text-primary"/>Claim Verification</CardTitle>
+                                 <CardDescription>Each claim in the answer is checked against the ground truth. Click "Run" to start.</CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-3">
+                                {exampleData.claims.map((claim, index) => (
+                                    <ClaimCard
+                                        key={index}
+                                        claim={claim}
+                                        isEvaluated={evaluatedClaims.includes(index)}
+                                    />
+                                ))}
+                            </CardContent>
+                        </Card>
+                    </div>
+                </div>
+
+                 <div className="flex justify-center mt-6 pt-4 border-t">
+                     <Button onClick={!isRunning ? handleSimulate : handleReset} className="w-40">
+                         {!isRunning && evaluatedClaims.length === 0 && <><Play className="mr-2" />Run Evaluation</>}
+                         {isRunning && 'Evaluating...'}
+                         {!isRunning && evaluatedClaims.length > 0 && <><RefreshCw className="mr-2" />Re-run</>}
                      </Button>
                 </div>
             </CardContent>
