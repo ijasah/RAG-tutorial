@@ -160,7 +160,7 @@ export const FaithfulnessSimulator = () => {
                             <div className="text-center p-4">
                                 <h3 className="text-xl font-semibold mb-3 text-foreground">Final Score</h3>
                                  <p className="text-muted-foreground mb-4">The Faithfulness score is the ratio of supported claims to the total number of claims.</p>
-                                <CodeBlock code={`Faithfulness = (Supported Claims) / (Total Claims)\n= ${supportedClaims} / ${totalClaims} = ${score.toFixed(2)}`} />
+                                <CodeBlock code={`Faithfulness Score = (Number of claims in the response supported by the retrieved context) / (Total number of claims in the response)\n\n= ${supportedClaims} / ${totalClaims} = ${score.toFixed(2)}`} />
                                  <p className="text-muted-foreground mt-4">A higher score is better, indicating the model is generating answers that are factually grounded in the context.</p>
                             </div>
                         )}
