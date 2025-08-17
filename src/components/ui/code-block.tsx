@@ -34,7 +34,7 @@ export function CodeBlock({ code, className }: { code: string; className?: strin
         </Tooltip>
        </TooltipProvider>
       <pre>
-        <code className="font-mono text-white/90">
+        <code className="font-mono text-white/90 whitespace-pre-wrap">
           {code}
         </code>
       </pre>
