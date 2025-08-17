@@ -58,10 +58,11 @@ const sections = [
 
 interface TableOfContentsProps {
     activeSectionId: string;
+    activeSubSectionId: string;
     onLinkClick: (id: string) => void;
 }
 
-export const TableOfContents = ({ activeSectionId, onLinkClick }: TableOfContentsProps) => {
+export const TableOfContents = ({ activeSectionId, activeSubSectionId, onLinkClick }: TableOfContentsProps) => {
   return (
     <div className="sticky top-24">
       <h3 className="text-lg font-semibold mb-4 text-primary">Table of Contents</h3>
@@ -101,7 +102,10 @@ export const TableOfContents = ({ activeSectionId, onLinkClick }: TableOfContent
                                         e.preventDefault();
                                         onLinkClick(subsection.id);
                                     }}
-                                    className="flex items-center gap-2 py-1.5 px-2 rounded-md text-xs text-muted-foreground hover:text-primary hover:bg-primary/5"
+                                    className={cn(
+                                        "flex items-center gap-2 py-1.5 px-2 rounded-md text-xs hover:text-primary hover:bg-primary/5",
+                                        activeSubSectionId === subsection.id ? "text-primary" : "text-muted-foreground"
+                                    )}
                                 >
                                     <ChevronRight className="w-3 h-3" />
                                     {subsection.title}
@@ -118,5 +122,3 @@ export const TableOfContents = ({ activeSectionId, onLinkClick }: TableOfContent
     </div>
   );
 };
-
-    

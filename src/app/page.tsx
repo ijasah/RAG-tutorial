@@ -105,6 +105,7 @@ const allSectionIds = sections.flatMap(s => [s.id, ...(s.subsections ? s.subsect
 
 const Index = () => {
   const [activeSection, setActiveSection] = useState(sections[0].id);
+  const [activeSubSectionId, setActiveSubSectionId] = useState('');
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
   const isScrolling = useRef(false);
 
@@ -125,6 +126,7 @@ const Index = () => {
       if(parentSection) {
           setActiveSection(parentSection.id);
       }
+      setActiveSubSectionId(id);
 
       setTimeout(() => {
         isScrolling.current = false;
@@ -160,6 +162,7 @@ const Index = () => {
             if (parentSection) {
                 setActiveSection(parentSection.id);
             }
+            setActiveSubSectionId(id);
         }
       });
     };
@@ -182,7 +185,11 @@ const Index = () => {
       <div id="content" className="container mx-auto px-4 py-16">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-12">
           <div className="lg:col-span-1">
-            <TableOfContents activeSectionId={activeSection} onLinkClick={scrollToSection} />
+            <TableOfContents 
+              activeSectionId={activeSection} 
+              activeSubSectionId={activeSubSectionId}
+              onLinkClick={scrollToSection} 
+            />
           </div>
           <main className="lg:col-span-3 space-y-24">
             <Section id="llm-to-rag" title="The Journey from LLMs to RAG" icon={<Route className="h-8 w-8 text-primary" />}>
@@ -380,7 +387,7 @@ const Index = () => {
                       "Is the answer factually consistent with the retrieved context?"
                     </p>
                      <p className="text-muted-foreground -mt-4">
-                      This metric evaluates the generator (LLM) by checking if the claims in the <strong>generated answer</strong> are factually supported by the <strong>retrieved context</strong>. This is crucial for preventing hallucinations.
+                      This metric evaluates the <strong>Generator</strong> (the LLM) by checking if the claims in the <strong>generated answer</strong> are factually supported by the <strong>retrieved context</strong>. This is crucial for preventing hallucinations.
                     </p>
                     <FaithfulnessSimulator />
                 </div>
@@ -449,5 +456,3 @@ const Index = () => {
 };
 
 export default Index;
-
-    
