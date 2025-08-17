@@ -21,7 +21,7 @@ const exampleData = {
 };
 
 const InfoCard = ({ icon, title, content }: { icon: React.ReactNode, title: string, content: string }) => (
-    <Card className="bg-muted/40 h-full">
+    <Card className="bg-muted/40">
         <CardHeader className="pb-3">
             <CardTitle className="text-sm flex items-center gap-2">
                 {icon}
@@ -95,7 +95,7 @@ export const ResponseRelevancySimulator = () => {
         setEvaluatedQuestions([]);
     };
     
-    const formula = `Response Relevancy = average(${exampleData.generatedQuestions.filter((q, i) => evaluatedQuestions.includes(i)).map(q => q.score.toFixed(2)).join(', ')})\n\n= ${finalScore.toFixed(3)}`;
+    const formula = `Response Relevancy = average(${exampleData.generatedQuestions.filter((q, i) => evaluatedQuestions.includes(i)).map(q => q.score.toFixed(2)).join(', ') || '...'})\n\n= ${finalScore.toFixed(3)}`;
 
     return (
         <Card className="bg-card/50 transition-all hover:shadow-lg hover:-translate-y-1">

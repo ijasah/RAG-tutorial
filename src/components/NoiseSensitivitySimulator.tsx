@@ -27,7 +27,7 @@ const exampleData = {
 };
 
 const InfoCard = ({ icon, title, content }: { icon: React.ReactNode, title: string, content: string | React.ReactNode }) => (
-    <Card className="bg-muted/40 h-full">
+    <Card className="bg-muted/40">
         <CardHeader className="pb-2">
             <CardTitle className="text-sm flex items-center gap-2">
                 {icon}
@@ -136,7 +136,7 @@ export const NoiseSensitivitySimulator = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                      {/* Left Column */}
                     <div className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <InfoCard icon={<HelpCircle className="text-primary"/>} title="User Question" content={exampleData.question} />
                             <InfoCard icon={<ClipboardCheck className="text-primary"/>} title="Ground Truth" content={exampleData.ground_truth} />
                         </div>

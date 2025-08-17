@@ -20,7 +20,7 @@ const exampleData = {
 };
 
 const InfoCard = ({ icon, title, content, className }: { icon: React.ReactNode, title: string, content: string, className?: string }) => (
-    <Card className={cn("bg-muted/40 h-full", className)}>
+    <Card className={cn("bg-muted/40", className)}>
         <CardHeader className="pb-2">
             <CardTitle className="text-sm flex items-center gap-2">
                 {icon}
@@ -85,8 +85,9 @@ export const FaithfulnessSimulator = () => {
 
     const score = useMemo(() => {
         if (evaluatedClaims.length === 0) return 0;
-        return supportedClaims / exampleData.claims.length;
-    }, [supportedClaims, evaluatedClaims]);
+        const totalClaims = exampleData.claims.length > 0 ? exampleData.claims.length : 1;
+        return supportedClaims / totalClaims;
+    }, [supportedClaims, evaluatedClaims, exampleData.claims.length]);
 
 
     const handleSimulate = () => {
@@ -108,7 +109,7 @@ export const FaithfulnessSimulator = () => {
         setEvaluatedClaims([]);
     };
     
-    const formula = `Faithfulness Score = (Supported Claims) / (Total Claims)\n\n= ${supportedClaims} / ${exampleData.claims.length} = ${score.toFixed(2)}`;
+    const formula = `Faithfulness = (Supported Claims) / (Total Claims)\n\n= ${supportedClaims} / ${exampleData.claims.length} = ${score.toFixed(2)}`;
 
     return (
         <Card className="bg-card/50 transition-all hover:shadow-lg hover:-translate-y-1">
