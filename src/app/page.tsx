@@ -4,6 +4,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
+import { motion } from 'framer-motion';
 import { Hero } from '@/components/Hero';
 import { TableOfContents } from '@/components/TableOfContents';
 import { Section } from '@/components/Section';
@@ -48,7 +49,8 @@ import {
   CheckCircle,
   XCircle,
   Grid,
-  BookMarked
+  BookMarked,
+  FileText
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -228,9 +230,31 @@ const Index = () => {
                         <CardTitle>What is Retrieval?</CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <p className="text-muted-foreground">
-                          Retrieval refers to the process of fetching relevant information from an external data source (like a database or a corpus of documents) based on a given input query. This process allows models to answer specific questions or provide more informed responses by leveraging knowledge that may not be encoded in the model itself.
-                        </p>
+                        <div className="grid grid-cols-1 md:grid-cols-3 items-center gap-6">
+                            <div className="md:col-span-1 flex justify-around items-center relative h-24">
+                                <Database className="w-10 h-10 text-primary" />
+                                <motion.div
+                                    className="absolute left-1/2 -translate-x-1/2"
+                                    animate={{
+                                        x: ['-50%', '50%', '-50%'],
+                                        opacity: [0, 1, 1, 0]
+                                    }}
+                                    transition={{
+                                        duration: 3,
+                                        repeat: Infinity,
+                                        ease: "easeInOut",
+                                    }}
+                                >
+                                    <FileText className="w-6 h-6 text-muted-foreground" />
+                                </motion.div>
+                                <BrainCircuit className="w-10 h-10 text-primary" />
+                            </div>
+                            <div className="md:col-span-2">
+                                <p className="text-muted-foreground">
+                                Retrieval refers to the process of fetching relevant information from an external data source (like a database or a corpus of documents) based on a given input query. This process allows models to answer specific questions or provide more informed responses by leveraging knowledge that may not be encoded in the model itself.
+                                </p>
+                            </div>
+                        </div>
                       </CardContent>
                     </Card>
                 </div>
@@ -492,3 +516,5 @@ const Index = () => {
 };
 
 export default Index;
+
+    
