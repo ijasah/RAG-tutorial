@@ -1,8 +1,10 @@
+
 // src/components/TableOfContents.tsx
 "use client";
 
 import { cn } from '@/lib/utils';
-import { BookOpen, Puzzle, ShieldCheck, Bot, SlidersHorizontal, Database, Route, Sparkles } from 'lucide-react';
+import { BookOpen, Puzzle, ShieldCheck, Bot, SlidersHorizontal, Database, Route, Sparkles, ChevronRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const sections = [
   { id: 'llm-to-rag', title: 'The Journey to RAG', icon: <Route className="w-4 h-4" /> },
@@ -12,7 +14,20 @@ const sections = [
   { id: 'parameters', title: 'Generation Parameters', icon: <SlidersHorizontal className="w-4 h-4" /> },
   { id: 'agentic-rag', title: 'Agentic RAG', icon: <Bot className="w-4 h-4" /> },
   { id: 'enhancements', title: 'Enhancement Techniques', icon: <Sparkles className="w-4 h-4" /> },
-  { id: 'evaluation', title: 'RAG Evaluation', icon: <ShieldCheck className="w-4 h-4" /> },
+  { 
+    id: 'evaluation', 
+    title: 'RAG Evaluation', 
+    icon: <ShieldCheck className="w-4 h-4" />,
+    subsections: [
+        { id: 'eval-terms', title: 'Key Terms' },
+        { id: 'eval-precision', title: 'Context Precision' },
+        { id: 'eval-recall', title: 'Context Recall' },
+        { id: 'eval-faithfulness', title: 'Faithfulness' },
+        { id: 'eval-noise', title: 'Noise Sensitivity' },
+        { id: 'eval-relevancy', title: 'Response Relevancy' },
+        { id: 'eval-summary', title: 'Metrics Summary' },
+    ]
+  },
 ];
 
 interface TableOfContentsProps {
@@ -25,7 +40,7 @@ export const TableOfContents = ({ activeSectionId, onLinkClick }: TableOfContent
     <div className="sticky top-24">
       <h3 className="text-lg font-semibold mb-4 text-primary">Table of Contents</h3>
       <nav>
-        <ul className="space-y-2">
+        <ul className="space-y-1">
           {sections.map((section) => (
             <li key={section.id}>
               <a
@@ -44,6 +59,32 @@ export const TableOfContents = ({ activeSectionId, onLinkClick }: TableOfContent
                 {section.icon}
                 {section.title}
               </a>
+               <AnimatePresence>
+                {activeSectionId === section.id && section.subsections && (
+                    <motion.ul 
+                        className="ml-4 mt-1 pl-4 border-l border-primary/20 space-y-1"
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                    >
+                        {section.subsections.map(subsection => (
+                            <li key={subsection.id}>
+                                <a
+                                    href={`#${subsection.id}`}
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        onLinkClick(subsection.id);
+                                    }}
+                                    className="flex items-center gap-2 py-1.5 px-2 rounded-md text-xs text-muted-foreground hover:text-primary hover:bg-primary/5"
+                                >
+                                    <ChevronRight className="w-3 h-3" />
+                                    {subsection.title}
+                                </a>
+                            </li>
+                        ))}
+                    </motion.ul>
+                )}
+              </AnimatePresence>
             </li>
           ))}
         </ul>

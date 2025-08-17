@@ -1,3 +1,4 @@
+
 // src/app/page.tsx
 'use client';
 
@@ -57,25 +58,48 @@ const sections = [
   { id: 'parameters', title: 'LLM Generation Parameters', icon: <SlidersHorizontal className="h-8 w-8 text-primary" /> },
   { id: 'agentic-rag', title: 'Agentic RAG', icon: <Bot className="h-8 w-8 text-primary" /> },
   { id: 'enhancements', title: 'RAG Enhancement Techniques', icon: <Sparkles className="h-8 w-8 text-primary" /> },
-  { id: 'evaluation', title: 'RAG Evaluation with RAGAS', icon: <ShieldCheck className="h-8 w-8 text-primary" /> },
+  { 
+    id: 'evaluation', 
+    title: 'RAG Evaluation with RAGAS', 
+    icon: <ShieldCheck className="h-8 w-8 text-primary" />,
+    subsections: [
+        { id: 'eval-terms', title: 'Key Terms' },
+        { id: 'eval-precision', title: 'Context Precision' },
+        { id: 'eval-recall', title: 'Context Recall' },
+        { id: 'eval-faithfulness', title: 'Faithfulness' },
+        { id: 'eval-noise', title: 'Noise Sensitivity' },
+        { id: 'eval-relevancy', title: 'Response Relevancy' },
+        { id: 'eval-summary', title: 'Metrics Summary' },
+    ]
+  },
 ];
 
+const allSectionIds = sections.flatMap(s => [s.id, ...(s.subsections ? s.subsections.map(sub => sub.id) : [])]);
+
+
 const Index = () => {
-  const [activeSectionIndex, setActiveSectionIndex] = useState(0);
-  const sectionRefs = useRef<(HTMLElement | null)[]>([]);
+  const [activeSection, setActiveSection] = useState(sections[0].id);
+  const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
   const isScrolling = useRef(false);
 
   useEffect(() => {
-    sectionRefs.current = sections.map(s => document.getElementById(s.id));
+    allSectionIds.forEach(id => {
+        sectionRefs.current[id] = document.getElementById(id);
+    })
   }, []);
 
-  const scrollToSection = (index: number) => {
+  const scrollToSection = (id: string) => {
     if (isScrolling.current) return;
-    const element = document.getElementById(sections[index].id);
+    const element = document.getElementById(id);
     if (element) {
       isScrolling.current = true;
       element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      setActiveSectionIndex(index);
+      
+      const parentSection = sections.find(s => s.id === id || s.subsections?.some(sub => sub.id === id));
+      if(parentSection) {
+          setActiveSection(parentSection.id);
+      }
+
       setTimeout(() => {
         isScrolling.current = false;
       }, 1000); // Prevent rapid scrolling
@@ -83,13 +107,15 @@ const Index = () => {
   };
 
   const handleNextSection = () => {
-    const nextIndex = Math.min(activeSectionIndex + 1, sections.length - 1);
-    scrollToSection(nextIndex);
+    const currentMainIndex = sections.findIndex(s => s.id === activeSection);
+    const nextIndex = Math.min(currentMainIndex + 1, sections.length - 1);
+    scrollToSection(sections[nextIndex].id);
   };
 
   const handlePrevSection = () => {
-    const prevIndex = Math.max(activeSectionIndex - 1, 0);
-    scrollToSection(prevIndex);
+    const currentMainIndex = sections.findIndex(s => s.id === activeSection);
+    const prevIndex = Math.max(currentMainIndex - 1, 0);
+    scrollToSection(sections[prevIndex].id);
   };
 
   useEffect(() => {
@@ -103,20 +129,24 @@ const Index = () => {
 
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
-            const index = sections.findIndex((s) => s.id === entry.target.id);
-            if (index !== -1) {
-                setActiveSectionIndex(index);
+            const id = entry.target.id;
+            const parentSection = sections.find(s => s.id === id || s.subsections?.some(sub => sub.id === id));
+            if (parentSection) {
+                setActiveSection(parentSection.id);
             }
         }
       });
     };
 
     const observer = new IntersectionObserver(observerCallback, observerOptions);
-    const elements = sections.map(s => document.getElementById(s.id)).filter(el => el);
-    elements.forEach(el => observer.observe(el!));
+    Object.values(sectionRefs.current).forEach(el => {
+        if(el) observer.observe(el);
+    });
 
     return () => {
-      elements.forEach(el => observer.unobserve(el!));
+      Object.values(sectionRefs.current).forEach(el => {
+        if(el) observer.unobserve(el);
+      });
     };
   }, []);
 
@@ -126,10 +156,7 @@ const Index = () => {
       <div id="content" className="container mx-auto px-4 py-16">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-12">
           <div className="lg:col-span-1">
-            <TableOfContents activeSectionId={sections[activeSectionIndex]?.id} onLinkClick={(id) => {
-              const index = sections.findIndex(s => s.id === id);
-              scrollToSection(index);
-            }}/>
+            <TableOfContents activeSectionId={activeSection} onLinkClick={scrollToSection} />
           </div>
           <main className="lg:col-span-3 space-y-24">
             <Section id="llm-to-rag" title="The Journey from LLMs to RAG" icon={<Route className="h-8 w-8 text-primary" />}>
@@ -250,7 +277,7 @@ const Index = () => {
                   A crucial step in building a RAG system is evaluating its performance. How do we know if the retrieved context is useful or if the final answer is correct? We use evaluation metrics to quantify the quality of our RAG pipeline.
                 </p>
 
-                <div>
+                <div id="eval-terms">
                   <h3 className="text-xl font-semibold mb-3 text-foreground">Key Evaluation Terms</h3>
                    <p className="text-muted-foreground mb-4">
                     Before diving into the metrics, let's define the core components we'll be evaluating.
@@ -291,53 +318,62 @@ const Index = () => {
                   </div>
                 </div>
 
-                 <h3 className="text-xl font-semibold mb-3 mt-8 text-foreground">Context Precision</h3>
-                 <p className="text-muted-foreground -mt-4 font-semibold text-lg italic text-center py-4">
-                  "Is the retrieved information relevant to the query?"
-                </p>
-                 <p className="text-muted-foreground -mt-4">
-                  Context Precision measures the signal-to-noise ratio of the retrieved context. High precision means the context is focused and useful.
-                </p>
-                <ContextPrecisionSimulator />
+                <div id="eval-precision" className="pt-12">
+                     <h3 className="text-xl font-semibold mb-3 mt-8 text-foreground">Context Precision</h3>
+                     <p className="text-muted-foreground -mt-4 font-semibold text-lg italic text-center py-4">
+                      "Is the retrieved information relevant to the query?"
+                    </p>
+                     <p className="text-muted-foreground -mt-4">
+                      Context Precision measures the signal-to-noise ratio of the retrieved context. High precision means the context is focused and useful.
+                    </p>
+                    <ContextPrecisionSimulator />
+                </div>
                 
-                 <h3 className="text-xl font-semibold mb-3 mt-8 text-foreground">Context Recall</h3>
-                  <p className="text-muted-foreground -mt-4 font-semibold text-lg italic text-center py-4">
-                  "Did we retrieve all the relevant context needed to fully answer the query?"
-                </p>
-                 <p className="text-muted-foreground -mt-4">
-                  Context Recall measures how well the retriever finds all the necessary information. High recall means we aren't missing important facts.
-                </p>
-                <ContextRecallSimulator />
+                <div id="eval-recall" className="pt-12">
+                     <h3 className="text-xl font-semibold mb-3 mt-8 text-foreground">Context Recall</h3>
+                      <p className="text-muted-foreground -mt-4 font-semibold text-lg italic text-center py-4">
+                      "Did we retrieve all the relevant context needed to fully answer the query?"
+                    </p>
+                     <p className="text-muted-foreground -mt-4">
+                      Context Recall measures how well the retriever finds all the necessary information. High recall means we aren't missing important facts.
+                    </p>
+                    <ContextRecallSimulator />
+                </div>
 
-                 <h3 className="text-xl font-semibold mb-3 mt-8 text-foreground">Faithfulness</h3>
-                  <p className="text-muted-foreground -mt-4 font-semibold text-lg italic text-center py-4">
-                  "Is the answer factually consistent with the retrieved context?"
-                </p>
-                 <p className="text-muted-foreground -mt-4">
-                  Faithfulness measures whether the generated answer is grounded in the retrieved context. This is crucial for preventing hallucinations, where the model makes up information. A high faithfulness score means the answer is trustworthy.
-                </p>
-                <FaithfulnessSimulator />
+                <div id="eval-faithfulness" className="pt-12">
+                     <h3 className="text-xl font-semibold mb-3 mt-8 text-foreground">Faithfulness</h3>
+                      <p className="text-muted-foreground -mt-4 font-semibold text-lg italic text-center py-4">
+                      "Is the answer factually consistent with the retrieved context?"
+                    </p>
+                     <p className="text-muted-foreground -mt-4">
+                      Faithfulness measures whether the generated answer is grounded in the retrieved context. This is crucial for preventing hallucinations, where the model makes up information. A high faithfulness score means the answer is trustworthy.
+                    </p>
+                    <FaithfulnessSimulator />
+                </div>
 
+                <div id="eval-noise" className="pt-12">
+                    <h3 className="text-xl font-semibold mb-3 mt-8 text-foreground">Noise Sensitivity</h3>
+                      <p className="text-muted-foreground -mt-4 font-semibold text-lg italic text-center py-4">
+                        "How much does the LLM's answer get thrown off by irrelevant information?"
+                      </p>
+                     <p className="text-muted-foreground -mt-4">
+                      Noise Sensitivity measures how robust an LLM is to handling irrelevant or distracting information in its context. A lower score is better, indicating the model can ignore the "noise" and produce a factual answer.
+                    </p>
+                    <NoiseSensitivitySimulator />
+                </div>
 
-                <h3 className="text-xl font-semibold mb-3 mt-8 text-foreground">Noise Sensitivity</h3>
-                  <p className="text-muted-foreground -mt-4 font-semibold text-lg italic text-center py-4">
-                    "How much does the LLM's answer get thrown off by irrelevant information?"
-                  </p>
-                 <p className="text-muted-foreground -mt-4">
-                  Noise Sensitivity measures how robust an LLM is to handling irrelevant or distracting information in its context. A lower score is better, indicating the model can ignore the "noise" and produce a factual answer.
-                </p>
-                <NoiseSensitivitySimulator />
-
-                 <h3 className="text-xl font-semibold mb-3 mt-8 text-foreground">Response Relevancy</h3>
-                  <p className="text-muted-foreground -mt-4 font-semibold text-lg italic text-center py-4">
-                    "Is the generated answer actually relevant to the question?"
-                  </p>
-                 <p className="text-muted-foreground -mt-4">
-                  Response Relevancy measures how well the generated answer addresses the user's original query. It uses a clever trick: if the answer is relevant, you should be able to reverse-engineer the original question from it. This metric penalizes incomplete or redundant answers.
-                </p>
-                <ResponseRelevancySimulator />
+                <div id="eval-relevancy" className="pt-12">
+                     <h3 className="text-xl font-semibold mb-3 mt-8 text-foreground">Response Relevancy</h3>
+                      <p className="text-muted-foreground -mt-4 font-semibold text-lg italic text-center py-4">
+                        "Is the generated answer actually relevant to the question?"
+                      </p>
+                     <p className="text-muted-foreground -mt-4">
+                      Response Relevancy measures how well the generated answer addresses the user's original query. It uses a clever trick: if the answer is relevant, you should be able to reverse-engineer the original question from it. This metric penalizes incomplete or redundant answers.
+                    </p>
+                    <ResponseRelevancySimulator />
+                </div>
                 
-                <div>
+                <div id="eval-summary" className="pt-12">
                     <h3 className="text-xl font-semibold mb-3 mt-8 text-foreground">Metrics at a Glance</h3>
                     <p className="text-muted-foreground mb-4">
                         This table provides a quick summary of the RAG evaluation metrics, helping you compare their focus and application at a glance.
@@ -359,8 +395,8 @@ const Index = () => {
           variant="outline"
           size="icon"
           onClick={handlePrevSection}
-          disabled={activeSectionIndex === 0}
-          className={cn('transition-opacity', activeSectionIndex === 0 && 'opacity-50')}
+          disabled={sections.findIndex(s => s.id === activeSection) === 0}
+          className={cn('transition-opacity', sections.findIndex(s => s.id === activeSection) === 0 && 'opacity-50')}
         >
           <ChevronUp className="h-4 w-4" />
         </Button>
@@ -368,8 +404,8 @@ const Index = () => {
           variant="outline"
           size="icon"
           onClick={handleNextSection}
-          disabled={activeSectionIndex === sections.length - 1}
-          className={cn('transition-opacity', activeSectionIndex === sections.length - 1 && 'opacity-50')}
+          disabled={sections.findIndex(s => s.id === activeSection) === sections.length - 1}
+          className={cn('transition-opacity', sections.findIndex(s => s.id === activeSection) === sections.length - 1 && 'opacity-50')}
         >
           <ChevronDown className="h-4 w-4" />
         </Button>
