@@ -8,10 +8,36 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const sections = [
   { id: 'llm-to-rag', title: 'The Journey to RAG', icon: <Route className="w-4 h-4" /> },
-  { id: 'introduction', title: 'Introduction to RAG', icon: <BookOpen className="w-4 h-4" /> },
-  { id: 'vector-dbs', title: 'Vector DBs & Similarity', icon: <Database className="w-4 h-4" /> },
+  { 
+    id: 'introduction', 
+    title: 'Introduction to RAG', 
+    icon: <BookOpen className="w-4 h-4" />,
+    subsections: [
+        { id: 'intro-what-is', title: 'What is Retrieval?' },
+        { id: 'intro-flow', title: 'The RAG Flow' },
+        { id: 'intro-pro-con', title: 'Advantages & Challenges' },
+    ]
+  },
+  { 
+    id: 'vector-dbs', 
+    title: 'Vector DBs & Similarity', 
+    icon: <Database className="w-4 h-4" />,
+    subsections: [
+        { id: 'vector-db-anim', title: 'Vector DB Simulation' },
+        { id: 'similarity-metrics', title: 'Similarity Metrics' },
+    ]
+  },
   { id: 'chunking', title: 'Chunking Strategies', icon: <Puzzle className="w-4 h-4" /> },
-  { id: 'parameters', title: 'Generation Parameters', icon: <SlidersHorizontal className="w-4 h-4" /> },
+  { 
+    id: 'parameters', 
+    title: 'Generation Parameters', 
+    icon: <SlidersHorizontal className="w-4 h-4" />,
+     subsections: [
+        { id: 'param-temp', title: 'Temperature' },
+        { id: 'param-top-k', title: 'Top-K' },
+        { id: 'param-top-p', title: 'Top-P' },
+    ]
+  },
   { id: 'agentic-rag', title: 'Agentic RAG', icon: <Bot className="w-4 h-4" /> },
   { id: 'enhancements', title: 'Enhancement Techniques', icon: <Sparkles className="w-4 h-4" /> },
   { 
@@ -92,3 +118,5 @@ export const TableOfContents = ({ activeSectionId, onLinkClick }: TableOfContent
     </div>
   );
 };
+
+    

@@ -52,10 +52,36 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 
 const sections = [
   { id: 'llm-to-rag', title: 'The Journey to RAG', icon: <Route className="h-8 w-8 text-primary" /> },
-  { id: 'introduction', title: 'Introduction to RAG', icon: <BookOpen className="h-8 w-8 text-primary" /> },
-  { id: 'vector-dbs', title: 'Vector Databases & Similarity', icon: <Database className="h-8 w-8 text-primary" /> },
+  { 
+    id: 'introduction', 
+    title: 'Introduction to RAG', 
+    icon: <BookOpen className="h-8 w-8 text-primary" />,
+    subsections: [
+        { id: 'intro-what-is', title: 'What is Retrieval?' },
+        { id: 'intro-flow', title: 'The RAG Flow' },
+        { id: 'intro-pro-con', title: 'Advantages & Challenges' },
+    ]
+  },
+  { 
+    id: 'vector-dbs', 
+    title: 'Vector DBs & Similarity', 
+    icon: <Database className="h-8 w-8 text-primary" />,
+    subsections: [
+        { id: 'vector-db-anim', title: 'Vector DB Simulation' },
+        { id: 'similarity-metrics', title: 'Similarity Metrics' },
+    ]
+  },
   { id: 'chunking', title: 'RAG Chunking Strategies', icon: <Puzzle className="h-8 w-8 text-primary" /> },
-  { id: 'parameters', title: 'LLM Generation Parameters', icon: <SlidersHorizontal className="h-8 w-8 text-primary" /> },
+  { 
+    id: 'parameters', 
+    title: 'LLM Generation Parameters', 
+    icon: <SlidersHorizontal className="h-8 w-8 text-primary" />,
+    subsections: [
+        { id: 'param-temp', title: 'Temperature' },
+        { id: 'param-top-k', title: 'Top-K' },
+        { id: 'param-top-p', title: 'Top-P' },
+    ]
+  },
   { id: 'agentic-rag', title: 'Agentic RAG', icon: <Bot className="h-8 w-8 text-primary" /> },
   { id: 'enhancements', title: 'RAG Enhancement Techniques', icon: <Sparkles className="h-8 w-8 text-primary" /> },
   { 
@@ -174,20 +200,24 @@ const Index = () => {
                   Retrieval is a crucial part of the RAG framework because it helps the model fetch relevant information from external sources to augment its generated content. By combining retrieval with generation, we can make LLMs more accurate and capable of answering domain-specific questions by pulling in specific knowledge.
                 </p>
                 
-                <Card className="transition-all hover:shadow-lg hover:-translate-y-1">
-                  <CardHeader>
-                    <CardTitle>What is Retrieval?</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground">
-                      Retrieval refers to the process of fetching relevant information from an external data source (like a database or a corpus of documents) based on a given input query. This process allows models to answer specific questions or provide more informed responses by leveraging knowledge that may not be encoded in the model itself.
-                    </p>
-                  </CardContent>
-                </Card>
+                <div id="intro-what-is">
+                    <Card className="transition-all hover:shadow-lg hover:-translate-y-1">
+                      <CardHeader>
+                        <CardTitle>What is Retrieval?</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-muted-foreground">
+                          Retrieval refers to the process of fetching relevant information from an external data source (like a database or a corpus of documents) based on a given input query. This process allows models to answer specific questions or provide more informed responses by leveraging knowledge that may not be encoded in the model itself.
+                        </p>
+                      </CardContent>
+                    </Card>
+                </div>
+                
+                <div id="intro-flow" className="pt-12">
+                    <RAGFlowDiagram />
+                </div>
 
-                <RAGFlowDiagram />
-
-                <div>
+                <div id="intro-pro-con" className="pt-12">
                   <h3 className="text-xl font-semibold mb-3 text-foreground">Advantages and Challenges</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <Card className="border-green-500/30 bg-green-500/10 transition-all hover:shadow-lg hover:-translate-y-1">
@@ -227,8 +257,12 @@ const Index = () => {
                   <Card className="overflow-hidden transition-all hover:shadow-lg hover:-translate-y-1" data-ai-hint="vector database">
                     <Image src="https://bigdataanalyticsnews.com/wp-content/uploads/2024/04/top-vector-database.jpg" alt="Top Vector Databases" width={800} height={450} className="w-full object-cover" />
                   </Card>
-                  <VectorDBAnimation />
-                  <SimilarityMetricsSimulator />
+                  <div id="vector-db-anim" className="pt-12">
+                    <VectorDBAnimation />
+                  </div>
+                  <div id="similarity-metrics" className="pt-12">
+                    <SimilarityMetricsSimulator />
+                  </div>
                </div>
             </Section>
 
@@ -246,9 +280,9 @@ const Index = () => {
                 <p className="text-muted-foreground">
                   The "generation" in RAG is controlled by several key parameters that influence the output of the Large Language Model. Understanding these parameters is crucial for fine-tuning the model's responses to be more accurate, creative, or constrained as needed. Explore the interactive demos below to see how they work.
                 </p>
-                <TemperatureDemo />
-                <TopKDemo />
-                <TopPDemo />
+                <div id="param-temp"><TemperatureDemo /></div>
+                <div id="param-top-k"><TopKDemo /></div>
+                <div id="param-top-p"><TopPDemo /></div>
               </div>
             </Section>
             
@@ -335,7 +369,7 @@ const Index = () => {
                       "Did we retrieve all the relevant context needed to fully answer the query?"
                     </p>
                      <p className="text-muted-foreground -mt-4">
-                      Context Recall measures how well the retriever finds all the necessary information. High recall means we aren't missing important facts.
+                      This metric evaluates the <strong>Retriever</strong>. It measures if the retrieved context was sufficient to support all the claims in the <strong>ground truth answer</strong>. High recall means we aren't missing important facts.
                     </p>
                     <ContextRecallSimulator />
                 </div>
@@ -346,7 +380,7 @@ const Index = () => {
                       "Is the answer factually consistent with the retrieved context?"
                     </p>
                      <p className="text-muted-foreground -mt-4">
-                      Faithfulness measures whether the generated answer is grounded in the retrieved context. This is crucial for preventing hallucinations, where the model makes up information. A high faithfulness score means the answer is trustworthy.
+                      This metric evaluates the generator (LLM) by checking if the claims in the <strong>generated answer</strong> are factually supported by the <strong>retrieved context</strong>. This is crucial for preventing hallucinations.
                     </p>
                     <FaithfulnessSimulator />
                 </div>
@@ -357,7 +391,7 @@ const Index = () => {
                         "How much does the LLM's answer get thrown off by irrelevant information?"
                       </p>
                      <p className="text-muted-foreground -mt-4">
-                      Noise Sensitivity measures how robust an LLM is to handling irrelevant or distracting information in its context. A lower score is better, indicating the model can ignore the "noise" and produce a factual answer.
+                      This metric measures how robust an LLM is to handling irrelevant or distracting information in its context by checking if the LLM generates claims that are not supported by the <strong>ground truth answer</strong>. A lower score is better.
                     </p>
                     <NoiseSensitivitySimulator />
                 </div>
@@ -368,7 +402,7 @@ const Index = () => {
                         "Is the generated answer actually relevant to the question?"
                       </p>
                      <p className="text-muted-foreground -mt-4">
-                      Response Relevancy measures how well the generated answer addresses the user's original query. It uses a clever trick: if the answer is relevant, you should be able to reverse-engineer the original question from it. This metric penalizes incomplete or redundant answers.
+                      This metric measures how well the generated answer addresses the user's original query. It uses a clever trick: by generating questions from the <strong>generated answer</strong> and comparing them to the <strong>original user query</strong>.
                     </p>
                     <ResponseRelevancySimulator />
                 </div>
@@ -415,3 +449,5 @@ const Index = () => {
 };
 
 export default Index;
+
+    
