@@ -19,7 +19,7 @@ const metrics = [
   {
     metric: "Context Recall",
     question: "Was all relevant context retrieved?",
-    formula: "Retrieved GT Chunks / Total GT Chunks",
+    formula: "Retrieved GT Contexts / Total GT Contexts",
     focus: "Measures how much of the necessary information was actually found by the retriever.",
   },
   {
@@ -61,7 +61,7 @@ export const EvaluationMetricsTable = () => {
                 <TableCell className="italic text-muted-foreground">"{metric.question}"</TableCell>
                 <TableCell>{metric.focus}</TableCell>
                 <TableCell className="text-right">
-                    <Badge variant="outline" className="font-mono text-xs">{metric.formula}</Badge>
+                    <Badge variant="outline" className="font-mono text-xs whitespace-pre-wrap">{metric.formula}</Badge>
                 </TableCell>
               </TableRow>
             ))}

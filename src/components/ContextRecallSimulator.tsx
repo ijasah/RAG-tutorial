@@ -14,7 +14,7 @@ import { Badge } from './ui/badge';
 const scenarios = {
     llm_based: {
         name: "LLM-based Recall",
-        description: "The LLM breaks the Ground Truth answer into 'claims' and checks if each claim is supported by the retrieved context. This evaluates the retriever's performance.",
+        description: "The LLM breaks the Ground Truth Answer into 'claims' and checks if each claim is supported by the retrieved context. This evaluates the retriever's performance.",
         data: {
             question: "Who is the lead author of the RAG paper and where did they work?",
             retrieved_contexts: [
@@ -125,16 +125,12 @@ export const ContextRecallSimulator = () => {
   
   const score = useMemo(() => {
     if (activeTab === 'llm_based') {
-        if (evaluatedItems.length === 0 && activeScenario.data.analysis.length > 0) return 0;
+        const totalClaims = activeScenario.data.analysis.length || 1;
         const supportedCount = evaluatedItems.map(i => activeScenario.data.analysis[i]).filter(a => a.supported).length;
-        const totalClaims = activeScenario.data.analysis.length;
-        if(totalClaims === 0) return 0;
         return supportedCount / totalClaims;
     } else {
-        if (evaluatedItems.length === 0 && activeScenario.data.analysis.length > 0) return 0;
+        const totalContexts = activeScenario.data.analysis.length || 1;
         const retrievedCount = evaluatedItems.map(i => activeScenario.data.analysis[i]).filter(a => a.retrieved).length;
-        const totalContexts = activeScenario.data.analysis.length;
-         if(totalContexts === 0) return 0;
         return retrievedCount / totalContexts;
     }
   }, [evaluatedItems, activeScenario, activeTab]);
@@ -163,10 +159,19 @@ export const ContextRecallSimulator = () => {
       handleReset();
       setActiveTab(value as ScenarioKey);
   }
+  
+  const formula = useMemo(() => {
+    if (activeTab === 'llm_based') {
+        const supportedCount = activeScenario.data.analysis.filter((a,i) => evaluatedItems.includes(i) && a.supported).length;
+        const totalClaims = activeScenario.data.analysis.length;
+        return `score = (Attributed Claims) / (Total Claims) = ${supportedCount} / ${totalClaims} = ${score.toFixed(2)}`;
+    } else {
+        const retrievedCount = activeScenario.data.analysis.filter((a,i) => evaluatedItems.includes(i) && a.retrieved).length;
+        const totalContexts = activeScenario.data.analysis.length;
+        return `score = (Retrieved Reference Contexts) / (Total Reference Contexts) = ${retrievedCount} / ${totalContexts} = ${score.toFixed(2)}`;
+    }
+  }, [activeTab, evaluatedItems, activeScenario, score]);
 
-  const formula = activeTab === 'llm_based' 
-    ? `score = (Attributed Claims) / (Total Claims) = ${activeScenario.data.analysis.filter((a,i) => evaluatedItems.includes(i) && a.supported).length} / ${activeScenario.data.analysis.length} = ${score.toFixed(2)}`
-    : `score = (Retrieved Reference Contexts) / (Total Reference Contexts) = ${activeScenario.data.analysis.filter((a,i) => evaluatedItems.includes(i) && a.retrieved).length} / ${activeScenario.data.analysis.length} = ${score.toFixed(2)}`;
 
   return (
     <Card className="bg-card/50 transition-all hover:shadow-lg hover:-translate-y-1">
@@ -194,7 +199,7 @@ export const ContextRecallSimulator = () => {
                  <div className="p-4 mb-6 bg-muted/40 rounded-lg border text-center space-y-2">
                   <h3 className="text-lg font-semibold text-primary">{activeScenario.name}</h3>
                   <p className="text-sm text-muted-foreground max-w-2xl mx-auto">{activeScenario.description}</p>
-                   <CodeBlock className="text-left !bg-background/50" code={formula} />
+                   <CodeBlock className="text-left !bg-background/50 whitespace-pre-wrap" code={formula} />
                 </div>
                 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -210,7 +215,10 @@ export const ContextRecallSimulator = () => {
                         </Card>
                         <Card>
                              <CardHeader>
-                                <CardTitle className="text-base flex items-center gap-2"><FileText className="text-primary"/>Ground Truth</CardTitle>
+                                <CardTitle className="text-base flex items-center gap-2">
+                                    <FileText className="text-primary"/>
+                                    {activeTab === 'llm_based' ? 'Ground Truth Answer' : 'Ground Truth Contexts'}
+                                </CardTitle>
                             </CardHeader>
                              <CardContent>
                                 {activeTab === 'llm_based' && <p className="text-sm">{(activeScenario.data as any).reference_answer}</p>}
@@ -247,10 +255,8 @@ export const ContextRecallSimulator = () => {
                     </div>
                 </div>
                  <div className="flex justify-center mt-6 pt-4 border-t">
-                     <Button onClick={!isRunning ? handleSimulate : handleReset} className="w-40">
-                         {!isRunning && evaluatedItems.length === 0 && <><Play className="mr-2" />Run Evaluation</>}
-                         {isRunning && 'Evaluating...'}
-                         {!isRunning && evaluatedItems.length > 0 && <><RefreshCw className="mr-2" />Re-run</>}
+                     <Button onClick={!isRunning && evaluatedItems.length === 0 ? handleSimulate : handleReset} className="w-48">
+                         {isRunning ? ('Evaluating...') : (evaluatedItems.length === 0 ? <><Play className="mr-2" />Run Evaluation</> : <><RefreshCw className="mr-2" />Re-run Evaluation</>)}
                      </Button>
                 </div>
               </TabsContent>
@@ -261,5 +267,3 @@ export const ContextRecallSimulator = () => {
     </Card>
   );
 };
-
-    

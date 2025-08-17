@@ -130,17 +130,15 @@ export const NoiseSensitivitySimulator = () => {
                 <div className="p-4 mb-6 bg-muted/40 rounded-lg border text-center space-y-2">
                     <h3 className="text-lg font-semibold text-primary">LLM-based Noise Sensitivity</h3>
                     <p className="text-sm text-muted-foreground max-w-2xl mx-auto">The LLM deconstructs the answer into claims and verifies each one against the ground truth answer.</p>
-                   <CodeBlock className="text-left !bg-background/50" code={formula} />
+                   <CodeBlock className="text-left !bg-background/50 whitespace-pre-wrap" code={formula} />
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                      {/* Left Column */}
                     <div className="space-y-4">
-                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <InfoCard icon={<HelpCircle className="text-primary"/>} title="User Question" content={exampleData.question} />
-                            <InfoCard icon={<ClipboardCheck className="text-primary"/>} title="Ground Truth" content={exampleData.ground_truth} />
-                        </div>
-                         <InfoCard icon={<Search className="text-primary"/>} title="Retrieved Contexts" content={
+                        <InfoCard icon={<HelpCircle className="text-primary"/>} title="User Question" content={exampleData.question} />
+                        <InfoCard icon={<ClipboardCheck className="text-primary"/>} title="Ground Truth Answer" content={exampleData.ground_truth} />
+                        <InfoCard icon={<Search className="text-primary"/>} title="Retrieved Contexts" content={
                             <div className="space-y-2">
                                 {exampleData.retrieved_contexts.map((ctx, i) => (
                                     <p key={i} className={cn("p-1.5 rounded-md border", ctx.relevant ? "bg-green-500/10 border-green-500/30" : "bg-destructive/10 border-destructive/30")}>{ctx.text}</p>
@@ -170,10 +168,8 @@ export const NoiseSensitivitySimulator = () => {
                 </div>
 
                  <div className="flex justify-center mt-6 pt-4 border-t">
-                     <Button onClick={!isRunning ? handleSimulate : handleReset} className="w-48">
-                         {!isRunning && evaluatedClaims.length === 0 && <><Play className="mr-2" />Run Evaluation</>}
-                         {isRunning && 'Evaluating...'}
-                         {!isRunning && evaluatedClaims.length > 0 && <><RefreshCw className="mr-2" />Re-run Evaluation</>}
+                     <Button onClick={!isRunning && evaluatedClaims.length === 0 ? handleSimulate : handleReset} className="w-48">
+                         {isRunning ? ('Evaluating...') : (evaluatedClaims.length === 0 ? <><Play className="mr-2" />Run Evaluation</> : <><RefreshCw className="mr-2" />Re-run Evaluation</>)}
                      </Button>
                 </div>
             </CardContent>

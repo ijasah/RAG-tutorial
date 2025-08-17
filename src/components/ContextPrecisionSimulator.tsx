@@ -127,7 +127,8 @@ export const ContextPrecisionSimulator = () => {
   const score = useMemo(() => {
     if (evaluatedChunks.length === 0) return 0;
     const relevantCount = evaluatedChunks.map(i => activeScenario.data.analysis[i]).filter(a => a.relevant).length;
-    return relevantCount / evaluatedChunks.length;
+    const total = evaluatedChunks.length > 0 ? evaluatedChunks.length : 1;
+    return relevantCount / total;
   }, [evaluatedChunks, activeScenario]);
 
   const handleSimulate = () => {
@@ -183,7 +184,7 @@ export const ContextPrecisionSimulator = () => {
                   <h3 className="text-lg font-semibold text-primary">{activeScenario.name}</h3>
                   <p className="text-sm text-muted-foreground max-w-2xl mx-auto">{activeScenario.description}</p>
                    <CodeBlock className="text-left !bg-background/50" code={`# Formula: (Sum of Relevant Chunks) / (Total Retrieved Chunks)
-score = ${activeScenario.data.analysis.filter((a,i) => evaluatedChunks.includes(i) && a.relevant).length} / ${evaluatedChunks.length} = ${score.toFixed(2)}`} />
+score = ${activeScenario.data.analysis.filter((a,i) => evaluatedChunks.includes(i) && a.relevant).length} / ${evaluatedChunks.length > 0 ? evaluatedChunks.length : activeScenario.data.retrieved_contexts.length} = ${score.toFixed(2)}`} />
                 </div>
                 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -212,7 +213,10 @@ score = ${activeScenario.data.analysis.filter((a,i) => evaluatedChunks.includes(
                         {/* Ground Truth Column */}
                         <Card>
                              <CardHeader>
-                                <CardTitle className="text-base flex items-center gap-2"><FileText className="text-primary"/>Ground Truth</CardTitle>
+                                <CardTitle className="text-base flex items-center gap-2">
+                                  <FileText className="text-primary"/>
+                                  {activeTab === 'non_llm_vs_reference' ? 'Ground Truth Contexts' : 'Ground Truth Answer'}
+                                </CardTitle>
                             </CardHeader>
                              <CardContent>
                                 {activeTab === 'llm_vs_response' && <p className="text-sm">{(activeScenario.data as any).response}</p>}
@@ -244,10 +248,8 @@ score = ${activeScenario.data.analysis.filter((a,i) => evaluatedChunks.includes(
                     </div>
                 </div>
                  <div className="flex justify-center mt-6 pt-4 border-t">
-                     <Button onClick={!isRunning ? handleSimulate : handleReset} className="w-40">
-                         {!isRunning && evaluatedChunks.length === 0 && <><Play className="mr-2" />Run Evaluation</>}
-                         {isRunning && 'Evaluating...'}
-                         {!isRunning && evaluatedChunks.length > 0 && <><RefreshCw className="mr-2" />Re-run</>}
+                     <Button onClick={!isRunning && evaluatedChunks.length === 0 ? handleSimulate : handleReset} className="w-48">
+                         {isRunning ? ('Evaluating...') : (evaluatedChunks.length === 0 ? <><Play className="mr-2" />Run Evaluation</> : <><RefreshCw className="mr-2" />Re-run Evaluation</>)}
                      </Button>
                 </div>
               </TabsContent>
