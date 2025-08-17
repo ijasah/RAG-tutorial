@@ -1,9 +1,8 @@
-
 // src/components/TableOfContents.tsx
 "use client";
 
 import { cn } from '@/lib/utils';
-import { BookOpen, Puzzle, ShieldCheck, Bot, SlidersHorizontal, Database, Route, Sparkles, ChevronRight } from 'lucide-react';
+import { BookOpen, Puzzle, ShieldCheck, Bot, SlidersHorizontal, Database, Route, Sparkles, ChevronRight, Grid } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const sections = [
@@ -18,6 +17,7 @@ const sections = [
         { id: 'intro-pro-con', title: 'Advantages & Challenges' },
     ]
   },
+  { id: 'ecosystem', title: 'RAG Ecosystem', icon: <Grid className="w-4 h-4" /> },
   { 
     id: 'vector-dbs', 
     title: 'Vector DBs & Similarity', 

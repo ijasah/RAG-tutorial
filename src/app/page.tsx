@@ -1,4 +1,3 @@
-
 // src/app/page.tsx
 'use client';
 
@@ -23,6 +22,7 @@ import { NoiseSensitivitySimulator } from '@/components/NoiseSensitivitySimulato
 import { ResponseRelevancySimulator } from '@/components/ResponseRelevancySimulator';
 import { FaithfulnessSimulator } from '@/components/FaithfulnessSimulator';
 import { EvaluationMetricsTable } from '@/components/EvaluationMetricsTable';
+import { RAGEcosystemDiagram } from '@/components/RAGEcosystemDiagram';
 
 import {
   BookOpen,
@@ -43,7 +43,8 @@ import {
   MessageSquare,
   ClipboardCheck,
   CheckCircle,
-  XCircle
+  XCircle,
+  Grid
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -61,6 +62,11 @@ const sections = [
         { id: 'intro-flow', title: 'The RAG Flow' },
         { id: 'intro-pro-con', title: 'Advantages & Challenges' },
     ]
+  },
+  { 
+    id: 'ecosystem', 
+    title: 'The RAG Ecosystem', 
+    icon: <Grid className="h-8 w-8 text-primary" /> 
   },
   { 
     id: 'vector-dbs', 
@@ -254,6 +260,15 @@ const Index = () => {
                   </div>
                 </div>
               </div>
+            </Section>
+
+            <Section id="ecosystem" title="The RAG Ecosystem at a Glance" icon={<Grid className="h-8 w-8 text-primary" />}>
+                <div className="space-y-6">
+                  <p className="text-muted-foreground mb-4">
+                    The world of Retrieval-Augmented Generation is vast and constantly evolving. This diagram provides a high-level overview of the key concepts, technologies, challenges, and evaluation methods that make up the RAG ecosystem.
+                  </p>
+                  <RAGEcosystemDiagram />
+                </div>
             </Section>
             
             <Section id="vector-dbs" title="Vector Databases & Similarity" icon={<Database className="h-8 w-8 text-primary" />}>
