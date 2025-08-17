@@ -2,7 +2,7 @@
 "use client";
 
 import { motion } from 'framer-motion';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, Waypoints } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const containerVariants = {
@@ -74,7 +74,7 @@ export const RAGEcosystemDiagram = () => {
             <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
 
                 {/* Left Column */}
-                <div className="lg:col-span-3 space-y-4">
+                <div className="lg:col-span-3 space-y-4 flex flex-col">
                     <Section title="RAG Ecosystem">
                         <div className="grid grid-cols-1 md:grid-cols-[1fr,auto,1fr] gap-4">
                             <SubSection title="Downstream Tasks">
@@ -93,16 +93,6 @@ export const RAGEcosystemDiagram = () => {
                         </div>
                     </Section>
 
-                    <DashedContainer className="bg-blue-100/30 dark:bg-blue-950/20">
-                        <Section title="The RAG Paradigm">
-                            <div className="bg-white dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/40 rounded-xl p-3 flex items-center justify-around text-sm font-medium">
-                                <Badge>Naive RAG</Badge>
-                                <motion.div variants={itemVariants} className="flex items-center gap-1 text-muted-foreground text-xs"><ChevronRight className="w-4 h-4"/> Advanced RAG <ChevronRight className="w-4 h-4"/></motion.div>
-                                <Badge>Modular RAG</Badge>
-                            </div>
-                        </Section>
-                    </DashedContainer>
-
                     <DashedContainer className="bg-yellow-50/30 dark:bg-yellow-950/10 border-yellow-300/50 dark:border-yellow-800/30">
                         <Section title="Techniques for Better RAG">
                              <div className="grid grid-cols-3 gap-1.5">
@@ -119,59 +109,9 @@ export const RAGEcosystemDiagram = () => {
                         </Section>
                     </DashedContainer>
 
-                     <DashedContainer className="bg-purple-50/30 dark:bg-purple-950/10 border-purple-300/50 dark:border-purple-800/30">
-                        <Section title="Key Issues of RAG">
-                            <div className="relative flex justify-center items-center h-14">
-                                <motion.div 
-                                    variants={itemVariants}
-                                    className="absolute flex items-center justify-center w-28 h-14 bg-pink-200/50 dark:bg-pink-500/10 text-pink-800 dark:text-pink-200 rounded-full blur-sm" style={{ transform: 'translateX(-30%) rotate(-10deg)'}} />
-                                <motion.div 
-                                    variants={itemVariants}
-                                    className="absolute flex items-center justify-center w-28 h-14 bg-purple-200/50 dark:bg-purple-500/10 text-purple-800 dark:text-purple-200 rounded-full blur-sm" style={{ transform: 'translateX(0%) rotate(5deg)'}} />
-                                <motion.div 
-                                    variants={itemVariants}
-                                    className="absolute flex items-center justify-center w-28 h-14 bg-blue-200/50 dark:bg-blue-500/10 text-blue-800 dark:text-blue-200 rounded-full blur-sm" style={{ transform: 'translateX(30%) rotate(-5deg)'}} />
-
-                                 <div className="absolute flex justify-around w-full text-xs font-semibold">
-                                     <motion.p variants={itemVariants}>What to retrieve</motion.p>
-                                     <motion.p variants={itemVariants}>When to retrieve</motion.p>
-                                     <motion.p variants={itemVariants}>How to use Retrieval</motion.p>
-                                 </div>
-                            </div>
-                        </Section>
-                     </DashedContainer>
-                </div>
-
-                {/* Right Column */}
-                <div className="lg:col-span-2 space-y-4">
-                    <Section title="RAG Prospect">
-                         <div className="grid grid-cols-1 md:grid-cols-[1.2fr,auto,1fr,auto,1fr] gap-4">
-                            <SubSection title="Challenges">
-                                <Badge>RAG in Long Context Length</Badge>
-                                <Badge>Hybrid</Badge>
-                                <Badge>Robustness</Badge>
-                                <Badge>Scaling-laws for RAG</Badge>
-                                <Badge>Production-ready RAG</Badge>
-                            </SubSection>
-                             <div className="border-l border-blue-200 dark:border-blue-800/30"></div>
-                            <SubSection title="Modality Extension">
-                                <Badge>Image</Badge>
-                                <Badge>Audio</Badge>
-                                <Badge>Video</Badge>
-                                <Badge>Code</Badge>
-                            </SubSection>
-                             <div className="border-l border-blue-200 dark:border-blue-800/30"></div>
-                             <SubSection title="Ecosystem">
-                                <Badge>Customization</Badge>
-                                <Badge>Simplification</Badge>
-                                <Badge>Specialization</Badge>
-                            </SubSection>
-                        </div>
-                    </Section>
-
-                     <DashedContainer className="bg-green-50/30 dark:bg-green-950/10 border-green-300/50 dark:border-green-800/30">
+                     <DashedContainer className="bg-green-50/30 dark:bg-green-950/10 border-green-300/50 dark:border-green-800/30 flex-grow">
                         <Section title="Evaluation of RAG">
-                            <div className="space-y-4">
+                            <div className="space-y-4 h-full flex flex-col">
                                 <SubSection title="Evaluation Target">
                                     <Badge>Retrieval Quality</Badge>
                                     <Badge>Generation Quality</Badge>
@@ -205,6 +145,66 @@ export const RAGEcosystemDiagram = () => {
                             </div>
                         </Section>
                     </DashedContainer>
+                </div>
+
+                {/* Right Column */}
+                <div className="lg:col-span-2 space-y-4 flex flex-col">
+                     <Section title="RAG Prospect">
+                         <div className="grid grid-cols-1 md:grid-cols-[1.2fr,auto,1fr,auto,1fr] gap-4">
+                            <SubSection title="Challenges">
+                                <Badge>RAG in Long Context Length</Badge>
+                                <Badge>Hybrid</Badge>
+                                <Badge>Robustness</Badge>
+                                <Badge>Scaling-laws for RAG</Badge>
+                                <Badge>Production-ready RAG</Badge>
+                            </SubSection>
+                             <div className="border-l border-blue-200 dark:border-blue-800/30"></div>
+                            <SubSection title="Modality Extension">
+                                <Badge>Image</Badge>
+                                <Badge>Audio</Badge>
+                                <Badge>Video</Badge>
+                                <Badge>Code</Badge>
+                            </SubSection>
+                             <div className="border-l border-blue-200 dark:border-blue-800/30"></div>
+                             <SubSection title="Ecosystem">
+                                <Badge>Customization</Badge>
+                                <Badge>Simplification</Badge>
+                                <Badge>Specialization</Badge>
+                            </SubSection>
+                        </div>
+                    </Section>
+
+                     <DashedContainer className="bg-blue-100/30 dark:bg-blue-950/20">
+                        <Section title="The RAG Paradigm">
+                            <div className="bg-white dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/40 rounded-xl p-3 flex items-center justify-around text-sm font-medium">
+                                <Badge>Naive RAG</Badge>
+                                <motion.div variants={itemVariants} className="flex items-center gap-1 text-muted-foreground text-xs"><ChevronRight className="w-4 h-4"/> Advanced RAG <ChevronRight className="w-4 h-4"/></motion.div>
+                                <Badge>Modular RAG</Badge>
+                            </div>
+                        </Section>
+                    </DashedContainer>
+
+                     <DashedContainer className="bg-purple-50/30 dark:bg-purple-950/10 border-purple-300/50 dark:border-purple-800/30 flex-grow">
+                        <Section title="Key Issues of RAG">
+                            <div className="relative flex justify-center items-center h-full min-h-[120px]">
+                                <motion.div 
+                                    variants={itemVariants}
+                                    className="absolute flex items-center justify-center w-28 h-14 bg-pink-200/50 dark:bg-pink-500/10 text-pink-800 dark:text-pink-200 rounded-full blur-sm" style={{ transform: 'translateX(-30%) rotate(-10deg)'}} />
+                                <motion.div 
+                                    variants={itemVariants}
+                                    className="absolute flex items-center justify-center w-28 h-14 bg-purple-200/50 dark:bg-purple-500/10 text-purple-800 dark:text-purple-200 rounded-full blur-sm" style={{ transform: 'translateX(0%) rotate(5deg)'}} />
+                                <motion.div 
+                                    variants={itemVariants}
+                                    className="absolute flex items-center justify-center w-28 h-14 bg-blue-200/50 dark:bg-blue-500/10 text-blue-800 dark:text-blue-200 rounded-full blur-sm" style={{ transform: 'translateX(30%) rotate(-5deg)'}} />
+
+                                 <div className="absolute flex justify-around w-full text-xs font-semibold">
+                                     <motion.p variants={itemVariants}>What to retrieve</motion.p>
+                                     <motion.p variants={itemVariants}>When to retrieve</motion.p>
+                                     <motion.p variants={itemVariants}>How to use Retrieval</motion.p>
+                                 </div>
+                            </div>
+                        </Section>
+                     </DashedContainer>
                 </div>
             </div>
         </motion.div>
