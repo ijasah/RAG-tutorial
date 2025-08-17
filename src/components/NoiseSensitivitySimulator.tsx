@@ -92,7 +92,8 @@ export const NoiseSensitivitySimulator = () => {
     
     const score = useMemo(() => {
         if (evaluatedClaims.length === 0) return 0;
-        return incorrectClaims / evaluatedClaims.length;
+        const totalClaims = exampleData.claims.length > 0 ? exampleData.claims.length : 1;
+        return incorrectClaims / totalClaims;
     }, [incorrectClaims, evaluatedClaims]);
     
     const isEvaluating = isRunning && evaluatedClaims.length < exampleData.claims.length;
@@ -136,8 +137,10 @@ export const NoiseSensitivitySimulator = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                      {/* Left Column */}
                     <div className="space-y-4">
-                        <InfoCard icon={<HelpCircle className="text-primary"/>} title="User Question" content={exampleData.question} />
-                        <InfoCard icon={<ClipboardCheck className="text-primary"/>} title="Ground Truth" content={exampleData.ground_truth} />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <InfoCard icon={<HelpCircle className="text-primary"/>} title="User Question" content={exampleData.question} />
+                            <InfoCard icon={<ClipboardCheck className="text-primary"/>} title="Ground Truth" content={exampleData.ground_truth} />
+                        </div>
                          <InfoCard icon={<Search className="text-primary"/>} title="Retrieved Contexts" content={
                             <div className="space-y-2">
                                 {exampleData.retrieved_contexts.map((ctx, i) => (
