@@ -4,6 +4,7 @@
 import { Button } from "@/components/ui/button";
 import { BrainCircuit, GraduationCap } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
+import { FullScreenToggle } from "./FullScreenToggle";
 
 export const Hero = () => {
   const handleScroll = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
@@ -18,7 +19,8 @@ export const Hero = () => {
   
   return (
     <header className="relative bg-background py-20 text-center h-[90vh] flex flex-col items-center justify-center">
-      <div className="absolute top-4 right-4 z-10">
+      <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
+          <FullScreenToggle />
           <ThemeToggle />
       </div>
       <div className="absolute inset-0 bg-grid-pattern opacity-10"></div>
