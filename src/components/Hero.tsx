@@ -34,7 +34,7 @@ export const Hero = () => {
         </h1>
         <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
             An interactive guide to Retrieval-Augmented Generation.
-            Presented by <a href="#" className="font-semibold text-primary hover:underline">IJAS A H</a>.
+            Presented by <a href="https://github.com/ijasah" target="_blank" rel="noopener noreferrer" className="font-semibold text-primary hover:underline">IJAS A H</a>.
         </p>
         <div className="flex justify-center gap-4">
             <a href="#content" onClick={handleScroll}>
