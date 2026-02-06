@@ -4,8 +4,8 @@ import { Toaster } from "@/components/ui/toaster"
 import { ThemeProvider } from "@/components/theme-provider";
 
 export const metadata: Metadata = {
-  title: 'RAG Tutorial: An Interactive Guide',
-  description: 'An interactive guide to the art and science of Retrieval-Augmented Generation.',
+  title: 'Agentic AI: An Interactive Tutorial',
+  description: 'An interactive guide to the new frontier of AI agents, from core concepts to multi-agent systems.',
 };
 
 export default function RootLayout({

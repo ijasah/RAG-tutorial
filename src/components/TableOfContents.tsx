@@ -1,61 +1,41 @@
 
-// src/components/TableOfContents.tsx
 "use client";
 
 import { cn } from '@/lib/utils';
-import { BookOpen, Puzzle, ShieldCheck, Bot, SlidersHorizontal, Database, Route, Sparkles, ChevronRight, Grid, BookMarked } from 'lucide-react';
+import { Bot, BrainCircuit, Users, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const sections = [
-  { id: 'llm-to-rag', title: 'The Journey to RAG', icon: <Route className="w-4 h-4" /> },
   { 
     id: 'introduction', 
-    title: 'Introduction to RAG', 
-    icon: <BookOpen className="w-4 h-4" />,
+    title: 'LLM Agents: An Overview', 
+    icon: <Bot className="w-4 h-4" />,
     subsections: [
-        { id: 'intro-what-is', title: 'What is Retrieval?' },
-        { id: 'intro-flow', title: 'The RAG Flow' },
-        { id: 'intro-pro-con', title: 'Advantages & Challenges' },
+        { id: 'core-components', title: 'Core Components' },
+        { id: 'tool-integration', title: 'Tool Integration' },
     ]
   },
   { 
-    id: 'vector-dbs', 
-    title: 'Vector DBs & Similarity', 
-    icon: <Database className="w-4 h-4" />,
+    id: 'react-agent', 
+    title: 'The ReAct Framework', 
+    icon: <BrainCircuit className="w-4 h-4" />,
     subsections: [
-        { id: 'vector-db-anim', title: 'Vector DB Simulation' },
-        { id: 'similarity-metrics', title: 'Similarity Metrics' },
+        { id: 'react-how', title: 'How ReAct Works' },
+        { id: 'react-simulation', title: 'ReAct Simulation' },
+        { id: 'react-benefits', title: 'Key Benefits' },
     ]
   },
-  { id: 'chunking', title: 'Chunking Strategies', icon: <Puzzle className="w-4 h-4" /> },
   { 
-    id: 'parameters', 
-    title: 'Generation Parameters', 
-    icon: <SlidersHorizontal className="w-4 h-4" />,
-     subsections: [
-        { id: 'param-temp', title: 'Temperature' },
-        { id: 'param-top-k', title: 'Top-K' },
-        { id: 'param-top-p', title: 'Top-P' },
-    ]
-  },
-  { id: 'agentic-rag', title: 'Agentic RAG', icon: <Bot className="w-4 h-4" /> },
-  { id: 'enhancements', title: 'Enhancement Techniques', icon: <Sparkles className="w-4 h-4" /> },
-  { 
-    id: 'evaluation', 
-    title: 'RAG Evaluation', 
-    icon: <ShieldCheck className="w-4 h-4" />,
+    id: 'multi-agent', 
+    title: 'Multi-Agent Systems', 
+    icon: <Users className="w-4 h-4" />,
     subsections: [
-        { id: 'eval-terms', title: 'Key Terms' },
-        { id: 'eval-precision', title: 'Context Precision' },
-        { id: 'eval-recall', title: 'Context Recall' },
-        { id: 'eval-faithfulness', title: 'Faithfulness' },
-        { id: 'eval-noise', title: 'Noise Sensitivity' },
-        { id: 'eval-relevancy', title: 'Response Relevancy' },
-        { id: 'eval-summary', title: 'Metrics Summary' },
+        { id: 'multi-advantages', title: 'Advantages' },
+        { id: 'multi-simulation', title: 'Collaboration Simulation' },
+        { id: 'multi-frameworks', title: 'Popular Frameworks' },
+        { id: 'multi-challenges', title: 'Challenges' },
     ]
   },
-  { id: 'ecosystem', title: 'RAG Ecosystem', icon: <Grid className="w-4 h-4" /> },
-  { id: 'further-reading', title: 'Further Reading', icon: <BookMarked className="w-4 h-4" /> }
 ];
 
 interface TableOfContentsProps {
