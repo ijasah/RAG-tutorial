@@ -78,9 +78,10 @@ const sections = [
     title: 'LangGraph Overview', 
     icon: <GitBranch className="h-8 w-8 text-primary" />,
     subsections: [
-        { id: 'lg-core-components', title: 'Core Components' },
-        { id: 'lg-invocation', title: 'Invocation' },
-        { id: 'lg-advanced', title: 'Advanced Concepts' },
+        { id: 'lg-key-concepts', title: 'Key Concepts' },
+        { id: 'lg-core-benefits', title: 'Core Benefits' },
+        { id: 'lg-ecosystem', title: 'Ecosystem' },
+        { id: 'lg-installation', title: 'Installation' },
     ]
   },
 ];
@@ -331,30 +332,30 @@ const Index = () => {
             <Section id="langgraph-overview" title="LangGraph Overview" icon={<GitBranch className="h-8 w-8 text-primary" />}>
                  <div className="space-y-6">
                     <p className="text-muted-foreground text-lg">
-                        LangGraph is a library for building reliable and controllable AI agents. Instead of a single, unpredictable chain, you define the agent's logic as a **graph**—a series of steps (nodes) and the connections between them (edges). This gives you explicit control over the agent's execution flow.
+                        LangGraph is a low-level orchestration framework and runtime for building, managing, and deploying long-running, stateful agents. Before using LangGraph, we recommend you familiarize yourself with some of the components used to build agents, starting with models and tools.
                     </p>
-
-                    <Card className="bg-muted/40">
-                      <CardHeader>
-                        <CardTitle>Key Concepts Explained</CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                          <div>
-                            <h4 className="font-semibold text-foreground">What is a "Runtime"?</h4>
-                            <p className="text-sm text-muted-foreground">The runtime is the engine that executes your agent's graph. It's the system that runs the nodes in the correct order, manages the flow of data between steps, and handles the overall execution of the workflow you've designed.</p>
-                          </div>
-                          <div>
-                            <h4 className="font-semibold text-foreground">What does "Stateful" mean?</h4>
-                            <p className="text-sm text-muted-foreground">A stateful agent has **memory**. It automatically keeps track of the entire history of a task—every message, every tool used, and every result. This "state" allows the agent to make smarter decisions based on past events, not just the most recent input.</p>
-                          </div>
-                          <div>
-                            <h4 className="font-semibold text-foreground">What is a "Long-Running" Agent?</h4>
-                            <p className="text-sm text-muted-foreground">Because agents are stateful, they can be paused (e.g., to wait for human approval) and resumed days later, picking up exactly where they left off. This is essential for complex workflows that aren't finished in a single, quick interaction.</p>
-                          </div>
-                      </CardContent>
-                    </Card>
-
-                     <div className="space-y-4">
+                    <div id="lg-key-concepts">
+                        <Card className="bg-muted/40">
+                          <CardHeader>
+                            <CardTitle>Key Concepts Explained</CardTitle>
+                          </CardHeader>
+                          <CardContent className="space-y-4">
+                              <div>
+                                <h4 className="font-semibold text-foreground">What is a "Runtime"?</h4>
+                                <p className="text-sm text-muted-foreground">The runtime is the engine that executes your agent's graph. It's the system that runs the nodes in the correct order, manages the flow of data between steps, and handles the overall execution of the workflow you've designed.</p>
+                              </div>
+                              <div>
+                                <h4 className="font-semibold text-foreground">What does "Stateful" mean?</h4>
+                                <p className="text-sm text-muted-foreground">A stateful agent has **memory**. It automatically keeps track of the entire history of a task—every message, every tool used, and every result. This "state" allows the agent to make smarter decisions based on past events, not just the most recent input.</p>
+                              </div>
+                              <div>
+                                <h4 className="font-semibold text-foreground">What is a "Long-Running" Agent?</h4>
+                                <p className="text-sm text-muted-foreground">Because agents are stateful, they can be paused (e.g., to wait for human approval) and resumed days later, picking up exactly where they left off. This is essential for complex workflows that aren't finished in a single, quick interaction.</p>
+                              </div>
+                          </CardContent>
+                        </Card>
+                    </div>
+                     <div id="lg-core-benefits" className="space-y-4">
                         <h3 className="text-xl font-semibold text-foreground">Core Benefits</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                            <Card className="bg-muted/30"><CardHeader><CardTitle className="text-base">Durable Execution</CardTitle></CardHeader><CardContent><p className="text-sm text-muted-foreground">Build agents that persist through failures and can run for extended periods, resuming from where they left off.</p></CardContent></Card>
@@ -364,7 +365,7 @@ const Index = () => {
                         </div>
                     </div>
                     
-                    <div className="space-y-4">
+                    <div id="lg-ecosystem" className="space-y-4">
                         <h3 className="text-xl font-semibold text-foreground">LangGraph Ecosystem</h3>
                         <div className="space-y-4">
                             <EcosystemCard title="LangSmith" icon={<LineChart />} href="http://www.langchain.com/langsmith">
@@ -377,6 +378,45 @@ const Index = () => {
                                 Provides integrations and composable components to streamline LLM application development.
                             </EcosystemCard>
                         </div>
+                    </div>
+
+                    <div id="lg-installation" className="pt-8 space-y-4">
+                        <h3 className="text-xl font-semibold text-foreground">Installation</h3>
+                        <p className="text-muted-foreground">
+                            To install the base LangGraph package:
+                        </p>
+                        <Tabs defaultValue="pip" className="w-full">
+                            <TabsList>
+                            <TabsTrigger value="pip">pip</TabsTrigger>
+                            <TabsTrigger value="uv">uv</TabsTrigger>
+                            </TabsList>
+                            <TabsContent value="pip">
+                            <CodeBlock code="pip install -U langgraph" />
+                            </TabsContent>
+                            <TabsContent value="uv">
+                            <CodeBlock code="uv add langgraph" />
+                            </TabsContent>
+                        </Tabs>
+
+                        <p className="text-muted-foreground">
+                            To use LangGraph you will usually want to access LLMs and define tools. You can do this however you see fit. One way to do this (which we will use in the docs) is to use LangChain. Install LangChain with:
+                        </p>
+                        
+                        <Tabs defaultValue="pip" className="w-full">
+                            <TabsList>
+                            <TabsTrigger value="pip">pip</TabsTrigger>
+                            <TabsTrigger value="uv">uv</TabsTrigger>
+                            </TabsList>
+                            <TabsContent value="pip">
+                            <CodeBlock code="pip install -U langchain" />
+                            </TabsContent>
+                            <TabsContent value="uv">
+                            <CodeBlock code="uv add langchain" />
+                            </TabsContent>
+                        </Tabs>
+                        <p className="text-muted-foreground">
+                            To work with specific LLM provider packages, you will need to install them separately. Refer to the integrations page for provider-specific installation instructions.
+                        </p>
                     </div>
 
                     <p className="text-xs text-muted-foreground text-center pt-8">

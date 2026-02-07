@@ -40,9 +40,10 @@ const sections = [
     title: 'LangGraph Overview',
     icon: <GitBranch className="w-4 h-4" />,
     subsections: [
-        { id: 'lg-core-components', title: 'Core Components' },
-        { id: 'lg-invocation', title: 'Invocation' },
-        { id: 'lg-advanced', title: 'Advanced Concepts' },
+        { id: 'lg-key-concepts', title: 'Key Concepts' },
+        { id: 'lg-core-benefits', title: 'Core Benefits' },
+        { id: 'lg-ecosystem', title: 'Ecosystem' },
+        { id: 'lg-installation', title: 'Installation' },
     ]
   }
 ];
