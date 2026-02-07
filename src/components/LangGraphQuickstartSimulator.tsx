@@ -111,9 +111,9 @@ const GraphNode = ({ label, visible, executing, isEnd }: { label: string, visibl
 const GraphArrow = ({ visible, executing, children, className }: { visible?: boolean, executing?: boolean, children: React.ReactNode, className?: string }) => (
     <AnimatePresence>
         {visible && (
-            <motion.div 
-                initial={{ opacity: 0 }} 
-                animate={{ opacity: 1 }} 
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
                 className={cn('transition-colors text-muted-foreground/50', executing ? 'text-primary' : 'text-muted-foreground/50', className)}
             >
                 {children}
@@ -159,6 +159,7 @@ export const LangGraphQuickstartSimulator = () => {
     const [step, setStep] = useState(0);
     const traceRef = useRef<HTMLDivElement>(null);
     const stateRef = useRef<HTMLDivElement>(null);
+    const codeScrollRef = useRef<HTMLDivElement>(null);
     const lineRefs = useRef<(HTMLDivElement | null)[]>([]);
 
     const handleNext = () => setStep(s => Math.min(s + 1, steps.length - 1));
@@ -166,7 +167,7 @@ export const LangGraphQuickstartSimulator = () => {
 
     const currentStepData = steps[step];
     const codeLines = agentCode.split('\n');
-    
+
     useEffect(() => {
         const scrollToBottom = (ref: React.RefObject<HTMLDivElement>) => {
              if (ref.current) {
@@ -178,7 +179,7 @@ export const LangGraphQuickstartSimulator = () => {
         };
         scrollToBottom(traceRef);
         scrollToBottom(stateRef);
-        
+
         const highlightedLine = steps[step]?.highlight.start;
         if (highlightedLine > 0 && lineRefs.current[highlightedLine]) {
             lineRefs.current[highlightedLine]?.scrollIntoView({
@@ -201,8 +202,8 @@ export const LangGraphQuickstartSimulator = () => {
             <CardContent className="p-4 space-y-4">
                  <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
                     <div className="bg-background rounded-lg border p-2 text-xs font-mono h-[500px]">
-                        <ScrollArea className="h-full">
-                            <div ref={stateRef}>
+                        <ScrollArea className="h-full" ref={codeScrollRef}>
+                            <div>
                                 <pre>
                                     {codeLines.map((line, i) => {
                                         const isHighlighted = currentStepData.highlight.start <= i + 1 && currentStepData.highlight.end >= i + 1;
@@ -228,38 +229,39 @@ export const LangGraphQuickstartSimulator = () => {
                     <div className="flex flex-col gap-4">
                         {/* Graph Visualization */}
                         <div className="h-48 bg-background rounded-lg border p-4 flex flex-col justify-center items-center relative">
-                             <div className="relative w-full h-full grid grid-cols-3 grid-rows-3 items-center justify-items-center">
+                             <div className="relative w-full h-full grid grid-cols-[1fr,auto,1fr,auto,1fr] items-center justify-items-center">
 
                                 {/* Nodes */}
                                 <div className="col-start-1 row-start-2">
                                     <GraphNode label="START" visible={currentStepData.graph.start} executing={currentStepData.execution.start}/>
                                 </div>
-                                <div className="col-start-2 row-start-2">
+                                <div className="col-start-3 row-start-1 flex flex-col items-center gap-10">
                                      <GraphNode label="agent" visible={currentStepData.graph.agent} executing={currentStepData.execution.agent} />
                                 </div>
-                                <div className="col-start-3 row-start-2">
+                                <div className="col-start-5 row-start-1">
                                     <GraphNode label="END" visible={currentStepData.graph.conditional} executing={currentStepData.execution.agentToEnd} isEnd/>
                                 </div>
-                                <div className="col-start-2 row-start-3">
+                                <div className="col-start-3 row-start-2">
                                      <GraphNode label="tools" visible={currentStepData.graph.tools} executing={currentStepData.execution.tools} />
                                 </div>
 
                                 {/* Edges */}
-                                <GraphArrow visible={currentStepData.graph.start} executing={currentStepData.execution.start} className="absolute left-[30%] top-1/2 -translate-y-1/2">
+                                <GraphArrow visible={currentStepData.graph.start} executing={currentStepData.execution.start} className="absolute left-[18%] top-[28%]">
                                     <ArrowRight className="w-6 h-6"/>
+                                    <p className="absolute -top-5 left-1/2 -translate-x-1/2 text-xs font-semibold">agent</p>
                                 </GraphArrow>
-                                
-                                <GraphArrow visible={currentStepData.graph.conditional} executing={currentStepData.execution.agentToTools} className="absolute left-1/2 -translate-x-1/2 top-[60%]">
+
+                                <GraphArrow visible={currentStepData.graph.conditional} executing={currentStepData.execution.agentToTools} className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/4">
                                     <ArrowDown className="w-6 h-6"/>
                                     <p className="absolute -right-2 top-1/2 -translate-y-1/2 text-xs font-semibold">tools</p>
                                 </GraphArrow>
 
-                                 <GraphArrow visible={currentStepData.graph.conditional} executing={currentStepData.execution.agentToEnd} className="absolute right-[30%] top-1/2 -translate-y-1/2">
+                                 <GraphArrow visible={currentStepData.graph.conditional} executing={currentStepData.execution.agentToEnd} className="absolute right-[18%] top-[28%]">
                                      <ArrowRight className="w-6 h-6"/>
-                                     <p className="absolute left-1/2 -translate-x-1/2 -top-5 text-xs font-semibold">end</p>
+                                     <p className="absolute -top-5 left-1/2 -translate-x-1/2 text-xs font-semibold">end</p>
                                 </GraphArrow>
 
-                                <GraphArrow visible={currentStepData.graph.loop} executing={currentStepData.execution.loop} className="absolute left-[38%] bottom-[35%]">
+                                <GraphArrow visible={currentStepData.graph.loop} executing={currentStepData.execution.loop} className="absolute left-[40%] bottom-[35%]">
                                     <CornerUpLeft className="w-6 h-6" />
                                      <p className="absolute -left-8 top-0 text-xs font-semibold">agent</p>
                                 </GraphArrow>
