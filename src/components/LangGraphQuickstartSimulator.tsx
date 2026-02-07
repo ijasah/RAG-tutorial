@@ -4,7 +4,7 @@ import { useState, useMemo, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Play, RefreshCw, ArrowRight, BrainCircuit, Eye, Info, User, Wand2, CheckCircle, Sparkles, GitBranch, Share2, CornerDownRight, CornerUpLeft } from 'lucide-react';
+import { Play, RefreshCw, ArrowRight, BrainCircuit, Eye, Info, User, Wand2, CheckCircle, Sparkles, ArrowDown, CornerUpLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -96,7 +96,7 @@ const GraphNode = ({ label, visible, executing, isEnd }: { label: string, visibl
             <motion.div
                 initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.5 }}
                 className={cn(
-                    "border-2 rounded-lg px-4 py-2 text-sm font-semibold transition-all duration-300",
+                    "border-2 rounded-lg px-4 py-2 text-sm font-semibold transition-all duration-300 w-24 text-center",
                     "bg-card border-border",
                     executing && !isEnd && "bg-primary/20 border-primary shadow-lg",
                     executing && isEnd && "bg-green-500/20 border-green-500 shadow-lg"
@@ -108,13 +108,13 @@ const GraphNode = ({ label, visible, executing, isEnd }: { label: string, visibl
     </AnimatePresence>
 );
 
-const GraphArrow = ({ visible, executing, children }: { visible?: boolean, executing?: boolean, children: React.ReactNode }) => (
+const GraphArrow = ({ visible, executing, children, className }: { visible?: boolean, executing?: boolean, children: React.ReactNode, className?: string }) => (
     <AnimatePresence>
         {visible && (
             <motion.div 
                 initial={{ opacity: 0 }} 
                 animate={{ opacity: 1 }} 
-                className={cn('transition-colors', executing ? 'text-primary' : 'text-muted-foreground/50')}
+                className={cn('transition-colors text-muted-foreground/50', executing ? 'text-primary' : 'text-muted-foreground/50', className)}
             >
                 {children}
             </motion.div>
@@ -159,7 +159,6 @@ export const LangGraphQuickstartSimulator = () => {
     const [step, setStep] = useState(0);
     const traceRef = useRef<HTMLDivElement>(null);
     const stateRef = useRef<HTMLDivElement>(null);
-    const codeScrollAreaRef = useRef<HTMLDivElement>(null);
     const lineRefs = useRef<(HTMLDivElement | null)[]>([]);
 
     const handleNext = () => setStep(s => Math.min(s + 1, steps.length - 1));
@@ -202,67 +201,69 @@ export const LangGraphQuickstartSimulator = () => {
             <CardContent className="p-4 space-y-4">
                  <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
                     <div className="bg-background rounded-lg border p-2 text-xs font-mono h-[500px]">
-                        <ScrollArea className="h-full" ref={codeScrollAreaRef}>
-                            <pre>
-                                {codeLines.map((line, i) => {
-                                    const isHighlighted = currentStepData.highlight.start <= i + 1 && currentStepData.highlight.end >= i + 1;
-                                    return (
-                                        <div
-                                            key={i}
-                                            ref={el => lineRefs.current[i + 1] = el}
-                                            className={cn(
-                                                "px-2 transition-colors duration-300 rounded-md",
-                                                isHighlighted ? 'bg-primary/20' : 'transparent'
-                                            )}
-                                        >
-                                            <span className="text-right pr-4 text-muted-foreground/50 w-8 inline-block select-none">{i + 1}</span>
-                                            <span>{line}</span>
-                                        </div>
-                                    );
-                                })}
-                            </pre>
+                        <ScrollArea className="h-full">
+                            <div ref={stateRef}>
+                                <pre>
+                                    {codeLines.map((line, i) => {
+                                        const isHighlighted = currentStepData.highlight.start <= i + 1 && currentStepData.highlight.end >= i + 1;
+                                        return (
+                                            <div
+                                                key={i}
+                                                ref={el => lineRefs.current[i + 1] = el}
+                                                className={cn(
+                                                    "px-2 transition-colors duration-300 rounded-md",
+                                                    isHighlighted ? 'bg-primary/20' : 'transparent'
+                                                )}
+                                            >
+                                                <span className="text-right pr-4 text-muted-foreground/50 w-8 inline-block select-none">{i + 1}</span>
+                                                <span>{line}</span>
+                                            </div>
+                                        );
+                                    })}
+                                </pre>
+                            </div>
                         </ScrollArea>
                     </div>
 
                     <div className="flex flex-col gap-4">
                         {/* Graph Visualization */}
                         <div className="h-48 bg-background rounded-lg border p-4 flex flex-col justify-center items-center relative">
-                            <div className="absolute w-full h-full">
-                                {/* START -> agent */}
-                                <GraphArrow visible={currentStepData.graph.start} executing={currentStepData.execution.start}>
-                                    <ArrowRight className="absolute top-1/2 -translate-y-1/2 left-[100px] w-6 h-6"/>
+                             <div className="relative w-full h-full grid grid-cols-3 grid-rows-3 items-center justify-items-center">
+
+                                {/* Nodes */}
+                                <div className="col-start-1 row-start-2">
+                                    <GraphNode label="START" visible={currentStepData.graph.start} executing={currentStepData.execution.start}/>
+                                </div>
+                                <div className="col-start-2 row-start-2">
+                                     <GraphNode label="agent" visible={currentStepData.graph.agent} executing={currentStepData.execution.agent} />
+                                </div>
+                                <div className="col-start-3 row-start-2">
+                                    <GraphNode label="END" visible={currentStepData.graph.conditional} executing={currentStepData.execution.agentToEnd} isEnd/>
+                                </div>
+                                <div className="col-start-2 row-start-3">
+                                     <GraphNode label="tools" visible={currentStepData.graph.tools} executing={currentStepData.execution.tools} />
+                                </div>
+
+                                {/* Edges */}
+                                <GraphArrow visible={currentStepData.graph.start} executing={currentStepData.execution.start} className="absolute left-[30%] top-1/2 -translate-y-1/2">
+                                    <ArrowRight className="w-6 h-6"/>
                                 </GraphArrow>
                                 
-                                {/* agent -> tools */}
-                                <GraphArrow visible={currentStepData.graph.conditional} executing={currentStepData.execution.agentToTools}>
-                                    <div className="absolute top-[88px] left-[180px] flex items-center gap-1 text-xs">
-                                        <p>tools</p>
-                                        <CornerDownRight className="w-4 h-4"/>
-                                    </div>
+                                <GraphArrow visible={currentStepData.graph.conditional} executing={currentStepData.execution.agentToTools} className="absolute left-1/2 -translate-x-1/2 top-[60%]">
+                                    <ArrowDown className="w-6 h-6"/>
+                                    <p className="absolute -right-2 top-1/2 -translate-y-1/2 text-xs font-semibold">tools</p>
                                 </GraphArrow>
 
-                                 {/* agent -> end */}
-                                <GraphArrow visible={currentStepData.graph.conditional} executing={currentStepData.execution.agentToEnd}>
-                                     <ArrowRight className="absolute top-1/2 -translate-y-1/2 left-[280px] w-6 h-6"/>
-                                     <p className="absolute top-[50px] left-[300px] text-xs">end</p>
+                                 <GraphArrow visible={currentStepData.graph.conditional} executing={currentStepData.execution.agentToEnd} className="absolute right-[30%] top-1/2 -translate-y-1/2">
+                                     <ArrowRight className="w-6 h-6"/>
+                                     <p className="absolute left-1/2 -translate-x-1/2 -top-5 text-xs font-semibold">end</p>
                                 </GraphArrow>
 
-                                {/* tools -> agent */}
-                                <GraphArrow visible={currentStepData.graph.loop} executing={currentStepData.execution.loop}>
-                                    <div className="absolute bottom-[88px] left-[180px] flex items-center gap-1 text-xs">
-                                        <CornerUpLeft className="w-4 h-4" />
-                                        <p>agent</p>
-                                    </div>
+                                <GraphArrow visible={currentStepData.graph.loop} executing={currentStepData.execution.loop} className="absolute left-[38%] bottom-[35%]">
+                                    <CornerUpLeft className="w-6 h-6" />
+                                     <p className="absolute -left-8 top-0 text-xs font-semibold">agent</p>
                                 </GraphArrow>
                             </div>
-                            <div className="relative flex items-center gap-20">
-                                <GraphNode label="START" visible={currentStepData.graph.start} executing={currentStepData.execution.start}/>
-                                <GraphNode label="agent" visible={currentStepData.graph.agent} executing={currentStepData.execution.agent} />
-                                <GraphNode label="END" visible={currentStepData.graph.conditional} executing={currentStepData.execution.agentToEnd} isEnd/>
-                            </div>
-                             <div className="absolute bottom-4 left-1/2 -translate-x-[calc(50%_+_80px)]">
-                                <GraphNode label="tools" visible={currentStepData.graph.tools} executing={currentStepData.execution.tools} />
-                             </div>
                         </div>
 
                          <div className="flex-grow grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -298,19 +299,21 @@ export const LangGraphQuickstartSimulator = () => {
                             </div>
                             <div className="h-[280px] flex flex-col">
                                 <h3 className="font-semibold text-center text-sm mb-2">Graph State</h3>
-                                <ScrollArea className="flex-grow w-full rounded-lg border p-2 bg-background" ref={stateRef}>
-                                    <div className="flex justify-between items-center bg-muted/50 border rounded p-2 mb-2">
-                                        <span className="font-semibold text-sm">llm_calls:</span>
-                                        <Badge variant="secondary" className="text-base">{currentStepData.state.llm_calls}</Badge>
+                                <ScrollArea className="flex-grow w-full rounded-lg border p-2 bg-background">
+                                     <div ref={stateRef}>
+                                        <div className="flex justify-between items-center bg-muted/50 border rounded p-2 mb-2">
+                                            <span className="font-semibold text-sm">llm_calls:</span>
+                                            <Badge variant="secondary" className="text-base">{currentStepData.state.llm_calls}</Badge>
+                                        </div>
+                                        <h4 className="font-semibold text-sm mb-1">messages:</h4>
+                                        <AnimatePresence>
+                                        {currentStepData.state.messages.map((msg, i) => (
+                                            <motion.div key={i} layout initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-2">
+                                                <StateMessage msg={msg} />
+                                            </motion.div>
+                                        ))}
+                                        </AnimatePresence>
                                     </div>
-                                    <h4 className="font-semibold text-sm mb-1">messages:</h4>
-                                    <AnimatePresence>
-                                    {currentStepData.state.messages.map((msg, i) => (
-                                        <motion.div key={i} layout initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-2">
-                                            <StateMessage msg={msg} />
-                                        </motion.div>
-                                    ))}
-                                    </AnimatePresence>
                                 </ScrollArea>
                             </div>
                          </div>
