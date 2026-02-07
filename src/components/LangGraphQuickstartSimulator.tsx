@@ -37,39 +37,53 @@ def should_continue(state: AgentState):
         return "tools"
     return "end"
 
-# 4. Define and build the graph
+# --- Build the graph ---
 from langgraph.graph import StateGraph, START, END
 
+# 4. Initialize the graph
 workflow = StateGraph(AgentState)
+
+# 5. Add the nodes
 workflow.add_node("agent", llm_call)
 workflow.add_node("tools", tool_node)
+
+# 6. Set the entry point
 workflow.add_edge(START, "agent")
+
+# 7. Add the conditional edge
 workflow.add_conditional_edges("agent", should_continue, {
     "tools": "tools",
     "end": END
 })
+
+# 8. Add the loop
 workflow.add_edge("tools", "agent")
 
-# 5. Compile and Run
+
+# --- Compile and Run ---
+# 9. Compile the graph
 app = workflow.compile()
+
+# 10. Invoke the agent
 result = app.invoke({"messages": [("user", "What is 3 + 4?")]})
 `;
 
 const steps = [
     { name: 'Ready', highlight: { start: -1, end: -1 }, explanation: 'Click "Start" to begin building the agent graph.', graph: {}, execution: {}, state: { messages: [], llm_calls: 0 }, trace: [] },
-    { name: 'Define State', highlight: { start: 7, end: 9 }, explanation: 'First, we define the "state" of our agent. This dictionary holds the history of messages and a call counter.', graph: {}, execution: {}, state: { messages: [], llm_calls: 0 }, trace: [] },
-    { name: 'Add Agent Node', highlight: { start: 33, end: 33 }, explanation: 'We add the primary "agent" node, which is responsible for calling the LLM.', graph: { agent: true }, execution: {}, state: { messages: [], llm_calls: 0 }, trace: [] },
-    { name: 'Add Tools Node', highlight: { start: 34, end: 34 }, explanation: 'Next, a "tools" node is added to execute any tools the agent decides to use.', graph: { agent: true, tools: true }, execution: {}, state: { messages: [], llm_calls: 0 }, trace: [] },
-    { name: 'Set Entry Point', highlight: { start: 35, end: 35 }, explanation: 'We define the entry point. All executions begin at the "agent" node.', graph: { agent: true, tools: true, start: true }, execution: {}, state: { messages: [], llm_calls: 0 }, trace: [] },
-    { name: 'Add Conditional Edge', highlight: { start: 36, end: 39 }, explanation: 'After the agent runs, this conditional edge checks if a tool was called. If yes, it routes to "tools"; otherwise, it ends.', graph: { agent: true, tools: true, start: true, conditional: true }, execution: {}, state: { messages: [], llm_calls: 0 }, trace: [] },
-    { name: 'Add Loop Edge', highlight: { start: 40, end: 40 }, explanation: 'Finally, we add an edge from "tools" back to "agent". This creates the loop that allows the agent to continue working.', graph: { agent: true, tools: true, start: true, conditional: true, loop: true }, execution: {}, state: { messages: [], llm_calls: 0 }, trace: [] },
-    { name: 'Compile', highlight: { start: 43, end: 43 }, explanation: 'The graph is compiled into a runnable application. The agent is now ready to be invoked.', graph: { agent: true, tools: true, start: true, conditional: true, loop: true }, execution: {}, state: { messages: [], llm_calls: 0 }, trace: [{ type: 'Info', content: 'Graph compiled successfully.' }] },
-    { name: 'Invoke', highlight: { start: 44, end: 44 }, explanation: 'The agent is invoked with the user\'s message, starting the execution at the "START" edge.', graph: { agent: true, tools: true, start: true, conditional: true, loop: true }, execution: { start: true }, state: { messages: [{ role: 'user', content: 'What is 3 + 4?' }], llm_calls: 0 }, trace: [{ type: 'Info', content: 'Graph compiled successfully.' }, { type: 'Info', content: 'Invoking agent...' }] },
-    { name: 'Run Agent Node', highlight: { start: 12, end: 15 }, explanation: 'The LLM runs, processes the messages, and decides the `add` tool is needed.', graph: { agent: true, tools: true, start: true, conditional: true, loop: true }, execution: { agent: true }, state: { messages: [{ role: 'user', content: 'What is 3 + 4?' }], llm_calls: 1 }, trace: [{ type: 'Info', content: 'Graph compiled successfully.' }, { type: 'Info', content: 'Invoking agent...' }, { type: 'Thought', content: 'The user is asking for addition. I should use the `add` tool.' }] },
-    { name: 'Run Conditional Edge', highlight: { start: 23, end: 27 }, explanation: 'The `should_continue` function checks the last message. Since it contains a tool call, the graph will route to the "tools" node.', graph: { agent: true, tools: true, start: true, conditional: true, loop: true }, execution: { agentToTools: true }, state: { messages: [{ role: 'user', content: 'What is 3 + 4?' }, { role: 'ai', tool_calls: [{ name: 'add', args: { a: 3, b: 4 } }] }], llm_calls: 1 }, trace: [{ type: 'Info', content: 'Graph compiled successfully.' }, { type: 'Info', content: 'Invoking agent...' }, { type: 'Thought', content: 'The user is asking for addition. I should use the `add` tool.' }] },
-    { name: 'Run Tools Node', highlight: { start: 17, end: 20 }, explanation: 'The `tool_node` executes the `add` tool with the arguments `(a=3, b=4)` and appends the output to the message list.', graph: { agent: true, tools: true, start: true, conditional: true, loop: true }, execution: { tools: true }, state: { messages: [{ role: 'user', content: 'What is 3 + 4?' }, { role: 'ai', tool_calls: [{ name: 'add', args: { a: 3, b: 4 } }] }, { role: 'tool', content: '7', tool_call_id: 'tool_call_123' }], llm_calls: 1 }, trace: [{ type: 'Info', content: 'Graph compiled successfully.' }, { type: 'Info', content: 'Invoking agent...' }, { type: 'Thought', content: 'The user is asking for addition. I should use the `add` tool.' }, { type: 'Action', content: 'Calling tool `add` with args `{\'a\': 3, \'b\': 4}`' }, { type: 'Observation', content: 'Tool returned: 7' }] },
-    { name: 'Re-run Agent Node', highlight: { start: 12, end: 15 }, explanation: 'The graph loops back. The agent receives the tool\'s output ("7") and synthesizes the final answer.', graph: { agent: true, tools: true, start: true, conditional: true, loop: true }, execution: { agent: true, loop: true }, state: { messages: [{ role: 'user', content: 'What is 3 + 4?' }, { role: 'ai', tool_calls: [{ name: 'add', args: { a: 3, b: 4 } }] }, { role: 'tool', content: '7', tool_call_id: 'tool_call_123' }], llm_calls: 2 }, trace: [{ type: 'Info', content: 'Graph compiled successfully.' }, { type: 'Info', content: 'Invoking agent...' }, { type: 'Thought', content: 'The user is asking for addition. I should use the `add` tool.' }, { type: 'Action', content: 'Calling tool `add` with args `{\'a\': 3, \'b\': 4}`' }, { type: 'Observation', content: 'Tool returned: 7' }, { type: 'Thought', content: 'I have the result. I will now provide the final answer.' }] },
-    { name: 'Run Conditional Edge (End)', highlight: { start: 23, end: 27 }, explanation: 'The `should_continue` function runs again. The last message has no tool calls, so the graph routes to "END".', graph: { agent: true, tools: true, start: true, conditional: true, loop: true }, execution: { agentToEnd: true }, state: { messages: [{ role: 'user', content: 'What is 3 + 4?' }, { role: 'ai', tool_calls: [{ name: 'add', args: { a: 3, b: 4 } }] }, { role: 'tool', content: '7', tool_call_id: 'tool_call_123' }, { role: 'ai', content: 'The sum is 7.' }], llm_calls: 2 }, trace: [{ type: 'Info', content: 'Graph compiled successfully.' }, { type: 'Info', content: 'Invoking agent...' }, { type: 'Thought', content: 'The user is asking for addition. I should use the `add` tool.' }, { type: 'Action', content: 'Calling tool `add` with args `{\'a\': 3, \'b\': 4}`' }, { type: 'Observation', content: 'Tool returned: 7' }, { type: 'Thought', content: 'I have the result. I will now provide the final answer.' }, { type: 'Final Answer', content: 'The sum is 7.' }] },
+    { name: 'Define State', highlight: { start: 7, end: 9 }, explanation: 'First, we define the `AgentState` dictionary. This special object will hold all the data that persists between steps in our graph, like the list of messages.', graph: {}, execution: {}, state: { messages: [], llm_calls: 0 }, trace: [] },
+    { name: 'Initialize Graph', highlight: { start: 33, end: 33 }, explanation: 'We create an instance of `StateGraph`, passing our `AgentState` to it. This is the foundation of our agent.', graph: { init: true }, execution: {}, state: { messages: [], llm_calls: 0 }, trace: [] },
+    { name: 'Add Agent Node', highlight: { start: 36, end: 36 }, explanation: 'We add the primary `agent` node. This node is a function (`llm_call`) responsible for calling the language model.', graph: { init: true, agent: true }, execution: {}, state: { messages: [], llm_calls: 0 }, trace: [] },
+    { name: 'Add Tools Node', highlight: { start: 37, end: 37 }, explanation: 'Next, we add a `tools` node. This node is a function (`tool_node`) that will execute any tools the agent decides to use.', graph: { init: true, agent: true, tools: true }, execution: {}, state: { messages: [], llm_calls: 0 }, trace: [] },
+    { name: 'Set Entry Point', highlight: { start: 40, end: 40 }, explanation: 'We define the entry point for the graph. All executions will now begin by routing from `START` to our `agent` node.', graph: { init: true, agent: true, tools: true, start: true }, execution: {}, state: { messages: [], llm_calls: 0 }, trace: [] },
+    { name: 'Add Conditional Edge', highlight: { start: 43, end: 46 }, explanation: 'This is the crucial decision-making step. After the `agent` node runs, this conditional edge (`should_continue`) checks if the LLM requested a tool. If yes, it routes to `tools`; otherwise, it routes to `END`.', graph: { init: true, agent: true, tools: true, start: true, conditional: true }, execution: {}, state: { messages: [], llm_calls: 0 }, trace: [] },
+    { name: 'Add Loop Edge', highlight: { start: 49, end: 49 }, explanation: 'Finally, we add an edge from `tools` back to `agent`. This creates the essential loop that allows the agent to use a tool and then reason about the tool\'s output in the next cycle.', graph: { init: true, agent: true, tools: true, start: true, conditional: true, loop: true }, execution: {}, state: { messages: [], llm_calls: 0 }, trace: [] },
+    { name: 'Compile', highlight: { start: 54, end: 54 }, explanation: 'The graph definition is compiled into a runnable application. The agent is now a fully assembled, executable object.', graph: { init: true, agent: true, tools: true, start: true, conditional: true, loop: true }, execution: {}, state: { messages: [], llm_calls: 0 }, trace: [{ type: 'Info', content: 'Graph compiled successfully.' }] },
+    { name: 'Invoke', highlight: { start: 57, end: 57 }, explanation: 'The agent is invoked with the user\'s message. This kicks off the execution, starting at the `START` edge and moving to the `agent` node.', graph: { init: true, agent: true, tools: true, start: true, conditional: true, loop: true }, execution: { start: true }, state: { messages: [{ role: 'user', content: 'What is 3 + 4?' }], llm_calls: 0 }, trace: [{ type: 'Info', content: 'Graph compiled successfully.' }, { type: 'Info', content: 'Invoking agent...' }] },
+    { name: 'Run Agent Node', highlight: { start: 12, end: 15 }, explanation: 'The `agent` node (our `llm_call` function) runs. The LLM processes the messages and decides the `add` tool is needed.', graph: { init: true, agent: true, tools: true, start: true, conditional: true, loop: true }, execution: { agent: true }, state: { messages: [{ role: 'user', content: 'What is 3 + 4?' }], llm_calls: 1 }, trace: [{ type: 'Info', content: 'Graph compiled successfully.' }, { type: 'Info', content: 'Invoking agent...' }, { type: 'Thought', content: 'The user is asking for addition. I should use the `add` tool.' }] },
+    { name: 'Run Conditional Edge', highlight: { start: 23, end: 27 }, explanation: 'The `should_continue` function checks the last message. Since it contains a tool call, the graph will route to the `tools` node.', graph: { init: true, agent: true, tools: true, start: true, conditional: true, loop: true }, execution: { agentToTools: true }, state: { messages: [{ role: 'user', content: 'What is 3 + 4?' }, { role: 'ai', tool_calls: [{ name: 'add', args: { a: 3, b: 4 } }] }], llm_calls: 1 }, trace: [{ type: 'Info', content: 'Graph compiled successfully.' }, { type: 'Info', content: 'Invoking agent...' }, { type: 'Thought', content: 'The user is asking for addition. I should use the `add` tool.' }] },
+    { name: 'Run Tools Node', highlight: { start: 17, end: 20 }, explanation: 'The `tools` node executes the `add` tool with the arguments `(a=3, b=4)` and appends the output to the message list.', graph: { init: true, agent: true, tools: true, start: true, conditional: true, loop: true }, execution: { tools: true }, state: { messages: [{ role: 'user', content: 'What is 3 + 4?' }, { role: 'ai', tool_calls: [{ name: 'add', args: { a: 3, b: 4 } }] }, { role: 'tool', content: '7', tool_call_id: 'tool_call_123' }], llm_calls: 1 }, trace: [{ type: 'Info', content: 'Graph compiled successfully.' }, { type: 'Info', content: 'Invoking agent...' }, { type: 'Thought', content: 'The user is asking for addition. I should use the `add` tool.' }, { type: 'Action', content: 'Calling tool `add` with args `{\'a\': 3, \'b\': 4}`' }, { type: 'Observation', content: 'Tool returned: 7' }] },
+    { name: 'Re-run Agent Node', highlight: { start: 12, end: 15 }, explanation: 'The graph loops back. The agent receives the tool\'s output ("7") and synthesizes the final answer.', graph: { init: true, agent: true, tools: true, start: true, conditional: true, loop: true }, execution: { agent: true, loop: true }, state: { messages: [{ role: 'user', content: 'What is 3 + 4?' }, { role: 'ai', tool_calls: [{ name: 'add', args: { a: 3, b: 4 } }] }, { role: 'tool', content: '7', tool_call_id: 'tool_call_123' }], llm_calls: 2 }, trace: [{ type: 'Info', content: 'Graph compiled successfully.' }, { type: 'Info', content: 'Invoking agent...' }, { type: 'Thought', content: 'The user is asking for addition. I should use the `add` tool.' }, { type: 'Action', content: 'Calling tool `add` with args `{\'a\': 3, \'b\': 4}`' }, { type: 'Observation', content: 'Tool returned: 7' }, { type: 'Thought', content: 'I have the result. I will now provide the final answer.' }] },
+    { name: 'Run Conditional Edge (End)', highlight: { start: 23, end: 27 }, explanation: 'The `should_continue` function runs again. The last message has no tool calls, so the graph routes to `END`. The execution is complete.', graph: { init: true, agent: true, tools: true, start: true, conditional: true, loop: true }, execution: { agentToEnd: true }, state: { messages: [{ role: 'user', content: 'What is 3 + 4?' }, { role: 'ai', tool_calls: [{ name: 'add', args: { a: 3, b: 4 } }] }, { role: 'tool', content: '7', tool_call_id: 'tool_call_123' }, { role: 'ai', content: 'The sum is 7.' }], llm_calls: 2 }, trace: [{ type: 'Info', content: 'Graph compiled successfully.' }, { type: 'Info', content: 'Invoking agent...' }, { type: 'Thought', content: 'The user is asking for addition. I should use the `add` tool.' }, { type: 'Action', content: 'Calling tool `add` with args `{\'a\': 3, \'b\': 4}`' }, { type: 'Observation', content: 'Tool returned: 7' }, { type: 'Thought', content: 'I have the result. I will now provide the final answer.' }, { type: 'Final Answer', content: 'The sum is 7.' }] },
 ];
 
 const GraphNode = ({ label, visible, executing, isEnd }: { label: string, visible?: boolean, executing?: boolean, isEnd?: boolean }) => (
@@ -85,37 +99,6 @@ const GraphNode = ({ label, visible, executing, isEnd }: { label: string, visibl
             >
                 {label}
             </motion.div>
-        )}
-    </AnimatePresence>
-);
-
-const GraphEdge = ({ visible, executing }: { visible?: boolean, executing?: boolean }) => (
-    <AnimatePresence>
-        {visible && (
-            <div className={cn("relative h-full w-8")}>
-                <motion.svg
-                    initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                    width="100%" height="100%" viewBox="0 0 32 2" className="absolute top-1/2 -translate-y-1/2 left-0 overflow-visible"
-                >
-                    <motion.path
-                        d="M 0 1 L 32 1"
-                        strokeWidth="2"
-                        className={cn(executing ? "stroke-primary" : "stroke-border")}
-                        initial={{ pathLength: 0 }}
-                        animate={{ pathLength: 1 }}
-                        transition={{ duration: 0.5, delay: 0.1 }}
-                    />
-                     <motion.path
-                        d="M 28 -3 L 32 1 L 28 5"
-                        strokeWidth="2"
-                        fill="none"
-                        className={executing ? "stroke-primary" : "stroke-border"}
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ delay: 0.4 }}
-                    />
-                </motion.svg>
-            </div>
         )}
     </AnimatePresence>
 );
@@ -157,6 +140,8 @@ export const LangGraphQuickstartSimulator = () => {
     const [step, setStep] = useState(0);
     const traceRef = useRef<HTMLDivElement>(null);
     const stateRef = useRef<HTMLDivElement>(null);
+    const codeScrollAreaRef = useRef<HTMLDivElement>(null);
+    const lineRefs = useRef<(HTMLDivElement | null)[]>([]);
 
     const handleNext = () => setStep(s => Math.min(s + 1, steps.length - 1));
     const handleReset = () => setStep(0);
@@ -165,12 +150,22 @@ export const LangGraphQuickstartSimulator = () => {
     const codeLines = agentCode.split('\n');
     
     useEffect(() => {
-        if (traceRef.current) {
-            traceRef.current.scrollTop = traceRef.current.scrollHeight;
+        const scrollToBottom = (ref: React.RefObject<HTMLDivElement>) => {
+             if (ref.current) {
+                ref.current.scrollTop = ref.current.scrollHeight;
+            }
+        };
+        scrollToBottom(traceRef);
+        scrollToBottom(stateRef);
+        
+        const highlightedLine = steps[step]?.highlight.start;
+        if (highlightedLine > 0 && lineRefs.current[highlightedLine]) {
+            lineRefs.current[highlightedLine]?.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center',
+            });
         }
-        if (stateRef.current) {
-            stateRef.current.scrollTop = stateRef.current.scrollHeight;
-        }
+
     }, [step]);
 
 
@@ -185,13 +180,14 @@ export const LangGraphQuickstartSimulator = () => {
             <CardContent className="p-4 space-y-4">
                  <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
                     <div className="bg-background rounded-lg border p-2 text-xs font-mono">
-                        <ScrollArea className="h-[450px]">
+                        <ScrollArea className="h-[500px]" ref={codeScrollAreaRef}>
                             <pre>
                                 {codeLines.map((line, i) => {
                                     const isHighlighted = currentStepData.highlight.start <= i + 1 && currentStepData.highlight.end >= i + 1;
                                     return (
                                         <div
                                             key={i}
+                                            ref={el => lineRefs.current[i + 1] = el}
                                             className={cn(
                                                 "px-2 transition-colors duration-300 rounded-md",
                                                 isHighlighted ? 'bg-primary/20' : 'transparent'
@@ -208,47 +204,47 @@ export const LangGraphQuickstartSimulator = () => {
 
                     <div className="flex flex-col gap-4">
                         {/* Graph Visualization */}
-                        <div className="h-48 bg-background rounded-lg border p-4 flex flex-col justify-center">
-                            {/* Top Row: START -> agent */}
-                            <div className="flex items-center">
-                                <GraphNode label="START" visible={currentStepData.graph.start} executing={currentStepData.execution.start}/>
-                                <GraphEdge visible={currentStepData.graph.start} executing={currentStepData.execution.start} />
-                                <GraphNode label="agent" visible={currentStepData.graph.agent} executing={currentStepData.execution.agent || currentStepData.execution.loop} />
-                            </div>
-
-                            {/* Conditional Branches from agent */}
-                            <AnimatePresence>
+                        <div className="h-48 bg-background rounded-lg border p-4 flex flex-col justify-center items-center">
+                            <div className="relative flex flex-col items-center">
+                                <div className="flex items-center gap-4">
+                                     <GraphNode label="START" visible={currentStepData.graph.start} executing={currentStepData.execution.start}/>
+                                     <AnimatePresence>
+                                        {currentStepData.graph.start && <motion.div initial={{opacity:0}} animate={{opacity:1}}><ArrowRight className={cn('transition-colors', currentStepData.execution.start ? 'text-primary' : 'text-border')}/></motion.div>}
+                                     </AnimatePresence>
+                                     <GraphNode label="agent" visible={currentStepData.graph.agent} executing={currentStepData.execution.agent || currentStepData.execution.loop} />
+                                </div>
+                                <AnimatePresence>
                                 {currentStepData.graph.conditional && (
-                                    <motion.div initial={{opacity:0}} animate={{opacity:1}} className="pl-[5.5rem] mt-2 space-y-2">
-                                        {/* Branch to Tools */}
-                                        <div className="flex items-center gap-2">
-                                            <CornerDownRight className={cn("w-5 h-5 transition-colors", currentStepData.execution.agentToTools ? "text-primary" : "text-muted-foreground/50")} />
-                                            <Badge variant={currentStepData.execution.agentToTools ? "default" : "secondary"}>tools</Badge>
-                                            <GraphNode label="tools" visible={currentStepData.graph.tools} executing={currentStepData.execution.tools} />
-                                            
-                                            {/* Loop from Tools back to Agent */}
-                                            <AnimatePresence>
-                                            {currentStepData.graph.loop && (
-                                                <motion.div initial={{opacity:0}} animate={{opacity:1}} className="flex items-center gap-1 text-xs ml-2">
-                                                    <CornerUpLeft className={cn("w-4 h-4 transition-colors", currentStepData.execution.loop ? 'text-primary' : 'text-muted-foreground/50')} />
-                                                    <span className={cn('text-muted-foreground/80 transition-colors', currentStepData.execution.loop && 'text-primary font-semibold')}>agent</span>
-                                                </motion.div>
-                                            )}
-                                            </AnimatePresence>
-                                        </div>
-
-                                        {/* Branch to End */}
-                                        <div className="flex items-center gap-2">
-                                            <CornerDownRight className={cn("w-5 h-5 transition-colors", currentStepData.execution.agentToEnd ? "text-primary" : "text-muted-foreground/50")} />
-                                            <Badge variant={currentStepData.execution.agentToEnd ? "default" : "secondary"}>end</Badge>
-                                            <GraphNode label="END" visible={true} executing={currentStepData.execution.agentToEnd} isEnd />
+                                     <motion.div initial={{opacity:0}} animate={{opacity:1}}>
+                                        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 flex justify-center w-[240px]">
+                                            <div className="absolute left-0 top-0 flex items-center gap-1">
+                                                <CornerDownRight className={cn('w-4 h-4', currentStepData.execution.agentToTools ? 'text-primary' : 'text-muted-foreground/50')} />
+                                                <Badge variant={currentStepData.execution.agentToTools ? 'default' : 'secondary'}>tools</Badge>
+                                            </div>
+                                             <div className="absolute right-0 top-0 flex items-center gap-1">
+                                                 <Badge variant={currentStepData.execution.agentToEnd ? 'default' : 'secondary'}>end</Badge>
+                                                <CornerDownRight className={cn('w-4 h-4', currentStepData.execution.agentToEnd ? 'text-primary' : 'text-muted-foreground/50')} />
+                                            </div>
                                         </div>
                                     </motion.div>
                                 )}
-                            </AnimatePresence>
+                                </AnimatePresence>
+                               <div className="absolute top-full mt-10 w-[380px] flex justify-between items-center">
+                                    <GraphNode label="tools" visible={currentStepData.graph.tools} executing={currentStepData.execution.tools} />
+                                    <GraphNode label="END" visible={currentStepData.graph.conditional} executing={currentStepData.execution.agentToEnd} isEnd/>
+                               </div>
+                                <AnimatePresence>
+                                {currentStepData.graph.loop && (
+                                    <motion.div initial={{opacity:0}} animate={{opacity:1}} className="absolute top-[105px] left-[-70px] flex items-center gap-1">
+                                       <CornerUpLeft className={cn("w-4 h-4", currentStepData.execution.loop ? 'text-primary' : 'text-muted-foreground/50')}/>
+                                       <span className={cn("text-xs", currentStepData.execution.loop ? 'text-primary font-semibold' : 'text-muted-foreground/80')}>agent</span>
+                                    </motion.div>
+                                )}
+                                </AnimatePresence>
+                            </div>
                         </div>
                          <div className="flex-grow grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="h-[230px] flex flex-col">
+                            <div className="h-[280px] flex flex-col">
                                 <h3 className="font-semibold text-center text-sm mb-2">Execution Trace</h3>
                                 <ScrollArea className="flex-grow w-full rounded-lg border p-2 bg-background" ref={traceRef}>
                                     <AnimatePresence>
@@ -278,7 +274,7 @@ export const LangGraphQuickstartSimulator = () => {
                                     </AnimatePresence>
                                 </ScrollArea>
                             </div>
-                            <div className="h-[230px] flex flex-col">
+                            <div className="h-[280px] flex flex-col">
                                 <h3 className="font-semibold text-center text-sm mb-2">Graph State</h3>
                                 <ScrollArea className="flex-grow w-full rounded-lg border p-2 bg-background" ref={stateRef}>
                                     <div className="flex justify-between items-center bg-muted/50 border rounded p-2 mb-2">
