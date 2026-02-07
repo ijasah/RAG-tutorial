@@ -73,7 +73,7 @@ export const LangGraphSimulator = () => {
 
     const getStatus = (nodeStep: number, doneStep?: number): Status => {
         if (step === nodeStep) return 'active';
-        if (step >= (doneStep || nodeStep)) return 'complete';
+        if (step >= (doneStep || nodeStep + 1)) return 'complete';
         return 'inactive';
     }
 
@@ -92,7 +92,7 @@ export const LangGraphSimulator = () => {
                     <GitBranch /> LangGraph Simulation
                 </CardTitle>
                 <CardDescription>
-                    See how a request flows through a graph. Nodes represent actors (the agent or tools), and edges represent the connections between them.
+                    See how a request flows through a graph. Nodes represent actors (the agent or tools), and edges represent the connections between them. The cycle allows the agent to use tools and reason iteratively.
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -135,5 +135,5 @@ export const LangGraphSimulator = () => {
 
             </CardContent>
         </Card>
-    )
+    );
 }
