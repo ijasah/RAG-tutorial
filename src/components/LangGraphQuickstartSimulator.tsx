@@ -102,9 +102,9 @@ const steps = [
             llm_calls: 1
         },
         trace: [
-            { type: 'Info', content: 'The graph definition is compiled into a runnable agent.' },
-            { type: 'Info', content: 'Agent is invoked with the initial user message.' },
-            { type: 'Thought', content: 'The user is asking for addition. I should use the `add` tool.' },
+             { type: 'Info', content: 'The graph definition is compiled into a runnable agent.' },
+             { type: 'Info', content: 'Agent is invoked with the initial user message.' },
+             { type: 'Thought', content: 'The user is asking for addition. I should use the `add` tool.' },
             { type: 'Action', content: 'Calling tool `add` with args `{\'a\': 3, \'b\': 4}`' },
             { type: 'Observation', content: 'Tool returned: 7' }
         ]
@@ -223,7 +223,7 @@ export const LangGraphQuickstartSimulator = () => {
                 </CardDescription>
             </CardHeader>
             <CardContent className="p-4 space-y-4">
-                <div className="bg-background rounded-lg border p-2 text-xs font-mono overflow-auto max-h-[500px]">
+                <div className="bg-background rounded-lg border p-2 text-xs font-mono">
                     <pre>
                         {codeLines.map((line, i) => (
                             <CodeLine key={i} line={line} i={i} highlight={currentStepData.highlight} step={step} />
