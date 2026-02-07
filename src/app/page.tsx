@@ -153,7 +153,6 @@ const sections = [
         { id: 'durable-what-is', title: 'What is Durability?' },
         { id: 'durable-simulation', title: 'Interactive Simulation' },
         { id: 'durable-modes', title: 'Durability Modes' },
-        { id: 'durable-tasks-in-nodes', title: 'Using @task in Nodes' },
     ]
   },
 ];
@@ -942,7 +941,7 @@ graph.update_state(config, {"foo": "a new value"})`} />
                                 <CardTitle className="text-sm flex items-center gap-2"><Layers/> Thread 2 (a day later)</CardTitle>
                                  <CardContent className="pt-2">
                                     <p className="text-xs p-2 bg-muted rounded border">User: "Any other ideas?"<br/>Agent: "Of course. Besides pizza, what other foods do you enjoy?"</p>
-                                </CardContent>
+                                 </CardContent>
                              </Card>
                         </div>
                     </div>
@@ -1153,38 +1152,6 @@ graph.compile(checkpointer=checkpointer)`} />
                         </TabsContent>
                     </Tabs>
                 </div>
-
-                <div id="durable-tasks-in-nodes">
-                    <h3 className="text-xl font-semibold text-foreground mb-4">Using @task in Nodes</h3>
-                    <p className="text-muted-foreground mb-4">If a node performs multiple actions with side effects, wrap each one in a `@task` to ensure they are not re-executed on resume.</p>
-                    <Tabs defaultValue="before">
-                        <TabsList className="grid grid-cols-2 w-full">
-                            <TabsTrigger value="before">Before</TabsTrigger>
-                            <TabsTrigger value="after">After (with @task)</TabsTrigger>
-                        </TabsList>
-                        <TabsContent value="before">
-                           <CodeBlock code={`# The API call is a side-effect inside the node
-def call_api(state: State):
-    # This will be re-run on resume
-    result = requests.get(state['url']).text
-    return {"result": result}`} />
-                        </TabsContent>
-                        <TabsContent value="after">
-                           <CodeBlock code={`# The side-effect is wrapped in a @task
-@task
-def _make_request(url: str):
-    return requests.get(url).text
-
-def call_api(state: State):
-    # On resume, the result of _make_request
-    # is loaded from the checkpoint instead of re-running.
-    request = _make_request(state['url'])
-    result = request.result()
-    return {"result": result}`} />
-                        </TabsContent>
-                    </Tabs>
-                </div>
-
               </div>
             </Section>
 
