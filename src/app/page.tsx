@@ -778,7 +778,7 @@ config = {"configurable": {"thread_id": "customer-session-123"}}`} className="mt
 from typing_extensions import TypedDict
 from operator import add
 from langgraph.graph import StateGraph, START, END
-from langgraph.checkpoint.memory import MemorySaver
+from langgraph.checkpoint.memory import InMemorySaver
 from langchain_core.runnables import RunnableConfig
 
 # A more complete example graph
@@ -800,7 +800,7 @@ workflow.add_edge("node_a", "node_b")
 workflow.add_edge("node_b", END)
 
 # Compile the graph with a checkpointer
-checkpointer = MemorySaver()
+checkpointer = InMemorySaver()
 graph = workflow.compile(checkpointer=checkpointer)
 
 # 1. Invoke the graph to create a history for a specific thread_id
@@ -1115,6 +1115,12 @@ graph.compile(checkpointer=checkpointer)`} />
                                     <CardTitle>sync</CardTitle>
                                     <CardDescription>Saves state before each step. Safest, but slowest.</CardDescription>
                                 </CardHeader>
+                                <CardContent>
+                                  <CodeBlock code={`graph.stream(
+    {"input": "test"},
+    config={"durability": "sync"}
+)`} />
+                                </CardContent>
                             </Card>
                         </TabsContent>
                         <TabsContent value="async">
@@ -1123,7 +1129,13 @@ graph.compile(checkpointer=checkpointer)`} />
                                     <CardTitle>async</CardTitle>
                                     <CardDescription>Saves state in the background. Good balance of safety and speed.</CardDescription>
                                 </CardHeader>
-                            </Card>
+                                <CardContent>
+                                  <CodeBlock code={`graph.stream(
+    {"input": "test"},
+    config={"durability": "async"}
+)`} />
+                                </CardContent>
+                             </Card>
                         </TabsContent>
                         <TabsContent value="exit">
                              <Card className="bg-muted/30">
@@ -1131,6 +1143,12 @@ graph.compile(checkpointer=checkpointer)`} />
                                     <CardTitle>exit</CardTitle>
                                     <CardDescription>Only saves at the very end. Fastest, but no recovery from mid-run crashes.</CardDescription>
                                 </CardHeader>
+                                <CardContent>
+                                  <CodeBlock code={`graph.stream(
+    {"input": "test"},
+    config={"durability": "exit"}
+)`} />
+                                </CardContent>
                             </Card>
                         </TabsContent>
                     </Tabs>
@@ -1198,7 +1216,3 @@ def call_api(state: State):
 };
 
 export default Index;
- 
-
-    
-
