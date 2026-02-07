@@ -743,7 +743,7 @@ asyncio.run(main())`
                     <PersistenceSimulator />
                 </div>
                 
-                <div id="persistence-history">
+                 <div id="persistence-history">
                     <Card className="mb-8 bg-blue-500/10 border-blue-500/30">
                         <CardHeader>
                             <CardTitle className="text-lg flex items-center gap-2"><Key className="text-primary"/>Where do I get the IDs?</CardTitle>
@@ -757,13 +757,32 @@ config = {"configurable": {"thread_id": "customer-session-123"}}`} className="mt
                             </div>
                             <div>
                                 <h4 className="font-semibold text-foreground">`checkpoint_id`: LangGraph gives you this.</h4>
-                                <p className="text-muted-foreground">A `checkpoint_id` is the unique ID for each *step* within a thread. You find it by looking at the state history. Each snapshot in the history has its own `checkpoint_id` inside its `config` object.</p>
-                                <CodeBlock code={`# 1. Get the history of a thread
+                                <p className="text-muted-foreground">A `checkpoint_id` is the unique ID for each *step* within a thread. You find it by looking at the state history. This complete example shows how:</p>
+                                <CodeBlock code={`from langgraph.graph import StateGraph, START, END
+from langgraph.checkpoint.memory import MemorySaver
+
+# A simple graph for demonstration
+workflow = StateGraph(dict)
+workflow.add_node("a", lambda x: print("Running node A"))
+workflow.add_edge(START, "a")
+workflow.add_edge("a", END)
+
+# Compile the graph with a checkpointer
+checkpointer = MemorySaver()
+graph = workflow.compile(checkpointer=checkpointer)
+
+# 1. Invoke the graph to create a history for a specific thread_id
+config = {"configurable": {"thread_id": "my-thread-1"}}
+graph.invoke({}, config)
+
+# 2. Get the history for that thread
 history = graph.get_state_history(config)
 
-# 2. Get the ID from a specific snapshot in that history
-checkpoint_id = history[0].config['configurable']['checkpoint_id']
-# Result: "1ef663ba-..."`} className="mt-2" />
+# 3. Extract the checkpoint_id from the latest snapshot in the history
+# The history is a list of snapshots, most recent first.
+latest_checkpoint_id = history[0].config["configurable"]["checkpoint_id"]
+
+print(f"The latest checkpoint ID is: {latest_checkpoint_id}")`} className="mt-2" />
                             </div>
                         </CardContent>
                     </Card>
