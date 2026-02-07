@@ -61,13 +61,13 @@ const steps = [
     },
     {
         name: 'Compile',
-        highlight: { start: 42, end: 42 },
+        highlight: { start: 40, end: 40 },
         state: { messages: [], llm_calls: 0 },
         trace: [{ type: 'Info', content: 'The graph definition is compiled into a runnable agent.' }]
     },
     {
         name: 'Invoke',
-        highlight: { start: 43, end: 43 },
+        highlight: { start: 41, end: 41 },
         state: { messages: [{ role: 'user', content: 'What is 3 + 4?' }], llm_calls: 0 },
         trace: [
             { type: 'Info', content: 'The graph definition is compiled into a runnable agent.' },
@@ -223,9 +223,9 @@ export const LangGraphQuickstartSimulator = () => {
                 </CardDescription>
             </CardHeader>
             <CardContent className="p-4 space-y-4">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     {/* Code Column */}
-                    <div className="lg:col-span-2 bg-background rounded-lg border p-2 text-xs font-mono">
+                    <div className="lg:col-span-1 bg-background rounded-lg border p-2 text-xs font-mono">
                         <pre>
                             {codeLines.map((line, i) => (
                                 <CodeLine key={i} line={line} i={i} highlight={currentStepData.highlight} step={step} />

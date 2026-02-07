@@ -208,15 +208,15 @@ const Index = () => {
     <div className="min-h-screen bg-background text-foreground">
       <Hero />
       <div id="content" className="container mx-auto px-4 py-16">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-12">
-          <div className="lg:col-span-1 mt-16">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+          <div className="lg:col-span-1">
             <TableOfContents 
               activeSectionId={activeSection} 
               activeSubSectionId={activeSubSectionId}
               onLinkClick={scrollToSection} 
             />
           </div>
-          <main className="lg:col-span-3 space-y-24">
+          <main className="lg:col-span-4 space-y-24">
             
              <Section id="introduction" title="LLM Agents: An Overview" icon={<Bot className="h-8 w-8 text-primary" />}>
               <div className="space-y-12">
