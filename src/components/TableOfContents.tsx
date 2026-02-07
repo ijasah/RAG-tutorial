@@ -51,7 +51,7 @@ const sections = [
     title: 'LangGraph Quickstart',
     icon: <Rocket className="w-4 h-4" />,
     subsections: [
-        { id: 'qs-graph-api', title: 'Using the Graph API' },
+        { id: 'qs-graph-simulation', title: 'Graph API Simulation' },
         { id: 'qs-functional-api', title: 'Using the Functional API' },
     ]
   }

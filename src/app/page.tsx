@@ -91,7 +91,7 @@ const sections = [
     title: 'LangGraph Quickstart', 
     icon: <Rocket className="h-8 w-8 text-primary" />,
     subsections: [
-        { id: 'qs-graph-api', title: 'Using the Graph API' },
+        { id: 'qs-graph-simulation', title: 'Graph API Simulation' },
         { id: 'qs-functional-api', title: 'Using the Functional API' },
     ]
   },
@@ -208,7 +208,7 @@ const Index = () => {
     <div className="min-h-screen bg-background text-foreground">
       <Hero />
       <div id="content" className="container mx-auto px-4 py-16">
-        <div className="grid grid-cols-1 lg:grid-cols-6 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-6 gap-8">
           <div className="lg:col-span-1">
             <TableOfContents 
               activeSectionId={activeSection} 
@@ -446,23 +446,15 @@ const Index = () => {
                    <p><strong className='text-foreground'>Functional API:</strong> Best for simpler, more linear agents. You define your agent using standard Python control flow (`if`, `while`) within a single decorated function. This can be more concise for straightforward logic.</p>
                 </div>
 
-                <Tabs defaultValue="graph-api" className="w-full">
-                    <TabsList className="grid w-full grid-cols-2">
-                        <TabsTrigger value="graph-api">Use the Graph API</TabsTrigger>
-                        <TabsTrigger value="functional-api">Use the Functional API</TabsTrigger>
-                    </TabsList>
-                    <TabsContent value="graph-api" id="qs-graph-api" className='pt-4'>
-                        <LangGraphQuickstartSimulator />
-                    </TabsContent>
-                    <TabsContent value="functional-api" id="qs-functional-api">
-                        <p className="text-muted-foreground my-4">
-                            The Functional API achieves the same result with more familiar Python syntax. Instead of defining nodes and edges, you use decorators (`@task`, `@entrypoint`) and standard control flow.
-                        </p>
-                         <Accordion type="single" collapsible className="w-full mt-6">
-                            <AccordionItem value="item-1">
-                                <AccordionTrigger>Full Code for Functional API</AccordionTrigger>
-                                <AccordionContent>
-                                    <CodeBlock code={`# Step 1: Define tools and model
+                <div id="qs-graph-simulation">
+                    <LangGraphQuickstartSimulator />
+                </div>
+                <div id="qs-functional-api">
+                    <Accordion type="single" collapsible className="w-full mt-6">
+                        <AccordionItem value="item-1">
+                            <AccordionTrigger>Full Code for Functional API</AccordionTrigger>
+                            <AccordionContent>
+                                <CodeBlock code={`# Step 1: Define tools and model
 from langchain.tools import tool
 from langchain_community.chat_models.anthropic import ChatAnthropic
 
@@ -541,12 +533,12 @@ messages = [HumanMessage(content="Add 3 and 4.")]
 for chunk in agent.stream(messages, stream_mode="updates"):
     print(chunk)
     print("\\n")`}
-                                    />
-                                </AccordionContent>
-                            </AccordionItem>
-                        </Accordion>
-                    </TabsContent>
-                </Tabs>
+                                />
+                            </AccordionContent>
+                        </AccordionItem>
+                    </Accordion>
+                </div>
+
               </div>
             </Section>
 
