@@ -47,7 +47,7 @@ workflow.add_edge(START, "agent")
 workflow.add_conditional_edges("agent", should_continue)
 workflow.add_edge("tools", "agent")
 
-# --- Compile and Run ---
+# 5. Compile and Run
 agent = workflow.compile()
 result = agent.invoke({"messages": [("user", "What is 3 + 4?")]})
 `;
@@ -157,13 +157,9 @@ const steps = [
 const CodeLine = ({ line, i, highlight, step }: { line: string, i: number, highlight: any, step: number }) => (
     <motion.div
         className={cn(
-            "px-2 transition-all duration-300 rounded-md",
+            "px-2 transition-colors duration-300 rounded-md",
             step > 0 && highlight.start <= i + 1 && highlight.end >= i + 1 ? 'bg-primary/20' : ''
         )}
-        initial={{ borderColor: 'transparent' }}
-        animate={{
-            borderColor: step > 0 && highlight.start === i + 1 ? 'hsl(var(--primary))' : 'transparent',
-        }}
     >
         <span className="text-right pr-4 text-muted-foreground/50 w-8 inline-block select-none">{i + 1}</span>
         <span>{line}</span>
@@ -199,23 +195,27 @@ const StateMessage = ({ msg }: { msg: any }) => {
 
 export const LangGraphQuickstartSimulator = () => {
     const [step, setStep] = useState(0);
-    const endOfContentRef = useRef<HTMLDivElement>(null);
+    const traceRef = useRef<HTMLDivElement>(null);
+    const stateRef = useRef<HTMLDivElement>(null);
 
     const handleNext = () => setStep(s => Math.min(s + 1, steps.length - 1));
     const handleReset = () => setStep(0);
 
     const currentStepData = steps[step];
     const codeLines = agentCode.split('\n');
-
+    
     useEffect(() => {
-        setTimeout(() => {
-            endOfContentRef.current?.scrollIntoView({ behavior: 'smooth' });
-        }, 200);
+        if (traceRef.current) {
+            traceRef.current.scrollTop = traceRef.current.scrollHeight;
+        }
+        if (stateRef.current) {
+            stateRef.current.scrollTop = stateRef.current.scrollHeight;
+        }
     }, [step]);
 
 
     return (
-        <Card className="bg-muted/30 transition-all shadow-inner w-full overflow-hidden">
+        <Card className="bg-muted/30 shadow-inner w-full overflow-hidden">
             <CardHeader className="text-center">
                  <CardTitle>Live Code Execution</CardTitle>
                  <CardDescription>
@@ -223,25 +223,61 @@ export const LangGraphQuickstartSimulator = () => {
                 </CardDescription>
             </CardHeader>
             <CardContent className="p-4 space-y-4">
-                <div className="bg-background rounded-lg border p-2 text-xs font-mono">
-                    <pre>
-                        {codeLines.map((line, i) => (
-                            <CodeLine key={i} line={line} i={i} highlight={currentStepData.highlight} step={step} />
-                        ))}
-                    </pre>
-                </div>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                    {/* Code Column */}
+                    <div className="lg:col-span-2 bg-background rounded-lg border p-2 text-xs font-mono">
+                        <pre>
+                            {codeLines.map((line, i) => (
+                                <CodeLine key={i} line={line} i={i} highlight={currentStepData.highlight} step={step} />
+                            ))}
+                        </pre>
+                    </div>
 
-                <ScrollArea className="h-[450px] w-full rounded-lg border">
-                    <div className="p-4 grid grid-cols-1 xl:grid-cols-2 gap-4">
-                        {/* State Column */}
+                    {/* Outputs Column */}
+                    <div className="flex flex-col gap-4">
+                        {/* Trace Column */}
                         <div className="space-y-2">
-                            <h3 className="font-semibold text-center mb-2 text-primary">Graph State</h3>
-                             <div className="flex justify-between items-center bg-background border rounded p-2">
-                                <span className="font-semibold text-sm">llm_calls:</span>
-                                <Badge variant="secondary" className="text-lg">{currentStepData.state.llm_calls}</Badge>
-                             </div>
-                             <div className="space-y-2">
-                                <h4 className="font-semibold text-sm">messages:</h4>
+                            <h3 className="font-semibold text-center text-primary">Execution Traces</h3>
+                            <ScrollArea className="h-64 w-full rounded-lg border p-2" ref={traceRef}>
+                                <AnimatePresence>
+                                    {currentStepData.trace.map((item, i) => (
+                                        <motion.div
+                                            key={i}
+                                            layout
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            className={cn(
+                                                "p-2 border-l-4 rounded-r-md mb-2",
+                                                item.type === 'Info' && 'border-gray-400 bg-gray-500/10',
+                                                item.type === 'Thought' && 'border-purple-400 bg-purple-500/10',
+                                                item.type === 'Action' && 'border-blue-400 bg-blue-500/10',
+                                                item.type === 'Observation' && 'border-amber-400 bg-amber-500/10',
+                                                item.type === 'Final Answer' && 'border-green-400 bg-green-500/10',
+                                            )}
+                                        >
+                                            <p className="font-bold text-xs flex items-center gap-2">
+                                            {item.type === 'Info' && <Info size={14}/>}
+                                            {item.type === 'Thought' && <BrainCircuit size={14}/>}
+                                            {item.type === 'Action' && <Wand2 size={14}/>}
+                                            {item.type === 'Observation' && <Eye size={14}/>}
+                                            {item.type === 'Final Answer' && <CheckCircle size={14}/>}
+                                            {item.type}
+                                            </p>
+                                            <p className="text-xs mt-1 pl-1">{item.content}</p>
+                                        </motion.div>
+                                    ))}
+                                </AnimatePresence>
+                            </ScrollArea>
+                        </div>
+                         {/* State Column */}
+                        <div className="space-y-2">
+                            <h3 className="font-semibold text-center text-primary">Graph State</h3>
+                             <ScrollArea className="h-64 w-full rounded-lg border p-2" ref={stateRef}>
+                                <div className="flex justify-between items-center bg-background border rounded p-2 mb-2">
+                                    <span className="font-semibold text-sm">llm_calls:</span>
+                                    <Badge variant="secondary" className="text-lg">{currentStepData.state.llm_calls}</Badge>
+                                </div>
+                                <h4 className="font-semibold text-sm mb-1">messages:</h4>
                                 <AnimatePresence>
                                 {currentStepData.state.messages.map((msg, i) => (
                                     <motion.div
@@ -249,49 +285,16 @@ export const LangGraphQuickstartSimulator = () => {
                                         layout
                                         initial={{ opacity: 0, y: -10 }}
                                         animate={{ opacity: 1, y: 0 }}
+                                        className="mb-2"
                                     >
                                         <StateMessage msg={msg} />
                                     </motion.div>
                                 ))}
                                 </AnimatePresence>
-                             </div>
-                        </div>
-
-                        {/* Trace Column */}
-                        <div className="space-y-2">
-                            <h3 className="font-semibold text-center mb-2 text-primary">Execution Trace</h3>
-                            <AnimatePresence>
-                                {currentStepData.trace.map((item, i) => (
-                                    <motion.div
-                                        key={i}
-                                        layout
-                                        initial={{ opacity: 0, y: 10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        className={cn(
-                                            "p-2 border-l-4 rounded-r-md",
-                                            item.type === 'Info' && 'border-gray-400 bg-gray-500/10',
-                                            item.type === 'Thought' && 'border-purple-400 bg-purple-500/10',
-                                            item.type === 'Action' && 'border-blue-400 bg-blue-500/10',
-                                            item.type === 'Observation' && 'border-amber-400 bg-amber-500/10',
-                                            item.type === 'Final Answer' && 'border-green-400 bg-green-500/10',
-                                        )}
-                                    >
-                                        <p className="font-bold text-xs flex items-center gap-2">
-                                           {item.type === 'Info' && <Info size={14}/>}
-                                           {item.type === 'Thought' && <BrainCircuit size={14}/>}
-                                           {item.type === 'Action' && <Wand2 size={14}/>}
-                                           {item.type === 'Observation' && <Eye size={14}/>}
-                                           {item.type === 'Final Answer' && <CheckCircle size={14}/>}
-                                           {item.type}
-                                        </p>
-                                        <p className="text-xs mt-1 pl-1">{item.content}</p>
-                                    </motion.div>
-                                ))}
-                            </AnimatePresence>
+                            </ScrollArea>
                         </div>
                     </div>
-                    <div ref={endOfContentRef} />
-                </ScrollArea>
+                </div>
 
                 <div className="flex justify-center items-center gap-4 mt-4 pt-4 border-t">
                      <Button onClick={handleReset} variant="outline" size="sm" className="w-24" disabled={step === 0}>
