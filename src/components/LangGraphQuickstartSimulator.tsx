@@ -85,8 +85,8 @@ const steps = [
             llm_calls: 1
         },
         trace: [
-            { type: 'Info', content: 'The graph definition is compiled into a runnable agent.' },
-            { type: 'Info', content: 'Agent is invoked with the initial user message.' },
+             { type: 'Info', content: 'The graph definition is compiled into a runnable agent.' },
+             { type: 'Info', content: 'Agent is invoked with the initial user message.' },
             { type: 'Thought', content: 'The user is asking for addition. I should use the `add` tool.' }
         ]
     },
@@ -226,7 +226,7 @@ export const LangGraphQuickstartSimulator = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     {/* Code Column */}
                     <div className="lg:col-span-1 bg-background rounded-lg border p-2 text-xs font-mono">
-                        <pre>
+                        <pre className="overflow-x-auto">
                             {codeLines.map((line, i) => (
                                 <CodeLine key={i} line={line} i={i} highlight={currentStepData.highlight} step={step} />
                             ))}
@@ -234,11 +234,35 @@ export const LangGraphQuickstartSimulator = () => {
                     </div>
 
                     {/* Outputs Column */}
-                    <div className="flex flex-col gap-4">
+                     <div className="lg:col-span-1 grid grid-rows-2 gap-4">
+                        {/* State Column */}
+                        <div className="space-y-2 flex flex-col">
+                            <h3 className="font-semibold text-center text-primary">Graph State</h3>
+                             <ScrollArea className="h-full w-full rounded-lg border p-2" ref={stateRef}>
+                                <div className="flex justify-between items-center bg-background border rounded p-2 mb-2">
+                                    <span className="font-semibold text-sm">llm_calls:</span>
+                                    <Badge variant="secondary" className="text-lg">{currentStepData.state.llm_calls}</Badge>
+                                </div>
+                                <h4 className="font-semibold text-sm mb-1">messages:</h4>
+                                <AnimatePresence>
+                                {currentStepData.state.messages.map((msg, i) => (
+                                    <motion.div
+                                        key={i}
+                                        layout
+                                        initial={{ opacity: 0, y: -10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        className="mb-2"
+                                    >
+                                        <StateMessage msg={msg} />
+                                    </motion.div>
+                                ))}
+                                </AnimatePresence>
+                            </ScrollArea>
+                        </div>
                         {/* Trace Column */}
-                        <div className="space-y-2">
+                        <div className="space-y-2 flex flex-col">
                             <h3 className="font-semibold text-center text-primary">Execution Traces</h3>
-                            <ScrollArea className="h-64 w-full rounded-lg border p-2" ref={traceRef}>
+                            <ScrollArea className="h-full w-full rounded-lg border p-2" ref={traceRef}>
                                 <AnimatePresence>
                                     {currentStepData.trace.map((item, i) => (
                                         <motion.div
@@ -266,30 +290,6 @@ export const LangGraphQuickstartSimulator = () => {
                                             <p className="text-xs mt-1 pl-1">{item.content}</p>
                                         </motion.div>
                                     ))}
-                                </AnimatePresence>
-                            </ScrollArea>
-                        </div>
-                         {/* State Column */}
-                        <div className="space-y-2">
-                            <h3 className="font-semibold text-center text-primary">Graph State</h3>
-                             <ScrollArea className="h-64 w-full rounded-lg border p-2" ref={stateRef}>
-                                <div className="flex justify-between items-center bg-background border rounded p-2 mb-2">
-                                    <span className="font-semibold text-sm">llm_calls:</span>
-                                    <Badge variant="secondary" className="text-lg">{currentStepData.state.llm_calls}</Badge>
-                                </div>
-                                <h4 className="font-semibold text-sm mb-1">messages:</h4>
-                                <AnimatePresence>
-                                {currentStepData.state.messages.map((msg, i) => (
-                                    <motion.div
-                                        key={i}
-                                        layout
-                                        initial={{ opacity: 0, y: -10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        className="mb-2"
-                                    >
-                                        <StateMessage msg={msg} />
-                                    </motion.div>
-                                ))}
                                 </AnimatePresence>
                             </ScrollArea>
                         </div>
