@@ -2,7 +2,7 @@
 "use client";
 
 import { cn } from '@/lib/utils';
-import { Bot, BrainCircuit, Users, ChevronRight, GitBranch } from 'lucide-react';
+import { Bot, BrainCircuit, Users, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const sections = [
@@ -34,16 +34,6 @@ const sections = [
         { id: 'multi-simulation', title: 'Collaboration Simulation' },
         { id: 'multi-frameworks', title: 'Popular Frameworks' },
         { id: 'multi-challenges', title: 'Challenges' },
-    ]
-  },
-  { 
-    id: 'langgraph', 
-    title: 'LangGraph Agents', 
-    icon: <GitBranch className="w-4 h-4" />,
-    subsections: [
-        { id: 'langgraph-intro', title: 'How it Works' },
-        { id: 'langgraph-simulation', title: 'Graph Simulation' },
-        { id: 'langgraph-components', title: 'Core Components' },
     ]
   },
 ];
