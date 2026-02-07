@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from '@/lib/utils';
-import { Bot, BrainCircuit, Users, GitBranch, ChevronRight, Rocket, Server } from 'lucide-react';
+import { Bot, BrainCircuit, Users, GitBranch, ChevronRight, Rocket, Server, Workflow } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const sections = [
@@ -45,6 +45,11 @@ const sections = [
         { id: 'lg-ecosystem', title: 'Ecosystem' },
         { id: 'lg-installation', title: 'Installation' },
     ]
+  },
+  {
+    id: 'thinking-in-langgraph',
+    title: 'Thinking in LangGraph',
+    icon: <Workflow className="w-4 h-4" />,
   },
   {
     id: 'langgraph-quickstart',

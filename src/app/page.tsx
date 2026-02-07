@@ -10,6 +10,7 @@ import { ReActSimulator } from '@/components/ReActSimulator';
 import { MultiAgentSimulator } from '@/components/MultiAgentSimulator';
 import { AgentFrameworks } from '@/components/AgentFrameworks';
 import { LangGraphQuickstartSimulator } from '@/components/LangGraphQuickstartSimulator';
+import { ThinkingInLangGraph } from '@/components/ThinkingInLangGraph';
 
 
 import {
@@ -34,6 +35,7 @@ import {
   Link as LinkIcon,
   LineChart,
   Lightbulb,
+  Workflow
 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -85,6 +87,11 @@ const sections = [
         { id: 'lg-ecosystem', title: 'Ecosystem' },
         { id: 'lg-installation', title: 'Installation' },
     ]
+  },
+  {
+    id: 'thinking-in-langgraph',
+    title: 'Thinking in LangGraph',
+    icon: <Workflow className="h-8 w-8 text-primary" />,
   },
   { 
     id: 'langgraph-quickstart', 
@@ -447,6 +454,15 @@ const Index = () => {
                         LangGraph is inspired by Pregel and Apache Beam, and its interface draws inspiration from NetworkX.
                     </p>
                  </div>
+            </Section>
+
+            <Section id="thinking-in-langgraph" title="Thinking in LangGraph" icon={<Workflow className="h-8 w-8 text-primary" />}>
+                <div className="space-y-6">
+                    <p className="text-muted-foreground mb-4">
+                       When you build an agent with LangGraph, you first break it apart into discrete steps called **nodes**. Then, you connect these nodes together through a shared **state** that each node can read from and write to. This section guides you through the thought process of building a customer support email agent with LangGraph.
+                    </p>
+                    <ThinkingInLangGraph />
+                </div>
             </Section>
 
             <Section id="langgraph-quickstart" title="LangGraph Quickstart" icon={<Rocket className="h-8 w-8 text-primary" />}>
