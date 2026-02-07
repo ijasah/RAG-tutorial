@@ -399,7 +399,7 @@ const Index = () => {
                         </Tabs>
 
                         <p className="text-muted-foreground">
-                            To use LangGraph you will usually want to access LLMs and define tools. You can do this however you see fit. One way to do this (which we will use in the docs) is to use LangChain. Install LangChain with:
+                            While LangGraph orchestrates the agent's workflow, you still need to connect to LLMs and define tools. LangChain provides a rich library of integrations for models and tools, making it a convenient choice to use alongside LangGraph. To get started, you can install the core LangChain package:
                         </p>
                         
                         <Tabs defaultValue="pip" className="w-full">
