@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from '@/lib/utils';
-import { Bot, BrainCircuit, Users, GitBranch, ChevronRight } from 'lucide-react';
+import { Bot, BrainCircuit, Users, GitBranch, ChevronRight, Rocket } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const sections = [
@@ -44,6 +44,15 @@ const sections = [
         { id: 'lg-core-benefits', title: 'Core Benefits' },
         { id: 'lg-ecosystem', title: 'Ecosystem' },
         { id: 'lg-installation', title: 'Installation' },
+    ]
+  },
+  {
+    id: 'langgraph-quickstart',
+    title: 'LangGraph Quickstart',
+    icon: <Rocket className="w-4 h-4" />,
+    subsections: [
+        { id: 'qs-graph-api', title: 'Using the Graph API' },
+        { id: 'qs-functional-api', title: 'Using the Functional API' },
     ]
   }
 ];
