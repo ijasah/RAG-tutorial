@@ -759,22 +759,38 @@ config = {"configurable": {"thread_id": "customer-session-123"}}`} className="mt
                             <div>
                                 <h4 className="font-semibold text-foreground">`checkpoint_id`: LangGraph gives you this.</h4>
                                 <p className="text-muted-foreground">A `checkpoint_id` is the unique ID for each *step* within a thread. You find it by looking at the state history. This complete example shows how:</p>
-                                <CodeBlock code={`from langgraph.graph import StateGraph, START, END
+                                <CodeBlock code={`from typing import Annotated
+from typing_extensions import TypedDict
+from operator import add
+from langgraph.graph import StateGraph, START, END
 from langgraph.checkpoint.memory import MemorySaver
+from langchain_core.runnables import RunnableConfig
 
-# A simple graph for demonstration
-workflow = StateGraph(dict)
-workflow.add_node("a", lambda x: print("Running node A"))
-workflow.add_edge(START, "a")
-workflow.add_edge("a", END)
+# A more complete example graph
+class State(TypedDict):
+    foo: str
+    bar: Annotated[list[str], add]
+
+def node_a(state: State):
+    return {"foo": "a", "bar": ["a"]}
+
+def node_b(state: State):
+    return {"foo": "b", "bar": ["b"]}
+
+workflow = StateGraph(State)
+workflow.add_node("node_a", node_a)
+workflow.add_node("node_b", node_b)
+workflow.add_edge(START, "node_a")
+workflow.add_edge("node_a", "node_b")
+workflow.add_edge("node_b", END)
 
 # Compile the graph with a checkpointer
 checkpointer = MemorySaver()
 graph = workflow.compile(checkpointer=checkpointer)
 
 # 1. Invoke the graph to create a history for a specific thread_id
-config = {"configurable": {"thread_id": "my-thread-1"}}
-graph.invoke({}, config)
+config: RunnableConfig = {"configurable": {"thread_id": "my-thread-1"}}
+graph.invoke({"foo": "", "bar": []}, config)
 
 # 2. Get the history for that thread
 history = graph.get_state_history(config)
@@ -1077,4 +1093,3 @@ export default Index;
  
 
     
-
