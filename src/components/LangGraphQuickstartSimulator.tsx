@@ -120,21 +120,6 @@ const GraphEdge = ({ visible, executing }: { visible?: boolean, executing?: bool
     </AnimatePresence>
 );
 
-const ConditionalBranch = ({ label, executing, children }: { label: string, executing: boolean, children: React.ReactNode }) => (
-    <div className="flex items-center gap-2">
-        <div className={cn("transition-colors", executing ? 'text-primary' : 'text-muted-foreground/50')}>
-             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="15 10 20 15 15 20"></polyline><path d="M4 4v7a4 4 0 0 0 4 4h12"></path>
-            </svg>
-        </div>
-        <Badge variant={executing ? 'default' : 'secondary'} className="text-xs -ml-2 mr-1">{label}</Badge>
-        <div className="flex items-center gap-2">
-            {children}
-        </div>
-    </div>
-);
-
-
 const StateMessage = ({ msg }: { msg: any }) => {
     let roleColor = '';
     let roleIcon: React.ReactNode = null;
@@ -223,37 +208,43 @@ export const LangGraphQuickstartSimulator = () => {
 
                     <div className="flex flex-col gap-4">
                         {/* Graph Visualization */}
-                         <div className="h-48 bg-background rounded-lg border p-4 flex flex-col justify-center">
-                            {/* START -> agent */}
+                        <div className="h-48 bg-background rounded-lg border p-4 flex flex-col justify-center">
+                            {/* Top Row: START -> agent */}
                             <div className="flex items-center">
                                 <GraphNode label="START" visible={currentStepData.graph.start} executing={currentStepData.execution.start}/>
                                 <GraphEdge visible={currentStepData.graph.start} executing={currentStepData.execution.start} />
                                 <GraphNode label="agent" visible={currentStepData.graph.agent} executing={currentStepData.execution.agent || currentStepData.execution.loop} />
                             </div>
 
-                            {/* Conditional Branches */}
+                            {/* Conditional Branches from agent */}
                             <AnimatePresence>
-                            {currentStepData.graph.conditional && (
-                                <motion.div initial={{opacity:0}} animate={{opacity:1}} className="pl-20 mt-2">
-                                    {/* Tools Branch */}
-                                    <ConditionalBranch label="tools" executing={currentStepData.execution.agentToTools}>
-                                        <GraphNode label="tools" visible={currentStepData.graph.tools} executing={currentStepData.execution.tools} />
-                                        <AnimatePresence>
-                                        {currentStepData.graph.loop && (
-                                            <motion.div initial={{opacity:0}} animate={{opacity:1}} className="flex items-center gap-1 text-xs">
-                                                <CornerUpLeft className={cn("w-4 h-4 transition-colors", currentStepData.execution.loop ? 'text-primary' : 'text-muted-foreground/50')} />
-                                                <span className={cn('text-muted-foreground/80 transition-colors', currentStepData.execution.loop && 'text-primary font-semibold')}>agent</span>
-                                            </motion.div>
-                                        )}
-                                        </AnimatePresence>
-                                    </ConditionalBranch>
+                                {currentStepData.graph.conditional && (
+                                    <motion.div initial={{opacity:0}} animate={{opacity:1}} className="pl-[5.5rem] mt-2 space-y-2">
+                                        {/* Branch to Tools */}
+                                        <div className="flex items-center gap-2">
+                                            <CornerDownRight className={cn("w-5 h-5 transition-colors", currentStepData.execution.agentToTools ? "text-primary" : "text-muted-foreground/50")} />
+                                            <Badge variant={currentStepData.execution.agentToTools ? "default" : "secondary"}>tools</Badge>
+                                            <GraphNode label="tools" visible={currentStepData.graph.tools} executing={currentStepData.execution.tools} />
+                                            
+                                            {/* Loop from Tools back to Agent */}
+                                            <AnimatePresence>
+                                            {currentStepData.graph.loop && (
+                                                <motion.div initial={{opacity:0}} animate={{opacity:1}} className="flex items-center gap-1 text-xs ml-2">
+                                                    <CornerUpLeft className={cn("w-4 h-4 transition-colors", currentStepData.execution.loop ? 'text-primary' : 'text-muted-foreground/50')} />
+                                                    <span className={cn('text-muted-foreground/80 transition-colors', currentStepData.execution.loop && 'text-primary font-semibold')}>agent</span>
+                                                </motion.div>
+                                            )}
+                                            </AnimatePresence>
+                                        </div>
 
-                                    {/* End Branch */}
-                                    <ConditionalBranch label="end" executing={currentStepData.execution.agentToEnd}>
-                                        <GraphNode label="END" visible={true} executing={currentStepData.execution.agentToEnd} isEnd />
-                                    </ConditionalBranch>
-                                </motion.div>
-                            )}
+                                        {/* Branch to End */}
+                                        <div className="flex items-center gap-2">
+                                            <CornerDownRight className={cn("w-5 h-5 transition-colors", currentStepData.execution.agentToEnd ? "text-primary" : "text-muted-foreground/50")} />
+                                            <Badge variant={currentStepData.execution.agentToEnd ? "default" : "secondary"}>end</Badge>
+                                            <GraphNode label="END" visible={true} executing={currentStepData.execution.agentToEnd} isEnd />
+                                        </div>
+                                    </motion.div>
+                                )}
                             </AnimatePresence>
                         </div>
                          <div className="flex-grow grid grid-cols-1 md:grid-cols-2 gap-4">
