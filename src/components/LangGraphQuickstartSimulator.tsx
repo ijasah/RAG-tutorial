@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Play, RefreshCw, ArrowRight, BrainCircuit, Database, GitBranch, MessageSquare, Sparkles, CheckCircle, Wand2, User } from 'lucide-react';
+import { Play, RefreshCw, ArrowRight, BrainCircuit, Database, GitBranch, MessageSquare, Sparkles, CheckCircle, Wand2, User, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 
@@ -13,13 +13,12 @@ from typing_extensions import TypedDict
 from langchain_core.messages import AnyMessage
 import operator
 
-# The state of our graph is a list of messages
+# 1. Define the state of our graph
 class AgentState(TypedDict):
     messages: Annotated[list[AnyMessage], operator.add]
     llm_calls: int
 
-# --- Nodes ---
-# Each node is a function that modifies the state
+# 2. Define the nodes (functions)
 def llm_call(state: AgentState):
     """LLM decides whether to call a tool or not"""
     # ... implementation calls model ...
@@ -30,41 +29,54 @@ def tool_node(state: AgentState):
     # ... implementation runs tools ...
     return {"messages": tool_outputs}
 
-# --- Conditional Edge ---
+# 3. Define the conditional edge
 def should_continue(state: AgentState):
-    """Decides if we should continue the loop or stop"""
+    """Decides if we should loop or stop"""
     if state["messages"][-1].tool_calls:
         return "tools"
     return "end"
 
-# --- Graph Definition ---
+# 4. Define the graph
 from langgraph.graph import StateGraph, START, END
 
 workflow = StateGraph(AgentState)
 workflow.add_node("agent", llm_call)
 workflow.add_node("tools", tool_node)
+
 workflow.add_edge(START, "agent")
 workflow.add_conditional_edges("agent", should_continue)
 workflow.add_edge("tools", "agent")
 
-# --- Compile and Run ---
+# 5. Compile and run the agent
 agent = workflow.compile()
 result = agent.invoke({"messages": [("user", "What is 3 + 4?")]})
 `;
 
 const steps = [
     {
-        name: 'Initial State',
-        highlight: { start: 41, end: 42 },
-        state: {
-            messages: [{ role: 'user', content: 'What is 3 + 4?' }],
-            llm_calls: 0
-        },
+        name: 'Ready',
+        highlight: { start: 0, end: 0 },
+        state: { messages: [], llm_calls: 0 },
         trace: []
     },
     {
-        name: 'LLM Call (Agent)',
-        highlight: { start: 13, end: 16 },
+        name: 'Compile',
+        highlight: { start: 42, end: 42 },
+        state: { messages: [], llm_calls: 0 },
+        trace: [{ type: 'Info', content: 'The graph definition is compiled into a runnable agent.' }]
+    },
+    {
+        name: 'Invoke',
+        highlight: { start: 43, end: 43 },
+        state: { messages: [{ role: 'user', content: 'What is 3 + 4?' }], llm_calls: 0 },
+        trace: [
+            { type: 'Info', content: 'The graph definition is compiled into a runnable agent.' },
+            { type: 'Info', content: 'Agent is invoked with the initial user message.' }
+        ]
+    },
+    {
+        name: 'Agent Node',
+        highlight: { start: 12, end: 15 },
         state: {
             messages: [
                 { role: 'user', content: 'What is 3 + 4?' },
@@ -72,11 +84,15 @@ const steps = [
             ],
             llm_calls: 1
         },
-        trace: [{ type: 'Thought', content: 'The user is asking for addition. I should use the `add` tool.' }]
+        trace: [
+            { type: 'Info', content: 'The graph definition is compiled into a runnable agent.' },
+            { type: 'Info', content: 'Agent is invoked with the initial user message.' },
+            { type: 'Thought', content: 'The user is asking for addition. I should use the `add` tool.' }
+        ]
     },
     {
-        name: 'Tool Call (tools)',
-        highlight: { start: 18, end: 21 },
+        name: 'Tools Node',
+        highlight: { start: 17, end: 20 },
         state: {
             messages: [
                 { role: 'user', content: 'What is 3 + 4?' },
@@ -86,14 +102,16 @@ const steps = [
             llm_calls: 1
         },
         trace: [
+            { type: 'Info', content: 'The graph definition is compiled into a runnable agent.' },
+            { type: 'Info', content: 'Agent is invoked with the initial user message.' },
             { type: 'Thought', content: 'The user is asking for addition. I should use the `add` tool.' },
             { type: 'Action', content: 'Calling tool `add` with args `{\'a\': 3, \'b\': 4}`' },
             { type: 'Observation', content: 'Tool returned: 7' }
         ]
     },
     {
-        name: 'LLM Call (Synthesis)',
-        highlight: { start: 13, end: 16 },
+        name: 'Agent Node (Synthesis)',
+        highlight: { start: 12, end: 15 },
         state: {
             messages: [
                 { role: 'user', content: 'What is 3 + 4?' },
@@ -104,6 +122,8 @@ const steps = [
             llm_calls: 2
         },
         trace: [
+            { type: 'Info', content: 'The graph definition is compiled into a runnable agent.' },
+            { type: 'Info', content: 'Agent is invoked with the initial user message.' },
             { type: 'Thought', content: 'The user is asking for addition. I should use the `add` tool.' },
             { type: 'Action', content: 'Calling tool `add` with args `{\'a\': 3, \'b\': 4}`' },
             { type: 'Observation', content: 'Tool returned: 7' },
@@ -123,6 +143,8 @@ const steps = [
             llm_calls: 2
         },
         trace: [
+             { type: 'Info', content: 'The graph definition is compiled into a runnable agent.' },
+             { type: 'Info', content: 'Agent is invoked with the initial user message.' },
              { type: 'Thought', content: 'The user is asking for addition. I should use the `add` tool.' },
             { type: 'Action', content: 'Calling tool `add` with args `{\'a\': 3, \'b\': 4}`' },
             { type: 'Observation', content: 'Tool returned: 7' },
@@ -195,7 +217,7 @@ export const LangGraphQuickstartSimulator = () => {
             <CardContent className="p-4 space-y-4">
                 <div className="grid grid-cols-1 xl:grid-cols-[2fr,1.5fr,1.5fr] gap-4 min-h-[400px]">
                     {/* Code Column */}
-                    <div className="bg-background rounded-lg border p-2 text-xs font-mono overflow-auto">
+                    <div className="bg-background rounded-lg border p-2 text-xs font-mono overflow-auto h-[500px]">
                         <pre>
                             {codeLines.map((line, i) => (
                                 <CodeLine key={i} line={line} i={i} highlight={currentStepData.highlight} step={step} />
@@ -242,14 +264,22 @@ export const LangGraphQuickstartSimulator = () => {
                                         animate={{ opacity: 1, y: 0 }}
                                         className={cn(
                                             "p-2 border-l-4 rounded-r-md",
+                                            item.type === 'Info' && 'border-gray-400 bg-gray-500/10',
                                             item.type === 'Thought' && 'border-purple-400 bg-purple-500/10',
                                             item.type === 'Action' && 'border-blue-400 bg-blue-500/10',
                                             item.type === 'Observation' && 'border-amber-400 bg-amber-500/10',
                                             item.type === 'Final Answer' && 'border-green-400 bg-green-500/10',
                                         )}
                                     >
-                                        <p className="font-bold text-xs">{item.type}</p>
-                                        <p className="text-xs mt-1">{item.content}</p>
+                                        <p className="font-bold text-xs flex items-center gap-2">
+                                           {item.type === 'Info' && <Info size={14}/>}
+                                           {item.type === 'Thought' && <BrainCircuit size={14}/>}
+                                           {item.type === 'Action' && <Wand2 size={14}/>}
+                                           {item.type === 'Observation' && <Eye size={14}/>}
+                                           {item.type === 'Final Answer' && <CheckCircle size={14}/>}
+                                           {item.type}
+                                        </p>
+                                        <p className="text-xs mt-1 pl-1">{item.content}</p>
                                     </motion.div>
                                 ))}
                             </AnimatePresence>

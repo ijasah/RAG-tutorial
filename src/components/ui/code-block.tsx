@@ -5,7 +5,7 @@ import { Button } from './button';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './tooltip';
 
-export function CodeBlock({ code, className }: { code: string; className?: string }) {
+export function CodeBlock({ code, className, style }: { code: string; className?: string, style?: React.CSSProperties }) {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {
@@ -15,7 +15,7 @@ export function CodeBlock({ code, className }: { code: string; className?: strin
   };
 
   return (
-    <div className={cn("relative rounded-lg bg-black/50 p-4 my-2 text-sm", className)}>
+    <div style={style} className={cn("relative rounded-lg bg-black/50 p-4 my-2 text-sm", className)}>
        <TooltipProvider>
         <Tooltip>
             <TooltipTrigger asChild>
