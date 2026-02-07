@@ -235,7 +235,7 @@ const Index = () => {
                 <div id="tool-integration" className="pt-8">
                   <h3 className="text-xl font-semibold mb-4 text-foreground">Tool Integration</h3>
                    <p className="text-muted-foreground mb-4">
-                        LLM Agents use external tools to expand their capabilities beyond text generation. This allows them to access real-time data, perform calculations, or interact with other systems.
+                        A core part of building an agent is giving it access to tools. These are functions the agent can call to interact with the outside world, like searching the web, running calculations, or accessing a database.
                     </p>
                   <CodeBlock code={toolCode} />
                 </div>
@@ -343,7 +343,7 @@ const Index = () => {
             <Section id="langgraph-overview" title="LangGraph Overview" icon={<GitBranch className="h-8 w-8 text-primary" />}>
                  <div className="space-y-6">
                     <p className="text-muted-foreground text-lg">
-                        LangGraph is a powerful library for building agents that can reliably handle complex tasks. It gives you full control by letting you define an agent's workflow as a graph—a series of connected steps. While LangGraph is a low-level tool focused on orchestration, it is often used with LangChain to easily access a rich ecosystem of models and tools.
+                        LangGraph is a powerful library for building agents that can reliably handle complex tasks. It gives you full control by letting you define an agent's workflow as a graph—a series of connected steps. To get started, it's helpful to understand a few core ideas.
                     </p>
                     <div id="lg-key-concepts">
                         <Card className="bg-muted/40">
@@ -410,7 +410,7 @@ const Index = () => {
                         </Tabs>
 
                         <p className="text-muted-foreground">
-                           While LangGraph can be used on its own, it works best with the rich ecosystem of model and tool integrations provided by the main LangChain library.
+                           While LangGraph can be used on its own, it works best with the rich ecosystem of model and tool integrations provided by the main LangChain library. These integrations make it simple to connect your agent to hundreds of different language models and external tools.
                         </p>
                         
                         <Tabs defaultValue="pip" className="w-full">
@@ -439,71 +439,103 @@ const Index = () => {
             <Section id="langgraph-quickstart" title="LangGraph Quickstart" icon={<Rocket className="h-8 w-8 text-primary" />}>
               <div className="space-y-6">
                 <p className="text-muted-foreground text-lg">
-                    This quickstart demonstrates how to build a calculator agent. The simulation below visualizes the agent's step-by-step execution, showing how it uses tools to arrive at the final answer.
+                    LangGraph offers two main ways to build your agent: the **Graph API** and the **Functional API**. This quickstart demonstrates how to build the same calculator agent using both approaches.
                 </p>
-                <LangGraphQuickstartSimulator />
-                <Alert>
-                  <FileWarning className="h-4 w-4" />
-                  <AlertTitle>API Key Required</AlertTitle>
-                  <AlertDescription>
-                    For this example, you will need to set up a Claude (Anthropic) account and get an API key. Then, set the <code>ANTHROPIC_API_KEY</code> environment variable in your terminal.
-                  </AlertDescription>
-                </Alert>
+                <ul className="list-disc pl-5 text-muted-foreground space-y-2">
+                    <li>
+                        <strong className="text-foreground">Graph API:</strong> Best for visualizing complex flows. You explicitly define your agent as a graph of nodes (steps) and edges (connections). This is great for readability and debugging.
+                    </li>
+                    <li>
+                        <strong className="text-foreground">Functional API:</strong> Best for simpler, more linear agents. You define your agent using standard Python control flow (`if`, `while`) within a single decorated function. This can be more concise for straightforward logic.
+                    </li>
+                </ul>
 
-                <Accordion type="single" collapsible className="w-full">
-                  <AccordionItem value="item-1">
-                    <AccordionTrigger>Full code example</AccordionTrigger>
-                    <AccordionContent>
-                      <CodeBlock code={`from langchain.tools import tool
+                <Tabs defaultValue="graph-api" className="w-full">
+                    <TabsList className="grid w-full grid-cols-2">
+                        <TabsTrigger value="graph-api">Use the Graph API</TabsTrigger>
+                        <TabsTrigger value="functional-api">Use the Functional API</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="graph-api" id="qs-graph-api">
+                        <p className="text-muted-foreground my-4">
+                        This interactive simulation walks you through building an agent, step by step. On the left, you'll see the Python code for each step. On the right, you'll see a diagram of the agent graph being constructed in real-time.
+                        </p>
+                        <LangGraphQuickstartSimulator />
+                        <Alert className="mt-6">
+                            <FileWarning className="h-4 w-4" />
+                            <AlertTitle>API Key Required</AlertTitle>
+                            <AlertDescription>
+                                For this example, you will need to set up a Claude (Anthropic) account and get an API key. Then, set the <code>ANTHROPIC_API_KEY</code> environment variable in your terminal.
+                            </AlertDescription>
+                        </Alert>
+                        <Accordion type="single" collapsible className="w-full mt-6">
+                            <AccordionItem value="item-1">
+                                <AccordionTrigger>Full Code for Graph API</AccordionTrigger>
+                                <AccordionContent>
+                                    <CodeBlock code={`# Step 1: Define tools and model
+from langchain.tools import tool
 from langchain.chat_models import init_chat_model
-from langchain.messages import AnyMessage, SystemMessage, ToolMessage, HumanMessage
-from typing_extensions import TypedDict, Annotated
-import operator
-from typing import Literal
-from langgraph.graph import StateGraph, START, END
-from IPython.display import Image, display
-
-# 1. Define tools and model
-model = init_chat_model("claude-sonnet-4-5-20250929", temperature=0)
-
+model = init_chat_model(
+    "claude-sonnet-4-5-20250929",
+    temperature=0
+)
 @tool
 def multiply(a: int, b: int) -> int:
-    """Multiply \`a\` and \`b\`."""
+    """Multiply \`a\` and \`b\`.
+    Args:
+        a: First int
+        b: Second int
+    """
     return a * b
-
 @tool
 def add(a: int, b: int) -> int:
-    """Adds \`a\` and \`b\`."""
+    """Adds \`a\` and \`b\`.
+    Args:
+        a: First int
+        b: Second int
+    """
     return a + b
-
 @tool
 def divide(a: int, b: int) -> float:
-    """Divide \`a\` and \`b\`."""
+    """Divide \`a\` and \`b\`.
+    Args:
+        a: First int
+        b: Second int
+    """
     return a / b
-
 tools = [add, multiply, divide]
 tools_by_name = {tool.name: tool for tool in tools}
 model_with_tools = model.bind_tools(tools)
 
-# 2. Define state
+# Step 2: Define state
+from langchain.messages import AnyMessage
+from typing_extensions import TypedDict, Annotated
+import operator
 class MessagesState(TypedDict):
     messages: Annotated[list[AnyMessage], operator.add]
     llm_calls: int
 
-# 3. Define model node
+# Step 3: Define model node
+from langchain.messages import SystemMessage
 def llm_call(state: dict):
+    """LLM decides whether to call a tool or not"""
     return {
         "messages": [
             model_with_tools.invoke(
-                [SystemMessage(content="You are a helpful assistant tasked with performing arithmetic on a set of inputs.")]
+                [
+                    SystemMessage(
+                        content="You are a helpful assistant tasked with performing arithmetic on a set of inputs."
+                    )
+                ]
                 + state["messages"]
             )
         ],
         "llm_calls": state.get('llm_calls', 0) + 1,
     }
 
-# 4. Define tool node
+# Step 4: Define tool node
+from langchain.messages import ToolMessage
 def tool_node(state: dict):
+    """Performs the tool call"""
     result = []
     for tool_call in state["messages"][-1].tool_calls:
         tool = tools_by_name[tool_call["name"]]
@@ -511,28 +543,140 @@ def tool_node(state: dict):
         result.append(ToolMessage(content=str(observation), tool_call_id=tool_call["id"]))
     return {"messages": result}
 
-# 5. Define end logic
+# Step 5: Define logic to determine whether to end
+from typing import Literal
+from langgraph.graph import StateGraph, START, END
 def should_continue(state: MessagesState) -> Literal["tool_node", END]:
-    if state["messages"][-1].tool_calls:
+    """Decide if we should continue the loop or stop based upon whether the LLM made a tool call"""
+    messages = state["messages"]
+    last_message = messages[-1]
+    if last_message.tool_calls:
         return "tool_node"
     return END
 
-# 6. Build and compile agent
+# Step 6: Build agent
 agent_builder = StateGraph(MessagesState)
 agent_builder.add_node("llm_call", llm_call)
 agent_builder.add_node("tool_node", tool_node)
 agent_builder.add_edge(START, "llm_call")
-agent_builder.add_conditional_edges("llm_call", should_continue, ["tool_node", END])
+agent_builder.add_conditional_edges(
+    "llm_call",
+    should_continue,
+    ["tool_node", END]
+)
 agent_builder.add_edge("tool_node", "llm_call")
 agent = agent_builder.compile()
 
+from IPython.display import Image, display
+display(Image(agent.get_graph(xray=True).draw_mermaid_png()))
+
+from langchain.messages import HumanMessage
+messages = [HumanMessage(content="Add 3 and 4.")]
+messages = agent.invoke({"messages": messages})
+for m in messages["messages"]:
+    m.pretty_print()`}/>
+                                </AccordionContent>
+                            </AccordionItem>
+                        </Accordion>
+                    </TabsContent>
+                    <TabsContent value="functional-api" id="qs-functional-api">
+                        <p className="text-muted-foreground my-4">
+                            The Functional API achieves the same result with more familiar Python syntax. Instead of defining nodes and edges, you use decorators (`@task`, `@entrypoint`) and standard control flow.
+                        </p>
+                        <Accordion type="single" collapsible className="w-full mt-6">
+                            <AccordionItem value="item-1">
+                                <AccordionTrigger>Full Code for Functional API</AccordionTrigger>
+                                <AccordionContent>
+                                    <CodeBlock code={`# Step 1: Define tools and model
+from langchain.tools import tool
+from langchain.chat_models import init_chat_model
+model = init_chat_model(
+    "claude-sonnet-4-5-20250929",
+    temperature=0
+)
+@tool
+def multiply(a: int, b: int) -> int:
+    """Multiply \`a\` and \`b\`.
+    Args:
+        a: First int
+        b: Second int
+    """
+    return a * b
+@tool
+def add(a: int, b: int) -> int:
+    """Adds \`a\` and \`b\`.
+    Args:
+        a: First int
+        b: Second int
+    """
+    return a + b
+@tool
+def divide(a: int, b: int) -> float:
+    """Divide \`a\` and \`b\`.
+    Args:
+        a: First int
+        b: Second int
+    """
+    return a / b
+tools = [add, multiply, divide]
+tools_by_name = {tool.name: tool for tool in tools}
+model_with_tools = model.bind_tools(tools)
+from langgraph.graph import add_messages
+from langchain.messages import (
+    SystemMessage,
+    HumanMessage,
+    ToolCall,
+)
+from langchain_core.messages import BaseMessage
+from langgraph.func import entrypoint, task
+
+# Step 2: Define model node
+@task
+def call_llm(messages: list[BaseMessage]):
+    """LLM decides whether to call a tool or not"""
+    return model_with_tools.invoke(
+        [
+            SystemMessage(
+                content="You are a helpful assistant tasked with performing arithmetic on a set of inputs."
+            )
+        ]
+        + messages
+    )
+
+# Step 3: Define tool node
+@task
+def call_tool(tool_call: ToolCall):
+    """Performs the tool call"""
+    tool = tools_by_name[tool_call["name"]]
+    return tool.invoke(tool_call)
+
+# Step 4: Define agent
+@entrypoint()
+def agent(messages: list[BaseMessage]):
+    model_response = call_llm(messages).result()
+    while True:
+        if not model_response.tool_calls:
+            break
+        # Execute tools
+        tool_result_futures = [
+            call_tool(tool_call) for tool_call in model_response.tool_calls
+        ]
+        tool_results = [fut.result() for fut in tool_result_futures]
+        messages = add_messages(messages, [model_response, *tool_results])
+        model_response = call_llm(messages).result()
+    messages = add_messages(messages, model_response)
+    return messages
+
 # Invoke
 messages = [HumanMessage(content="Add 3 and 4.")]
-result = agent.invoke({"messages": messages})
-print(result)`}/>
-                    </AccordionContent>
-                  </AccordionItem>
-                </Accordion>
+for chunk in agent.stream(messages, stream_mode="updates"):
+    print(chunk)
+    print("\n")`}/>
+                                </AccordionContent>
+                            </AccordionItem>
+                        </Accordion>
+                    </TabsContent>
+                </Tabs>
               </div>
             </Section>
 
