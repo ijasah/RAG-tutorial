@@ -10,6 +10,7 @@ import { AgentCoreComponents } from '@/components/AgentCoreComponents';
 import { ReActSimulator } from '@/components/ReActSimulator';
 import { MultiAgentSimulator } from '@/components/MultiAgentSimulator';
 import { AgentFrameworks } from '@/components/AgentFrameworks';
+import { LangGraphSimulator } from '@/components/LangGraphSimulator';
 
 
 import {
@@ -25,7 +26,10 @@ import {
   FileWarning,
   Clock,
   Sparkles,
-  Rocket
+  Rocket,
+  GitBranch,
+  ArrowRight,
+  ArrowLeft
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -61,6 +65,16 @@ const sections = [
         { id: 'multi-simulation', title: 'Collaboration Simulation' },
         { id: 'multi-frameworks', title: 'Popular Frameworks' },
         { id: 'multi-challenges', title: 'Challenges' },
+    ]
+  },
+  { 
+    id: 'langgraph', 
+    title: 'LangGraph Agents', 
+    icon: <GitBranch className="h-8 w-8 text-primary" />,
+    subsections: [
+        { id: 'langgraph-intro', title: 'How it Works' },
+        { id: 'langgraph-simulation', title: 'Graph Simulation' },
+        { id: 'langgraph-components', title: 'Core Components' },
     ]
   },
 ];
@@ -289,6 +303,71 @@ const Index = () => {
                   </div>
               </div>
             </Section>
+
+            <Section id="langgraph" title="LangGraph: Building Stateful Agents" icon={<GitBranch className="h-8 w-8 text-primary" />}>
+              <div className="space-y-12">
+                  <p id="langgraph-intro" className="text-muted-foreground text-lg">
+                      LangGraph is a library for building stateful, multi-actor applications with LLMs. It extends the LangChain expression language to coordinate multiple chains (or actors) across multiple steps of computation in a cyclic, graph-based way. This is essential for creating robust AI agents that can reason, plan, and use tools iteratively.
+                  </p>
+
+                  <Card className="bg-muted/30">
+                      <CardHeader>
+                          <CardTitle className="text-base">The Agent Loop as a Graph</CardTitle>
+                      </CardHeader>
+                      <CardContent className="flex flex-col items-center space-y-2">
+                          <div className="flex items-center gap-4">
+                              <Card className="p-3 bg-blue-500/10 border-blue-500/30"><p>Input</p></Card>
+                              <ArrowRight />
+                              <Card className="p-3"><p>LLM</p></Card>
+                              <ArrowRight />
+                              <Card className="p-3"><p>Tools</p></Card>
+                          </div>
+                          <div className="flex items-center gap-4 self-end pr-8">
+                              <ArrowLeft />
+                              <p className="text-sm text-muted-foreground">(Observation)</p>
+                          </div>
+                          <div className="flex items-center gap-4">
+                              <Card className="p-3 bg-green-500/10 border-green-500/30"><p>Output</p></Card>
+                              <ArrowLeft />
+                              <Card className="p-3"><p>LLM</p></Card>
+                              <div className="w-8" />
+                          </div>
+                          <p className="text-sm text-muted-foreground pt-4">The agent moves through the graph, calling the model and tools in a loop until the task is complete.</p>
+                      </CardContent>
+                  </Card>
+
+                  <div id="langgraph-simulation" className="pt-8">
+                      <LangGraphSimulator />
+                  </div>
+
+                  <div id="langgraph-components" className="pt-8">
+                      <h3 className="text-xl font-semibold mb-4 text-foreground">Core Components</h3>
+                      <div className="space-y-4">
+                          <Card className="bg-muted/30">
+                              <CardHeader><CardTitle className="text-base">The Model</CardTitle></CardHeader>
+                              <CardContent>
+                                  <p className="text-muted-foreground mb-4">The reasoning engine of the agent. LangGraph allows for dynamic model selection based on the agent's state.</p>
+                                  <CodeBlock code={'from langchain_openai import ChatOpenAI\n\nmodel = ChatOpenAI(model="gpt-4o-mini")'} />
+                              </CardContent>
+                          </Card>
+                          <Card className="bg-muted/30">
+                              <CardHeader><CardTitle className="text-base">Tools</CardTitle></CardHeader>
+                              <CardContent>
+                                  <p className="text-muted-foreground mb-4">Functions that give the agent abilities, like searching the web or accessing databases. The agent decides which tool to use.</p>
+                                  <CodeBlock code={'from langchain.tools import tool\n\n@tool\ndef search(query: str) -> str:\n    """Search for information."""\n    return f"Results for: {query}"'} />
+                              </CardContent>
+                          </Card>
+                          <Card className="bg-muted/30">
+                              <CardHeader><CardTitle className="text-base">State</CardTitle></CardHeader>
+                              <CardContent>
+                                  <p className="text-muted-foreground mb-4">A central object that holds information, like conversation history. The graph updates this state as it runs, allowing for memory.</p>
+                                  <CodeBlock code={'from typing import TypedDict, Annotated\nfrom langchain_core.messages import BaseMessage\nimport operator\n\nclass AgentState(TypedDict):\n    messages: Annotated[list[BaseMessage], operator.add]'} />
+                              </CardContent>
+                          </Card>
+                      </div>
+                  </div>
+              </div>
+          </Section>
 
           </main>
         </div>
