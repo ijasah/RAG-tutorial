@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from '@/lib/utils';
-import { Bot, BrainCircuit, Users, GitBranch, ChevronRight, Rocket, Server, Workflow, Save } from 'lucide-react';
+import { Bot, BrainCircuit, Users, GitBranch, ChevronRight, Rocket, Server, Workflow, Save, History, UserCheck, MemoryStick, ShieldCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const sections = [

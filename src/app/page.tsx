@@ -38,6 +38,10 @@ import {
   Lightbulb,
   Workflow,
   Save,
+  MemoryStick,
+  UserCheck,
+  History,
+  ShieldCheck,
 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -123,6 +127,42 @@ const sections = [
     icon: <Save className="h-8 w-8 text-primary" />,
   },
 ];
+
+const persistenceCode = `from langgraph.graph import StateGraph, START, END
+from langgraph.checkpoint.memory import MemorySaver
+from typing import Annotated
+from typing_extensions import TypedDict
+from operator import add
+
+# 1. Define the state schema
+class State(TypedDict):
+    foo: str
+    bar: Annotated[list[str], add]
+
+# 2. Define the nodes
+def node_a(state: State):
+    return {"foo": "a", "bar": ["a"]}
+
+def node_b(state: State):
+    return {"foo": "b", "bar": ["b"]}
+
+# 3. Wire the graph
+workflow = StateGraph(State)
+workflow.add_node("node_a", node_a)
+workflow.add_node("node_b", node_b)
+workflow.add_edge(START, "node_a")
+workflow.add_edge("node_a", "node_b")
+workflow.add_edge("node_b", END)
+
+# 4. Compile with a checkpointer
+# This tells LangGraph to save state automatically
+checkpointer = MemorySaver()
+graph = workflow.compile(checkpointer=checkpointer)
+
+# 5. Invoke with a thread_id
+# This creates a new, independent conversation thread
+config = {"configurable": {"thread_id": "thread-1"}}
+graph.invoke({"foo": "", "bar":[]}, config)`;
 
 const allSectionIds = sections.flatMap(s => [s.id, ...(s.subsections ? s.subsections.map(sub => sub.id) : [])]);
 
@@ -657,12 +697,79 @@ asyncio.run(main())`
             </Section>
 
             <Section id="langgraph-persistence" title="LangGraph Persistence" icon={<Save className="h-8 w-8 text-primary" />}>
-              <p className="text-muted-foreground text-center mb-8">
-                LangGraph's persistence feature is what gives agents their power. It allows an agent to automatically save its work at each step. This is done through **Threads** (a single conversation) and **Checkpoints** (a snapshot of memory). This stateful nature enables powerful features like human-in-the-loop approvals, long-term memory, and resuming tasks after interruptions.
-                <br/><br/>
-                This simulation demonstrates how new threads are created for each run, and how checkpoints are saved along the way. Click on any checkpoint to inspect the agent's memory at that exact moment.
-              </p>
-              <PersistenceSimulator />
+              <div className="space-y-8">
+                <div>
+                    <h3 className="text-xl font-semibold text-foreground mb-2">The Superpower of Stateful Agents</h3>
+                    <p className="text-muted-foreground">
+                        LangGraph's persistence layer is what elevates a simple workflow to a truly stateful, long-running agent. By automatically saving the agent's memory at every step, it unlocks powerful capabilities that are impossible with stateless services.
+                    </p>
+                </div>
+
+                <Card className="bg-muted/40">
+                  <CardHeader>
+                    <CardTitle className="text-lg">Core Concepts: Threads & Checkpoints</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4 text-sm">
+                      <div>
+                        <h4 className="font-semibold text-foreground flex items-center gap-2"><ArrowRight className="text-primary"/>What is a Thread?</h4>
+                        <p className="text-muted-foreground pl-6">Think of a thread as a single, continuous conversation or task. Every time you start a new, independent run of your agent, you give it a unique `thread_id`. This allows LangGraph to keep all the history for that specific task completely separate from others.</p>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-foreground flex items-center gap-2"><ArrowRight className="text-primary"/>What is a Checkpoint?</h4>
+                        <p className="text-muted-foreground pl-6">A checkpoint is a snapshot—a "save point"—of your agent's memory (its state) at a specific moment in time. LangGraph automatically creates a new checkpoint after each step in your graph. This is what makes the agent's memory durable.</p>
+                      </div>
+                  </CardContent>
+                </Card>
+
+                <div>
+                    <h3 className="text-xl font-semibold text-foreground mb-2 text-center">Live Simulation</h3>
+                    <p className="text-muted-foreground text-center mb-4">
+                       This simulation demonstrates these concepts in action. Each time you "Run New Thread," you are creating a new, independent conversation. Watch as checkpoints are saved along the way. **Click on any checkpoint to inspect the agent's memory at that exact moment.**
+                    </p>
+                    <PersistenceSimulator />
+                </div>
+                
+                <Accordion type="single" collapsible className="w-full">
+                    <AccordionItem value="item-1">
+                        <AccordionTrigger>Show me the code</AccordionTrigger>
+                        <AccordionContent>
+                           <p className="text-sm text-muted-foreground mb-2">Implementing persistence is straightforward. You compile your graph with a `checkpointer` (like the `MemorySaver` for in-memory storage) and then pass a unique `thread_id` in the config when you invoke it.</p>
+                           <CodeBlock code={persistenceCode} />
+                        </AccordionContent>
+                    </AccordionItem>
+                </Accordion>
+
+                <div>
+                    <h3 className="text-xl font-semibold text-foreground mb-4">What This Enables</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                         <Card className="bg-muted/30">
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2 text-base"><UserCheck className="text-primary"/> Human-in-the-loop</CardTitle>
+                            </CardHeader>
+                            <CardContent><p className="text-sm text-muted-foreground">Pause the agent, ask a human for approval or input, and then resume exactly where it left off, even days later.</p></CardContent>
+                        </Card>
+                         <Card className="bg-muted/30">
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2 text-base"><MemoryStick className="text-primary"/> Long-term Memory</CardTitle>
+                            </CardHeader>
+                            <CardContent><p className="text-sm text-muted-foreground">Agents can remember past interactions within the same thread, allowing for rich, context-aware conversations.</p></CardContent>
+                        </Card>
+                         <Card className="bg-muted/30">
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2 text-base"><History className="text-primary"/> Time Travel & Debugging</CardTitle>
+                            </CardHeader>
+                            <CardContent><p className="text-sm text-muted-foreground">You can load the agent's state from any previous checkpoint to debug issues or explore different execution paths.</p></CardContent>
+                        </Card>
+                         <Card className="bg-muted/30">
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2 text-base"><ShieldCheck className="text-primary"/> Fault Tolerance</CardTitle>
+                            </CardHeader>
+                            <CardContent><p className="text-sm text-muted-foreground">If the agent crashes, it can be restarted from the last successful checkpoint, preventing loss of work.</p></CardContent>
+                        </Card>
+                    </div>
+                </div>
+
+              </div>
             </Section>
 
           </main>
