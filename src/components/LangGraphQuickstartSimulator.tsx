@@ -1,202 +1,193 @@
+
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Play, RefreshCw, BrainCircuit, Wand2, Eye, MessageSquare, Calculator, ArrowRight } from 'lucide-react';
+import { Play, RefreshCw, BrainCircuit, Wand2, Eye, MessageSquare, Calculator, ArrowRight, CornerDownRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { CodeBlock } from '@/components/ui/code-block';
 
-const executionSteps = [
-    { 
-        type: 'thought',
-        activeNode: 'agent',
-        icon: <BrainCircuit className="text-pink-400" />,
-        title: 'Thought',
-        content: 'The user wants to add two numbers. I need to use the `add` tool.',
-        duration: 2000,
+const codeSnippets = {
+    state: `class MessagesState(TypedDict):
+    messages: Annotated[list[AnyMessage], operator.add]`,
+    llm_call: `def llm_call(state: dict):
+    # The LLM decides whether to use a tool or respond to the user.
+    return {"messages": [model_with_tools.invoke(state["messages"])]}`,
+    tool_node: `def tool_node(state: dict):
+    # This runs the tool and returns the results.
+    tool_call = state["messages"][-1].tool_calls[0]
+    result = tools_by_name[tool_call["name"]].invoke(tool_call["args"])
+    return {"messages": [ToolMessage(content=str(result), tool_call_id=tool_call["id"])]}`,
+    graph: `agent_builder = StateGraph(MessagesState)
+agent_builder.add_node("llm_call", llm_call)
+agent_builder.add_node("tool_node", tool_node)
+agent_builder.add_edge(START, "llm_call")
+agent_builder.add_conditional_edges("llm_call", should_continue)
+agent_builder.add_edge("tool_node", "llm_call")
+agent = agent_builder.compile()`,
+    invoke: `agent.invoke({"messages": [HumanMessage(content="Add 3 and 4.")]})`
+};
+
+const simulationSteps = [
+    {
+        id: 'start',
+        highlight: 'invoke',
+        output: [],
+        explanation: 'The simulation starts by invoking the compiled agent with the user\'s message.'
     },
-    { 
-        type: 'action',
-        activeNode: 'agent',
-        icon: <Wand2 className="text-blue-400" />,
-        title: 'Action',
-        content: 'Calling tool: add(a=3, b=4)',
-        duration: 1500,
+    {
+        id: 'thought_1',
+        highlight: 'llm_call',
+        output: [
+            { icon: <BrainCircuit />, title: 'Thought', content: 'The user wants to add 3 and 4. I should use the `add` tool.' },
+        ],
+        explanation: 'The agent graph enters the `llm_call` node. The LLM reasons about the user\'s request.'
     },
-    { 
-        type: 'observation',
-        activeNode: 'tools',
-        icon: <Eye className="text-purple-400" />,
-        title: 'Observation',
-        content: 'Tool returned: 7',
-        duration: 1500,
+    {
+        id: 'action_1',
+        highlight: 'llm_call',
+        output: [
+            { icon: <BrainCircuit />, title: 'Thought', content: 'The user wants to add 3 and 4. I should use the `add` tool.' },
+            { icon: <Wand2 />, title: 'Action', content: 'Calling tool `add` with arguments {"a": 3, "b": 4}' }
+        ],
+        explanation: 'The LLM decides to call a tool. The graph will now route to the `tool_node`.'
     },
-     { 
-        type: 'thought',
-        activeNode: 'agent',
-        icon: <BrainCircuit className="text-pink-400" />,
-        title: 'Thought',
-        content: 'I have the result from the tool. I can now form the final answer.',
-        duration: 2000,
+    {
+        id: 'observation_1',
+        highlight: 'tool_node',
+        output: [
+            { icon: <BrainCircuit />, title: 'Thought', content: 'The user wants to add 3 and 4. I should use the `add` tool.' },
+            { icon: <Wand2 />, title: 'Action', content: 'Calling tool `add` with arguments {"a": 3, "b": 4}' },
+            { icon: <Eye />, title: 'Observation', content: 'Tool returned: 7' }
+        ],
+        explanation: 'The `tool_node` executes the `add` tool, which returns `7`. This observation is added to the agent\'s state.'
     },
-    { 
-        type: 'answer',
-        activeNode: 'agent',
-        icon: <MessageSquare className="text-primary" />,
-        title: 'Final Answer',
-        content: 'The result of adding 3 and 4 is 7.',
-        duration: 1000,
+     {
+        id: 'thought_2',
+        highlight: 'llm_call',
+        output: [
+            { icon: <BrainCircuit />, title: 'Thought', content: 'The user wants to add 3 and 4. I should use the `add` tool.' },
+            { icon: <Wand2 />, title: 'Action', content: 'Calling tool `add` with arguments {"a": 3, "b": 4}' },
+            { icon: <Eye />, title: 'Observation', content: 'Tool returned: 7' },
+            { icon: <BrainCircuit />, title: 'Thought', content: 'I have the result from the tool. I can now provide the final answer to the user.' }
+        ],
+        explanation: 'The graph loops back to the `llm_call` node. With the new observation, the LLM decides it has enough information.'
+    },
+    {
+        id: 'answer',
+        highlight: 'llm_call',
+        output: [
+            { icon: <BrainCircuit />, title: 'Thought', content: 'The user wants to add 3 and 4. I should use the `add` tool.' },
+            { icon: <Wand2 />, title: 'Action', content: 'Calling tool `add` with arguments {"a": 3, "b": 4}' },
+            { icon: <Eye />, title: 'Observation', content: 'Tool returned: 7' },
+            { icon: <BrainCircuit />, title: 'Thought', content: 'I have the result from the tool. I can now provide the final answer to the user.' },
+            { icon: <MessageSquare />, title: 'Final Answer', content: 'The result is 7.' }
+        ],
+        explanation: 'The agent provides the final answer. Since no more tools are called, the graph execution finishes.'
     }
 ];
 
-const subTypeToBgColor: Record<string, string> = {
-    thought: 'bg-pink-500/10 border-pink-500/30',
-    action: 'bg-blue-500/10 border-blue-500/30',
-    observation: 'bg-purple-500/10 border-purple-500/30',
-    answer: 'bg-primary/10 border-primary/30'
-};
-
-const GraphNode = ({ title, icon, active }: { title: string, icon: React.ReactNode, active: boolean }) => (
-    <motion.div
-        className={cn(
-            "p-6 border-2 rounded-xl flex flex-col items-center gap-2 transition-all duration-300",
-            active ? "bg-primary/10 border-primary shadow-lg" : "bg-muted/40 border-dashed"
-        )}
-        animate={{ scale: active ? 1.05 : 1 }}
-        transition={{ type: 'spring', stiffness: 300, damping: 10 }}
-    >
-        {icon}
-        <h3 className="font-semibold text-foreground">{title}</h3>
-    </motion.div>
-);
 
 export const LangGraphQuickstartSimulator = () => {
-    const [currentStep, setCurrentStep] = useState(0);
+    const [step, setStep] = useState(0);
     const [isRunning, setIsRunning] = useState(false);
-    const [log, setLog] = useState<(typeof executionSteps[0])[]>([]);
 
-    useEffect(() => {
-        if (isRunning && currentStep < executionSteps.length) {
-            const timer = setTimeout(() => {
-                setLog(prev => [...prev, executionSteps[currentStep]]);
-                setCurrentStep(prev => prev + 1);
-            }, executionSteps[currentStep].duration);
-            return () => clearTimeout(timer);
-        } else if (currentStep >= executionSteps.length) {
-            setIsRunning(false);
-        }
-    }, [currentStep, isRunning]);
-
-    const handleSimulate = () => {
-        setLog([]);
-        setCurrentStep(0);
+    const handleStart = () => {
         setIsRunning(true);
+        setStep(1);
     };
 
+    const handleNext = () => {
+        if (step < simulationSteps.length -1) {
+            setStep(s => s + 1);
+        }
+    };
+    
     const handleReset = () => {
         setIsRunning(false);
-        setLog([]);
-        setCurrentStep(0);
+        setStep(0);
     };
 
-    const activeNode = log[log.length - 1]?.activeNode;
+    const currentSimStep = simulationSteps[step];
+    const isFinished = step === simulationSteps.length - 1;
 
     return (
         <Card className="bg-muted/30 my-8 transition-all hover:shadow-lg hover:-translate-y-1">
             <CardHeader>
                 <CardTitle>Execution Simulation</CardTitle>
                 <CardDescription>
-                    Watch side-by-side as the agent graph executes and produces a step-by-step trace of its reasoning, actions, and observations.
+                    This is a step-by-step, line-by-line simulation. On the left is the agent's code, and on the right is the output. Click "Start" and then "Next" to see how the agent executes its logic.
                 </CardDescription>
             </CardHeader>
             <CardContent>
-                <div className="flex justify-center mb-6">
-                    <Button onClick={log.length > 0 ? handleReset : handleSimulate} className="min-w-[180px]" disabled={isRunning}>
-                        {isRunning ? 'Executing...' : (log.length > 0 ? <><RefreshCw /> Reset Simulation</> : <><Play /> Start Simulation</>)}
-                    </Button>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 min-h-[400px]">
-                    {/* Left side: The Graph */}
-                    <div className="flex flex-col justify-center items-center gap-4 relative p-4 rounded-lg bg-background border">
-                         <h3 className="text-sm font-semibold text-muted-foreground absolute top-4 left-4">Agent Graph</h3>
-                        <GraphNode title="Agent" icon={<BrainCircuit className="w-10 h-10 text-primary" />} active={activeNode === 'agent'} />
-                        
-                        {/* Arrows */}
-                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full pointer-events-none">
-                            <AnimatePresence>
-                                {log.some(l => l.type === 'action') && (
-                                    <motion.svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
-                                        <motion.path
-                                            d="M 50 25 V 75"
-                                            stroke="hsl(var(--primary))"
-                                            strokeWidth="1.5"
-                                            strokeDasharray="4 4"
-                                            markerEnd="url(#arrowhead)"
-                                            initial={{ pathLength: 0 }}
-                                            animate={{ pathLength: 1 }}
-                                            transition={{ duration: 0.5, delay: 0.2 }}
-                                        />
-                                    </motion.svg>
-                                )}
-                            </AnimatePresence>
-                             <AnimatePresence>
-                                {log.some(l => l.type === 'observation') && (
-                                     <motion.svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute top-0 left-0">
-                                         <motion.path
-                                            d="M 55 75 C 80 60, 80 40, 55 25"
-                                            stroke="hsl(var(--foreground))"
-                                            strokeWidth="1.5"
-                                            strokeDasharray="2 3"
-                                            fill="none"
-                                            markerEnd="url(#arrowhead-gray)"
-                                            initial={{ pathLength: 0 }}
-                                            animate={{ pathLength: 1 }}
-                                            transition={{ duration: 0.5, delay: 0.2 }}
-                                        />
-                                    </motion.svg>
-                                )}
-                            </AnimatePresence>
-                            <svg width="0" height="0">
-                                <defs>
-                                    <marker id="arrowhead" markerWidth="5" markerHeight="3.5" refX="0" refY="1.75" orient="auto">
-                                        <polygon points="0 0, 5 1.75, 0 3.5" fill="hsl(var(--primary))" />
-                                    </marker>
-                                     <marker id="arrowhead-gray" markerWidth="5" markerHeight="3.5" refX="0" refY="1.75" orient="auto">
-                                        <polygon points="0 0, 5 1.75, 0 3.5" fill="hsl(var(--foreground))" />
-                                    </marker>
-                                </defs>
-                            </svg>
-                        </div>
-                        
-                        <GraphNode title="Tools" icon={<Calculator className="w-10 h-10 text-primary" />} active={activeNode === 'tools'} />
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    {/* Code Column */}
+                    <div className="space-y-3 rounded-lg border bg-background p-4">
+                        <h3 className="font-semibold text-sm text-center mb-2">Agent Code</h3>
+                        {Object.entries(codeSnippets).map(([key, code]) => (
+                            <motion.div
+                                key={key}
+                                animate={{
+                                    borderColor: currentSimStep.highlight === key ? 'hsl(var(--primary))' : 'hsl(var(--border))',
+                                    scale: currentSimStep.highlight === key ? 1.02 : 1,
+                                }}
+                                transition={{ duration: 0.3 }}
+                                className="border-2 rounded-lg"
+                            >
+                                <CodeBlock code={code} className="!my-0" />
+                            </motion.div>
+                        ))}
                     </div>
 
-                    {/* Right side: The Trace */}
-                    <div className="relative p-4 rounded-lg bg-background border">
-                         <h3 className="text-sm font-semibold text-muted-foreground absolute top-4 left-4">Execution Trace</h3>
-                         <div className="space-y-3 pt-10">
-                            <AnimatePresence>
-                                {log.map((step, index) => (
+                    {/* Output Column */}
+                     <div className="space-y-3 rounded-lg border bg-background p-4">
+                        <h3 className="font-semibold text-sm text-center mb-2">Simulated Output</h3>
+                        <div className="space-y-2">
+                             <AnimatePresence>
+                                {currentSimStep.output.map((line, index) => (
                                     <motion.div
                                         key={index}
                                         layout
                                         initial={{ opacity: 0, y: 10 }}
                                         animate={{ opacity: 1, y: 0 }}
-                                        transition={{ duration: 0.3 }}
-                                        className={cn("p-3 rounded-lg border text-sm", subTypeToBgColor[step.type!])}
+                                        transition={{ duration: 0.3, delay: index * 0.1 }}
+                                        className="p-2.5 rounded-lg border bg-muted/50 text-sm"
                                     >
-                                        <h4 className="font-semibold mb-1.5 flex items-center gap-2">
-                                            {step.icon} {step.title}
+                                        <h4 className="font-semibold mb-1.5 flex items-center gap-2 text-xs text-primary/80">
+                                            {line.icon} {line.title}
                                         </h4>
-                                        <p className="pl-8 text-muted-foreground">{step.content}</p>
+                                        <p className="pl-6 text-muted-foreground text-xs">{line.content}</p>
                                     </motion.div>
                                 ))}
                             </AnimatePresence>
-                         </div>
+                        </div>
                     </div>
                 </div>
+
+                 <div className="mt-4 pt-4 border-t text-center space-y-2">
+                     <p className="text-sm text-muted-foreground min-h-[40px] px-4 flex items-center justify-center">
+                        {currentSimStep.explanation}
+                    </p>
+                    <div className="flex justify-center gap-2">
+                        {!isRunning ? (
+                             <Button onClick={handleStart} className="w-32">
+                                <Play className="mr-2"/> Start
+                            </Button>
+                        ) : (
+                            <>
+                                <Button onClick={handleReset} variant="outline" className="w-32">
+                                    <RefreshCw className="mr-2"/> Reset
+                                </Button>
+                                <Button onClick={handleNext} disabled={isFinished} className="w-32">
+                                    Next <ArrowRight className="ml-2"/>
+                                </Button>
+                            </>
+                        )}
+                    </div>
+                 </div>
+
             </CardContent>
         </Card>
     );
