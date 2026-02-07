@@ -457,12 +457,10 @@ const Index = () => {
             </Section>
 
             <Section id="thinking-in-langgraph" title="Thinking in LangGraph" icon={<Workflow className="h-8 w-8 text-primary" />}>
-                <div className="space-y-6">
-                    <p className="text-muted-foreground mb-4">
-                       When you build an agent with LangGraph, you first break it apart into discrete steps called **nodes**. Then, you connect these nodes together through a shared **state** that each node can read from and write to. This section guides you through the thought process of building a customer support email agent with LangGraph.
-                    </p>
-                    <ThinkingInLangGraph />
-                </div>
+                <p className="text-muted-foreground text-center">
+                    This interactive simulation walks you through the 5 core steps of building a stateful agent with LangGraph. Use the accordion on the right to navigate through the process and see how the agent's workflow diagram on the left changes.
+                </p>
+                <ThinkingInLangGraph />
             </Section>
 
             <Section id="langgraph-quickstart" title="LangGraph Quickstart" icon={<Rocket className="h-8 w-8 text-primary" />}>
