@@ -4,7 +4,7 @@ import { useState, useMemo, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Play, RefreshCw, ArrowRight, BrainCircuit, Eye, Info, User, Wand2, CheckCircle, Sparkles, GitBranch, Share2, CornerDownRight } from 'lucide-react';
+import { Play, RefreshCw, ArrowRight, BrainCircuit, Eye, Info, User, Wand2, CheckCircle, Sparkles, GitBranch, Share2, CornerDownRight, CornerUpLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -89,24 +89,24 @@ const GraphNode = ({ label, visible, executing, isEnd }: { label: string, visibl
     </AnimatePresence>
 );
 
-const GraphEdge = ({ visible, executing, isConditional, isLoop }: { visible?: boolean, executing?: boolean, isConditional?: boolean, isLoop?: boolean }) => (
+const GraphEdge = ({ visible, executing }: { visible?: boolean, executing?: boolean }) => (
     <AnimatePresence>
         {visible && (
-            <div className={cn("relative h-full", isLoop ? "w-10" : "w-16")}>
+            <div className={cn("relative h-full w-8")}>
                 <motion.svg
                     initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                    width="100%" height="100%" viewBox={isLoop ? "0 0 20 60" : "0 0 40 2"} className="absolute top-0 left-0 overflow-visible"
+                    width="100%" height="100%" viewBox="0 0 32 2" className="absolute top-1/2 -translate-y-1/2 left-0 overflow-visible"
                 >
                     <motion.path
-                        d={isLoop ? "M 10 0 v 60" : "M 0 1 L 40 1"}
+                        d="M 0 1 L 32 1"
                         strokeWidth="2"
-                        className={cn(isConditional ? "stroke-dashed" : "", executing ? "stroke-primary" : "stroke-border")}
+                        className={cn(executing ? "stroke-primary" : "stroke-border")}
                         initial={{ pathLength: 0 }}
                         animate={{ pathLength: 1 }}
                         transition={{ duration: 0.5, delay: 0.1 }}
                     />
                      <motion.path
-                        d={isLoop ? "M 5 55 l 5 5 l 5 -5" : "M 35 -4 L 40 1 L 35 6"}
+                        d="M 28 -3 L 32 1 L 28 5"
                         strokeWidth="2"
                         fill="none"
                         className={executing ? "stroke-primary" : "stroke-border"}
@@ -118,6 +118,20 @@ const GraphEdge = ({ visible, executing, isConditional, isLoop }: { visible?: bo
             </div>
         )}
     </AnimatePresence>
+);
+
+const ConditionalBranch = ({ label, executing, children }: { label: string, executing: boolean, children: React.ReactNode }) => (
+    <div className="flex items-center gap-2">
+        <div className={cn("transition-colors", executing ? 'text-primary' : 'text-muted-foreground/50')}>
+             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="15 10 20 15 15 20"></polyline><path d="M4 4v7a4 4 0 0 0 4 4h12"></path>
+            </svg>
+        </div>
+        <Badge variant={executing ? 'default' : 'secondary'} className="text-xs -ml-2 mr-1">{label}</Badge>
+        <div className="flex items-center gap-2">
+            {children}
+        </div>
+    </div>
 );
 
 
@@ -185,65 +199,62 @@ export const LangGraphQuickstartSimulator = () => {
             </CardHeader>
             <CardContent className="p-4 space-y-4">
                  <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-                     <ScrollArea className="bg-background rounded-lg border p-2 text-xs font-mono h-[450px] overflow-auto">
-                        <pre>
-                            {codeLines.map((line, i) => {
-                                const isHighlighted = currentStepData.highlight.start <= i + 1 && currentStepData.highlight.end >= i + 1;
-                                return (
-                                    <div
-                                        key={i}
-                                        className={cn(
-                                            "px-2 transition-colors duration-300 rounded-md",
-                                            isHighlighted ? 'bg-primary/20' : 'transparent'
-                                        )}
-                                    >
-                                        <span className="text-right pr-4 text-muted-foreground/50 w-8 inline-block select-none">{i + 1}</span>
-                                        <span>{line}</span>
-                                    </div>
-                                );
-                            })}
-                        </pre>
-                    </ScrollArea>
+                    <div className="bg-background rounded-lg border p-2 text-xs font-mono">
+                        <ScrollArea className="h-[450px]">
+                            <pre>
+                                {codeLines.map((line, i) => {
+                                    const isHighlighted = currentStepData.highlight.start <= i + 1 && currentStepData.highlight.end >= i + 1;
+                                    return (
+                                        <div
+                                            key={i}
+                                            className={cn(
+                                                "px-2 transition-colors duration-300 rounded-md",
+                                                isHighlighted ? 'bg-primary/20' : 'transparent'
+                                            )}
+                                        >
+                                            <span className="text-right pr-4 text-muted-foreground/50 w-8 inline-block select-none">{i + 1}</span>
+                                            <span>{line}</span>
+                                        </div>
+                                    );
+                                })}
+                            </pre>
+                        </ScrollArea>
+                    </div>
 
                     <div className="flex flex-col gap-4">
                         {/* Graph Visualization */}
-                        <div className="h-48 bg-background rounded-lg border p-4 flex flex-col items-center justify-center">
-                            <div className="flex items-center justify-center space-x-2">
+                         <div className="h-48 bg-background rounded-lg border p-4 flex flex-col justify-center">
+                            {/* START -> agent */}
+                            <div className="flex items-center">
                                 <GraphNode label="START" visible={currentStepData.graph.start} executing={currentStepData.execution.start}/>
                                 <GraphEdge visible={currentStepData.graph.start} executing={currentStepData.execution.start} />
-                                <GraphNode label="agent" visible={currentStepData.graph.agent} executing={currentStepData.execution.agent} />
-                                <GraphEdge visible={currentStepData.graph.conditional} executing={currentStepData.execution.agentToTools} isConditional/>
-                                <GraphNode label="tools" visible={currentStepData.graph.tools} executing={currentStepData.execution.tools} />
+                                <GraphNode label="agent" visible={currentStepData.graph.agent} executing={currentStepData.execution.agent || currentStepData.execution.loop} />
                             </div>
-                            <div className="flex items-start justify-center h-16 w-full">
-                                <div className="flex w-1/2 justify-end pr-8 relative">
-                                    <AnimatePresence>
-                                    {currentStepData.graph.loop && (
-                                        <motion.div initial={{opacity:0}} animate={{opacity:1}} className="absolute -bottom-1 left-full -translate-x-[90px] flex flex-col items-center">
-                                            <div className={cn("h-6 w-[2px] rounded-full", currentStepData.execution.tools ? 'bg-primary' : 'bg-border')}></div>
-                                            <div className={cn("w-[235px] h-[2px] rounded-full", currentStepData.execution.loop ? 'bg-primary' : 'bg-border')}></div>
-                                            <div className="flex w-full justify-between">
-                                                <div className={cn("h-6 w-[2px] rounded-full", currentStepData.execution.loop ? 'bg-primary' : 'bg-border')}></div>
-                                                <div className={cn("h-6 w-[2px] rounded-full", currentStepData.execution.tools ? 'bg-primary' : 'bg-border')}></div>
-                                            </div>
-                                             <AnimatePresence>
-                                                {currentStepData.execution.loop && <CornerDownRight size={16} className="absolute -bottom-1 left-0 text-primary"/>}
-                                            </AnimatePresence>
-                                        </motion.div>
-                                    )}
-                                    </AnimatePresence>
-                                </div>
-                                <div className="flex w-1/2 justify-start pl-[125px] relative">
-                                    <AnimatePresence>
-                                    {currentStepData.graph.conditional && (
-                                         <motion.div initial={{opacity:0}} animate={{opacity:1}} className="absolute -bottom-1 left-0 translate-x-[40px] flex flex-col items-center">
-                                             <GraphEdge visible={true} executing={currentStepData.execution.agentToEnd} isLoop={true} />
-                                             <GraphNode label="END" visible={true} executing={currentStepData.execution.agentToEnd} isEnd/>
-                                         </motion.div>
-                                    )}
-                                    </AnimatePresence>
-                                </div>
-                            </div>
+
+                            {/* Conditional Branches */}
+                            <AnimatePresence>
+                            {currentStepData.graph.conditional && (
+                                <motion.div initial={{opacity:0}} animate={{opacity:1}} className="pl-20 mt-2">
+                                    {/* Tools Branch */}
+                                    <ConditionalBranch label="tools" executing={currentStepData.execution.agentToTools}>
+                                        <GraphNode label="tools" visible={currentStepData.graph.tools} executing={currentStepData.execution.tools} />
+                                        <AnimatePresence>
+                                        {currentStepData.graph.loop && (
+                                            <motion.div initial={{opacity:0}} animate={{opacity:1}} className="flex items-center gap-1 text-xs">
+                                                <CornerUpLeft className={cn("w-4 h-4 transition-colors", currentStepData.execution.loop ? 'text-primary' : 'text-muted-foreground/50')} />
+                                                <span className={cn('text-muted-foreground/80 transition-colors', currentStepData.execution.loop && 'text-primary font-semibold')}>agent</span>
+                                            </motion.div>
+                                        )}
+                                        </AnimatePresence>
+                                    </ConditionalBranch>
+
+                                    {/* End Branch */}
+                                    <ConditionalBranch label="end" executing={currentStepData.execution.agentToEnd}>
+                                        <GraphNode label="END" visible={true} executing={currentStepData.execution.agentToEnd} isEnd />
+                                    </ConditionalBranch>
+                                </motion.div>
+                            )}
+                            </AnimatePresence>
                         </div>
                          <div className="flex-grow grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="h-[230px] flex flex-col">
