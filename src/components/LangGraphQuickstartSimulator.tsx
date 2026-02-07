@@ -57,7 +57,7 @@ result = app.invoke({"messages": [("user", "What is 3 + 4?")]})
 
 const steps = [
     { name: 'Ready', highlight: { start: -1, end: -1 }, explanation: 'Click "Start" to begin building and running the LangGraph agent.', graph: {}, execution: {}, state: { messages: [], llm_calls: 0 }, trace: [] },
-    { name: 'Define State', highlight: { start: 5, end: 8 }, explanation: 'First, we define the "state" of our agent. This is a simple dictionary that will hold the history of messages and a counter for LLM calls.', graph: {}, execution: {}, state: { messages: [], llm_calls: 0 }, trace: [] },
+    { name: 'Define State', highlight: { start: 6, end: 8 }, explanation: 'First, we define the "state" of our agent. This is a simple dictionary that will hold the history of messages and a counter for LLM calls.', graph: {}, execution: {}, state: { messages: [], llm_calls: 0 }, trace: [] },
     { name: 'Add Agent Node', highlight: { start: 32, end: 32 }, explanation: 'We add the primary "agent" node. This function is responsible for calling the large language model.', graph: { agent: true }, execution: {}, state: { messages: [], llm_calls: 0 }, trace: [] },
     { name: 'Add Tools Node', highlight: { start: 33, end: 33 }, explanation: 'Next, we add a "tools" node. This function will execute any tools that the agent decides to use.', graph: { agent: true, tools: true }, execution: {}, state: { messages: [], llm_calls: 0 }, trace: [] },
     { name: 'Set Entry Point', highlight: { start: 34, end: 34 }, explanation: 'We define the entry point of the graph. All executions will begin at the "agent" node.', graph: { agent: true, tools: true, start: true }, execution: {}, state: { messages: [], llm_calls: 0 }, trace: [] },
@@ -67,8 +67,8 @@ const steps = [
     { name: 'Invoke', highlight: { start: 43, end: 43 }, explanation: 'The agent is invoked with the initial user message.', graph: { agent: true, tools: true, start: true, conditional: true, loop: true }, execution: { start: true }, state: { messages: [{ role: 'user', content: 'What is 3 + 4?' }], llm_calls: 0 }, trace: [{ type: 'Info', content: 'Graph compiled successfully.' }, { type: 'Info', content: 'Invoking agent...' }] },
     { name: 'Run Agent Node', highlight: { start: 11, end: 14 }, explanation: 'The LLM decides that the `add` tool is needed to answer the user\'s question.', graph: { agent: true, tools: true, start: true, conditional: true, loop: true }, execution: { agent: true }, state: { messages: [{ role: 'user', content: 'What is 3 + 4?' }], llm_calls: 1 }, trace: [{ type: 'Info', content: 'Graph compiled successfully.' }, { type: 'Info', content: 'Invoking agent...' }, { type: 'Thought', content: 'The user is asking for addition. I should use the `add` tool.' }] },
     { name: 'Run Tools Node', highlight: { start: 16, end: 19 }, explanation: 'The `tool_node` executes the `add` tool with the arguments `(a=3, b=4)`.', graph: { agent: true, tools: true, start: true, conditional: true, loop: true }, execution: { tools: true }, state: { messages: [{ role: 'user', content: 'What is 3 + 4?' }, { role: 'ai', tool_calls: [{ name: 'add', args: { a: 3, b: 4 } }] }], llm_calls: 1 }, trace: [{ type: 'Info', content: 'Graph compiled successfully.' }, { type: 'Info', content: 'Invoking agent...' }, { type: 'Thought', content: 'The user is asking for addition. I should use the `add` tool.' }, { type: 'Action', content: 'Calling tool `add` with args `{\'a\': 3, \'b\': 4}`' }] },
-    { name: 'Re-run Agent Node', highlight: { start: 11, end: 14 }, explanation: 'The agent receives the tool\'s output ("7") and synthesizes the final answer.', graph: { agent: true, tools: true, start: true, conditional: true, loop: true }, execution: { agent: true, loop: true }, state: { messages: [{ role: 'user', content: 'What is 3 + 4?' }, { role: 'ai', tool_calls: [{ name: 'add', args: { a: 3, b: 4 } }] }, { role: 'tool', content: '7' }], llm_calls: 2 }, trace: [{ type: 'Info', content: 'Graph compiled successfully.' }, { type: 'Info', content: 'Invoking agent...' }, { type: 'Thought', content: 'The user is asking for addition. I should use the `add` tool.' }, { type: 'Action', content: 'Calling tool `add` with args `{\'a\': 3, \'b\': 4}`' }, { type: 'Observation', content: 'Tool returned: 7' }, { type: 'Thought', content: 'I have the result. I will now provide the final answer.' }] },
-    { name: 'End', highlight: { start: 25, end: 25 }, explanation: 'The agent has the final answer and no more tools are needed, so the conditional edge routes to END.', graph: { agent: true, tools: true, start: true, conditional: true, loop: true }, execution: { end: true }, state: { messages: [{ role: 'user', content: 'What is 3 + 4?' }, { role: 'ai', tool_calls: [{ name: 'add', args: { a: 3, b: 4 } }] }, { role: 'tool', content: '7' }, { role: 'ai', content: 'The sum is 7.' }], llm_calls: 2 }, trace: [{ type: 'Info', content: 'Graph compiled successfully.' }, { type: 'Info', content: 'Invoking agent...' }, { type: 'Thought', content: 'The user is asking for addition. I should use the `add` tool.' }, { type: 'Action', content: 'Calling tool `add` with args `{\'a\': 3, \'b\': 4}`' }, { type: 'Observation', content: 'Tool returned: 7' }, { type: 'Thought', content: 'I have the result. I will now provide the final answer.' }, { type: 'Final Answer', content: 'The sum is 7.' }] },
+    { name: 'Re-run Agent Node', highlight: { start: 11, end: 14 }, explanation: 'The agent receives the tool\'s output ("7") and synthesizes the final answer.', graph: { agent: true, tools: true, start: true, conditional: true, loop: true }, execution: { agent: true, loop: true }, state: { messages: [{ role: 'user', content: 'What is 3 + 4?' }, { role: 'ai', tool_calls: [{ name: 'add', args: { a: 3, b: 4 } }] }, { role: 'tool', content: '7', tool_call_id: 'tool_call_123' }], llm_calls: 2 }, trace: [{ type: 'Info', content: 'Graph compiled successfully.' }, { type: 'Info', content: 'Invoking agent...' }, { type: 'Thought', content: 'The user is asking for addition. I should use the `add` tool.' }, { type: 'Action', content: 'Calling tool `add` with args `{\'a\': 3, \'b\': 4}`' }, { type: 'Observation', content: 'Tool returned: 7' }, { type: 'Thought', content: 'I have the result. I will now provide the final answer.' }] },
+    { name: 'End', highlight: { start: 25, end: 25 }, explanation: 'The agent has the final answer and no more tools are needed, so the conditional edge routes to END.', graph: { agent: true, tools: true, start: true, conditional: true, loop: true }, execution: { end: true }, state: { messages: [{ role: 'user', content: 'What is 3 + 4?' }, { role: 'ai', tool_calls: [{ name: 'add', args: { a: 3, b: 4 } }] }, { role: 'tool', content: '7', tool_call_id: 'tool_call_123' }, { role: 'ai', content: 'The sum is 7.' }], llm_calls: 2 }, trace: [{ type: 'Info', content: 'Graph compiled successfully.' }, { type: 'Info', content: 'Invoking agent...' }, { type: 'Thought', content: 'The user is asking for addition. I should use the `add` tool.' }, { type: 'Action', content: 'Calling tool `add` with args `{\'a\': 3, \'b\': 4}`' }, { type: 'Observation', content: 'Tool returned: 7' }, { type: 'Thought', content: 'I have the result. I will now provide the final answer.' }, { type: 'Final Answer', content: 'The sum is 7.' }] },
 ];
 
 const GraphNode = ({ x, y, label, visible, executing }: { x: number, y: number, label: string, visible?: boolean, executing?: boolean }) => (
@@ -119,6 +119,11 @@ const StateMessage = ({ msg }: { msg: any }) => {
                     <p>Args: {JSON.stringify(msg.tool_calls[0].args)}</p>
                 </div>
             )}
+            {msg.tool_call_id && (
+                 <div className="mt-1 pl-1 border-l-2 border-dashed ml-2 pl-2">
+                    <p>ID: {msg.tool_call_id}</p>
+                </div>
+            )}
         </div>
     )
 }
@@ -156,35 +161,75 @@ export const LangGraphQuickstartSimulator = () => {
                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     <div className="bg-background rounded-lg border p-2 text-xs font-mono h-[450px] overflow-auto">
                         <pre>
-                            {codeLines.map((line, i) => (
-                               <motion.div
-                                    key={i}
-                                    className={cn("px-2 transition-colors duration-300 rounded-md")}
-                                    animate={{ backgroundColor: currentStepData.highlight.start <= i + 1 && currentStepData.highlight.end >= i + 1 ? 'hsla(var(--primary), 0.2)' : 'transparent' }}
-                                >
-                                    <span className="text-right pr-4 text-muted-foreground/50 w-8 inline-block select-none">{i + 1}</span>
-                                    <span>{line}</span>
-                                </motion.div>
-                            ))}
+                            {codeLines.map((line, i) => {
+                                const isHighlighted = currentStepData.highlight.start <= i + 1 && currentStepData.highlight.end >= i + 1;
+                                return (
+                                    <div
+                                        key={i}
+                                        className={cn(
+                                            "px-2 transition-colors duration-300 rounded-md",
+                                            isHighlighted ? 'bg-primary/20' : 'transparent'
+                                        )}
+                                    >
+                                        <span className="text-right pr-4 text-muted-foreground/50 w-8 inline-block select-none">{i + 1}</span>
+                                        <span>{line}</span>
+                                    </div>
+                                );
+                            })}
                         </pre>
                     </div>
 
-                    <div className="bg-background rounded-lg border p-4 flex items-center justify-center">
-                        <svg viewBox="0 0 400 220" className="w-full h-full">
-                           <GraphNode x={50} y={40} label="START" visible={currentStepData.graph.start} executing={currentStepData.execution.start}/>
-                           <GraphNode x={150} y={110} label="agent" visible={currentStepData.graph.agent} executing={currentStepData.execution.agent} />
-                           <GraphNode x={350} y={110} label="tools" visible={currentStepData.graph.tools} executing={currentStepData.execution.tools} />
-                           <GraphNode x={250} y={190} label="END" visible={currentStepData.graph.conditional} executing={currentStepData.execution.end} />
-                           
-                           <GraphEdge d="M 50 60 V 95 C 50 100, 130 105, 130 110" visible={currentStepData.graph.start} executing={currentStepData.execution.start} />
-                           <GraphEdge d="M 190 110 H 310" visible={currentStepData.graph.conditional} executing={currentStepData.execution.tools} isConditional />
-                           <GraphEdge d="M 170 125 Q 200 150, 230 175" visible={currentStepData.graph.conditional} executing={currentStepData.execution.end} isConditional />
-                           <GraphEdge d="M 310 100 C 250 50, 190 60, 190 100" visible={currentStepData.graph.loop} executing={currentStepData.execution.loop} />
-                        </svg>
+                    <div className="flex flex-col gap-4">
+                        <div className="h-1/2 bg-background rounded-lg border p-4 flex items-center justify-center">
+                            <svg viewBox="0 0 400 220" className="w-full h-full">
+                               <GraphNode x={50} y={40} label="START" visible={currentStepData.graph.start} executing={currentStepData.execution.start}/>
+                               <GraphNode x={150} y={110} label="agent" visible={currentStepData.graph.agent} executing={currentStepData.execution.agent} />
+                               <GraphNode x={350} y={110} label="tools" visible={currentStepData.graph.tools} executing={currentStepData.execution.tools} />
+                               <GraphNode x={250} y={190} label="END" visible={currentStepData.graph.conditional} executing={currentStepData.execution.end} />
+                               
+                               <GraphEdge d="M 50 60 V 95 C 50 100, 130 105, 130 110" visible={currentStepData.graph.start} executing={currentStepData.execution.start} />
+                               <GraphEdge d="M 190 110 H 310" visible={currentStepData.graph.conditional} executing={currentStepData.execution.tools} isConditional />
+                               <GraphEdge d="M 170 125 Q 200 150, 230 175" visible={currentStepData.graph.conditional} executing={currentStepData.execution.end} isConditional />
+                               <GraphEdge d="M 310 100 C 250 50, 190 60, 190 100" visible={currentStepData.graph.loop} executing={currentStepData.execution.loop} />
+                            </svg>
+                        </div>
+                         <div className="h-1/2 flex flex-col">
+                            <h3 className="font-semibold text-center text-sm mb-2">Execution Trace</h3>
+                            <ScrollArea className="flex-grow w-full rounded-lg border p-2 bg-background" ref={traceRef}>
+                                <AnimatePresence>
+                                    {currentStepData.trace.map((item, i) => (
+                                        <motion.div
+                                            key={i}
+                                            layout
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            className={cn(
+                                                "p-2 border-l-4 rounded-r-md mb-2 text-xs",
+                                                item.type === 'Info' && 'border-gray-400 bg-gray-500/10',
+                                                item.type === 'Thought' && 'border-purple-400 bg-purple-500/10',
+                                                item.type === 'Action' && 'border-blue-400 bg-blue-500/10',
+                                                item.type === 'Observation' && 'border-amber-400 bg-amber-500/10',
+                                                item.type === 'Final Answer' && 'border-green-400 bg-green-500/10',
+                                            )}
+                                        >
+                                            <p className="font-bold flex items-center gap-2">
+                                            {item.type === 'Info' && <Info size={14}/>}
+                                            {item.type === 'Thought' && <BrainCircuit size={14}/>}
+                                            {item.type === 'Action' && <Wand2 size={14}/>}
+                                            {item.type === 'Observation' && <Eye size={14}/>}
+                                            {item.type === 'Final Answer' && <CheckCircle size={14}/>}
+                                            {item.type}
+                                            </p>
+                                            <p className="mt-1 pl-1">{item.content}</p>
+                                        </motion.div>
+                                    ))}
+                                </AnimatePresence>
+                            </ScrollArea>
+                        </div>
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div>
                      <div className="space-y-2 flex flex-col">
                         <h3 className="font-semibold text-center text-sm">Graph State</h3>
                          <ScrollArea className="h-48 w-full rounded-lg border p-2 bg-background" ref={stateRef}>
@@ -205,39 +250,6 @@ export const LangGraphQuickstartSimulator = () => {
                                     <StateMessage msg={msg} />
                                 </motion.div>
                             ))}
-                            </AnimatePresence>
-                        </ScrollArea>
-                    </div>
-                    <div className="space-y-2 flex flex-col">
-                        <h3 className="font-semibold text-center text-sm">Execution Trace</h3>
-                        <ScrollArea className="h-48 w-full rounded-lg border p-2 bg-background" ref={traceRef}>
-                            <AnimatePresence>
-                                {currentStepData.trace.map((item, i) => (
-                                    <motion.div
-                                        key={i}
-                                        layout
-                                        initial={{ opacity: 0, y: 10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        className={cn(
-                                            "p-2 border-l-4 rounded-r-md mb-2 text-xs",
-                                            item.type === 'Info' && 'border-gray-400 bg-gray-500/10',
-                                            item.type === 'Thought' && 'border-purple-400 bg-purple-500/10',
-                                            item.type === 'Action' && 'border-blue-400 bg-blue-500/10',
-                                            item.type === 'Observation' && 'border-amber-400 bg-amber-500/10',
-                                            item.type === 'Final Answer' && 'border-green-400 bg-green-500/10',
-                                        )}
-                                    >
-                                        <p className="font-bold flex items-center gap-2">
-                                        {item.type === 'Info' && <Info size={14}/>}
-                                        {item.type === 'Thought' && <BrainCircuit size={14}/>}
-                                        {item.type === 'Action' && <Wand2 size={14}/>}
-                                        {item.type === 'Observation' && <Eye size={14}/>}
-                                        {item.type === 'Final Answer' && <CheckCircle size={14}/>}
-                                        {item.type}
-                                        </p>
-                                        <p className="mt-1 pl-1">{item.content}</p>
-                                    </motion.div>
-                                ))}
                             </AnimatePresence>
                         </ScrollArea>
                     </div>
