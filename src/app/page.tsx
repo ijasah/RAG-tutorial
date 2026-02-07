@@ -342,7 +342,7 @@ const Index = () => {
             <Section id="langgraph-overview" title="LangGraph Overview" icon={<GitBranch className="h-8 w-8 text-primary" />}>
                  <div className="space-y-6">
                     <p className="text-muted-foreground text-lg">
-                        LangGraph is a low-level orchestration framework and runtime for building, managing, and deploying long-running, stateful agents. Before using LangGraph, we recommend you familiarize yourself with some of the components used to build agents, starting with models and tools.
+                        LangGraph is a powerful library for building agents that can reliably handle complex tasks. It gives you full control by letting you define an agent's workflow as a graph—a series of connected steps. LangGraph is very low-level, giving you precise control over the agent's orchestration.
                     </p>
                     <div id="lg-key-concepts">
                         <Card className="bg-muted/40">
@@ -393,7 +393,7 @@ const Index = () => {
                     <div id="lg-installation" className="pt-8 space-y-4">
                         <h3 className="text-xl font-semibold text-foreground">Installation</h3>
                         <p className="text-muted-foreground">
-                           While LangGraph orchestrates the agent's workflow, you still need a way to connect to LLMs and define tools. LangChain provides a rich library of integrations for this, making it a convenient choice to use alongside LangGraph.
+                           While LangGraph can be used on its own, it is often used with LangChain to easily access a wide variety of models and tools. For the examples in this tutorial, we will use LangChain to provide these components.
                         </p>
                         <Tabs defaultValue="pip" className="w-full">
                             <TabsList>
