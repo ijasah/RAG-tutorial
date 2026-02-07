@@ -56,7 +56,7 @@ import {
   Zap,
   Shield,
   Code,
-  Broadcast,
+  Radio,
 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -161,7 +161,7 @@ const sections = [
   { 
     id: 'streaming', 
     title: 'Streaming in LangGraph', 
-    icon: <Broadcast className="h-8 w-8 text-primary" />,
+    icon: <Radio className="h-8 w-8 text-primary" />,
     subsections: [
         { id: 'streaming-modes', title: 'Stream Modes Explained' },
         { id: 'streaming-simulation', title: 'Live Simulation' },
@@ -1175,7 +1175,7 @@ graph.compile(checkpointer=checkpointer)`} />
               </div>
             </Section>
 
-            <Section id="streaming" title="Streaming in LangGraph" icon={<Broadcast className="h-8 w-8 text-primary" />}>
+            <Section id="streaming" title="Streaming in LangGraph" icon={<Radio className="h-8 w-8 text-primary" />}>
               <div className="space-y-8">
                 <p className="text-muted-foreground text-lg">
                   LangGraph provides a powerful streaming system to surface real-time updates. By displaying output progressively, streaming significantly improves user experience, especially when dealing with LLM latency.

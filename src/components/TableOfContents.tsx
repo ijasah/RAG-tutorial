@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from '@/lib/utils';
-import { Bot, BrainCircuit, Users, GitBranch, ChevronRight, Rocket, Server, Workflow, Save, History, UserCheck, MemoryStick, ShieldCheck, Broadcast } from 'lucide-react';
+import { Bot, BrainCircuit, Users, GitBranch, ChevronRight, Rocket, Server, Workflow, Save, History, UserCheck, MemoryStick, ShieldCheck, Radio } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const sections = [
@@ -98,7 +98,7 @@ const sections = [
   { 
     id: 'streaming', 
     title: 'Streaming in LangGraph', 
-    icon: <Broadcast className="w-4 h-4" />,
+    icon: <Radio className="w-4 h-4" />,
     subsections: [
         { id: 'streaming-modes', title: 'Stream Modes Explained' },
         { id: 'streaming-simulation', title: 'Live Simulation' },
