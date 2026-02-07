@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Play, RefreshCw, ArrowRight, BrainCircuit, Database, GitBranch, MessageSquare, Sparkles, CheckCircle, Wand2, User, Info } from 'lucide-react';
+import { Play, RefreshCw, ArrowRight, BrainCircuit, Eye, Info, User, Wand2, CheckCircle, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const agentCode = `from typing import Annotated
 from typing_extensions import TypedDict
@@ -42,12 +43,11 @@ from langgraph.graph import StateGraph, START, END
 workflow = StateGraph(AgentState)
 workflow.add_node("agent", llm_call)
 workflow.add_node("tools", tool_node)
-
 workflow.add_edge(START, "agent")
 workflow.add_conditional_edges("agent", should_continue)
 workflow.add_edge("tools", "agent")
 
-# 5. Compile and run the agent
+# --- Compile and Run ---
 agent = workflow.compile()
 result = agent.invoke({"messages": [("user", "What is 3 + 4?")]})
 `;
@@ -122,9 +122,9 @@ const steps = [
             llm_calls: 2
         },
         trace: [
-            { type: 'Info', content: 'The graph definition is compiled into a runnable agent.' },
-            { type: 'Info', content: 'Agent is invoked with the initial user message.' },
-            { type: 'Thought', content: 'The user is asking for addition. I should use the `add` tool.' },
+             { type: 'Info', content: 'The graph definition is compiled into a runnable agent.' },
+             { type: 'Info', content: 'Agent is invoked with the initial user message.' },
+             { type: 'Thought', content: 'The user is asking for addition. I should use the `add` tool.' },
             { type: 'Action', content: 'Calling tool `add` with args `{\'a\': 3, \'b\': 4}`' },
             { type: 'Observation', content: 'Tool returned: 7' },
             { type: 'Thought', content: 'I have the result. I will now provide the final answer.' }
@@ -199,12 +199,20 @@ const StateMessage = ({ msg }: { msg: any }) => {
 
 export const LangGraphQuickstartSimulator = () => {
     const [step, setStep] = useState(0);
+    const endOfContentRef = useRef<HTMLDivElement>(null);
 
     const handleNext = () => setStep(s => Math.min(s + 1, steps.length - 1));
     const handleReset = () => setStep(0);
 
     const currentStepData = steps[step];
     const codeLines = agentCode.split('\n');
+
+    useEffect(() => {
+        setTimeout(() => {
+            endOfContentRef.current?.scrollIntoView({ behavior: 'smooth' });
+        }, 200);
+    }, [step]);
+
 
     return (
         <Card className="bg-muted/30 transition-all shadow-inner w-full overflow-hidden">
@@ -215,20 +223,19 @@ export const LangGraphQuickstartSimulator = () => {
                 </CardDescription>
             </CardHeader>
             <CardContent className="p-4 space-y-4">
-                <div className="grid grid-cols-1 xl:grid-cols-[2fr,1.5fr,1.5fr] gap-4 min-h-[400px]">
-                    {/* Code Column */}
-                    <div className="bg-background rounded-lg border p-2 text-xs font-mono overflow-auto h-[500px]">
-                        <pre>
-                            {codeLines.map((line, i) => (
-                                <CodeLine key={i} line={line} i={i} highlight={currentStepData.highlight} step={step} />
-                            ))}
-                        </pre>
-                    </div>
+                <div className="bg-background rounded-lg border p-2 text-xs font-mono overflow-auto max-h-[500px]">
+                    <pre>
+                        {codeLines.map((line, i) => (
+                            <CodeLine key={i} line={line} i={i} highlight={currentStepData.highlight} step={step} />
+                        ))}
+                    </pre>
+                </div>
 
-                    {/* State Column */}
-                    <div className="bg-background/30 rounded-lg border p-3">
-                         <h3 className="font-semibold text-center mb-2 text-primary">Graph State</h3>
-                         <div className="space-y-3">
+                <ScrollArea className="h-[450px] w-full rounded-lg border">
+                    <div className="p-4 grid grid-cols-1 xl:grid-cols-2 gap-4">
+                        {/* State Column */}
+                        <div className="space-y-2">
+                            <h3 className="font-semibold text-center mb-2 text-primary">Graph State</h3>
                              <div className="flex justify-between items-center bg-background border rounded p-2">
                                 <span className="font-semibold text-sm">llm_calls:</span>
                                 <Badge variant="secondary" className="text-lg">{currentStepData.state.llm_calls}</Badge>
@@ -248,13 +255,11 @@ export const LangGraphQuickstartSimulator = () => {
                                 ))}
                                 </AnimatePresence>
                              </div>
-                         </div>
-                    </div>
+                        </div>
 
-                    {/* Trace Column */}
-                    <div className="bg-background/30 rounded-lg border p-3">
-                         <h3 className="font-semibold text-center mb-2 text-primary">Execution Trace</h3>
-                         <div className="space-y-2 text-sm">
+                        {/* Trace Column */}
+                        <div className="space-y-2">
+                            <h3 className="font-semibold text-center mb-2 text-primary">Execution Trace</h3>
                             <AnimatePresence>
                                 {currentStepData.trace.map((item, i) => (
                                     <motion.div
@@ -283,9 +288,10 @@ export const LangGraphQuickstartSimulator = () => {
                                     </motion.div>
                                 ))}
                             </AnimatePresence>
-                         </div>
+                        </div>
                     </div>
-                </div>
+                    <div ref={endOfContentRef} />
+                </ScrollArea>
 
                 <div className="flex justify-center items-center gap-4 mt-4 pt-4 border-t">
                      <Button onClick={handleReset} variant="outline" size="sm" className="w-24" disabled={step === 0}>
