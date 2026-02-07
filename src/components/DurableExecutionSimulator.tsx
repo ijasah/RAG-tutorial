@@ -45,16 +45,11 @@ const SimulationBox = ({ title, code, isSolution = false }: { title: string, cod
 
     const getTime = async () => {
         setIsLoading(true);
-        try {
-            const response = await fetch("https://worldtimeapi.org/api/ip");
-            const data = await response.json();
-            return data.datetime;
-        } catch (error) {
-            console.error("Failed to fetch time:", error);
-            return new Date().toISOString();
-        } finally {
-            setIsLoading(false);
-        }
+        // Simulate network delay and return a local timestamp to avoid network errors.
+        await new Promise(resolve => setTimeout(resolve, 500));
+        const time = new Date().toISOString();
+        setIsLoading(false);
+        return time;
     };
     
     const handleRun = async () => {
