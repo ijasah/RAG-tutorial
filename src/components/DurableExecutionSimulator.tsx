@@ -9,6 +9,7 @@ import { CodeBlock } from '@/components/ui/code-block';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Play, RefreshCw, Zap, History, Server, Code, AlertTriangle, Check, Shield } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
 
 const problemCode = `import requests
 
