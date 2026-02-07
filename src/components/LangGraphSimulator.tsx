@@ -28,7 +28,7 @@ const FlowNode = ({ name, icon, status, description, result }: { name: string, i
             <p className="text-xs text-muted-foreground mt-1">{description}</p>
             <AnimatePresence>
             {result && (
-                <motion.div 
+                <motion.div
                     initial={{ opacity: 0, y: 5 }}
                     animate={{ opacity: 1, y: 0, transition: {delay: 0.3} }}
                     className="mt-2 text-xs text-left text-muted-foreground p-2 bg-background rounded-md border w-full"
@@ -64,24 +64,26 @@ export const LangGraphSimulator = () => {
             setStep(0);
             return;
         }
-        for (let i = 1; i <= 6; i++) {
-            setTimeout(() => setStep(i), i * 1500);
+        // Use a loop with timeouts to advance steps automatically
+        for (let i = 1; i <= 5; i++) {
+            setTimeout(() => setStep(i), (i -1) * 1800);
         }
     }
     
-    const isRunning = step > 0 && step < 6;
+    const isRunning = step > 0 && step < 5;
 
     const getStatus = (nodeStep: number, doneStep?: number): Status => {
-        if (step === nodeStep) return 'active';
-        if (step >= (doneStep || nodeStep + 1)) return 'complete';
+        const currentActiveStep = Math.floor(step);
+        if (currentActiveStep === nodeStep) return 'active';
+        if (currentActiveStep >= (doneStep || nodeStep + 1)) return 'complete';
         return 'inactive';
     }
 
     const descriptions = {
         input: step >= 1 ? "What is LangGraph?" : "",
-        agent1: step >= 2 ? "Agent decides to use the search tool." : "",
-        tools: step >= 3 ? "Search Result: LangGraph is a library for building stateful, multi-actor applications with LLMs..." : "",
-        agent2: step >= 4 ? "Agent decides it has enough info to answer." : "",
+        agent1: step === 2 ? "Agent decides to use the search tool." : "",
+        tools: step === 3 ? "Search Result: LangGraph is a library for building stateful, multi-actor applications with LLMs..." : "",
+        agent2: step === 4 ? "Agent decides it has enough info to answer." : "",
         output: step >= 5 ? "LangGraph is a powerful library for creating complex, stateful AI agents by defining workflows as a graph." : "",
     }
     
@@ -97,35 +99,51 @@ export const LangGraphSimulator = () => {
             </CardHeader>
             <CardContent className="space-y-6">
                 <div className="text-center">
-                     <Button onClick={handleSimulate} className="min-w-[120px]" disabled={isRunning}>
-                        {isRunning ? 'Running...' : (step === 0 ? <><Play className="mr-2" />Start Simulation</> : <><RefreshCw className="mr-2" />Re-run</>)}
+                     <Button onClick={handleSimulate} className="min-w-[150px]" disabled={isRunning}>
+                        {isRunning ? 'Executing...' : (step === 0 ? <><Play className="mr-2" />Start Execution</> : <><RefreshCw className="mr-2" />Re-run</>)}
                     </Button>
                 </div>
                 
                 <div className="flex flex-col items-center space-y-4">
+                    {/* Main execution path */}
                     <div className="flex items-center justify-center gap-4 w-full">
-                        <FlowNode name="User Input" icon={<User />} status={getStatus(1)} description="The initial request." result={descriptions.input}/>
+                        <FlowNode name="User Input" icon={<User />} status={getStatus(1, 2)} description="The initial request." result={descriptions.input}/>
                         <FlowArrow active={step >= 2} />
-                        <FlowNode name="Agent" icon={<Bot />} status={getStatus(2)} description="The agent reasons." result={descriptions.agent1} />
+                        <FlowNode name="Agent" icon={<Bot />} status={getStatus(2, 3)} description="The agent reasons about the input." result={descriptions.agent1} />
                         <FlowArrow active={step >= 3} />
-                        <FlowNode name="Tools" icon={<Search />} status={getStatus(3)} description="External tools are called." result={descriptions.tools} />
+                        <FlowNode name="Tools" icon={<Search />} status={getStatus(3, 4)} description="External tools are called for data." result={descriptions.tools} />
                     </div>
 
+                    {/* Loop back arrow */}
                     <AnimatePresence>
                     {step >= 4 && (
                         <motion.div 
                             initial={{opacity: 0, pathLength: 0}} 
                             animate={{opacity: 1, pathLength: 1}} 
-                            transition={{duration: 0.5}}
-                            className="w-full"
+                            transition={{duration: 0.8, ease: "easeInOut"}}
+                            className="w-full h-10"
                         >
                             <svg width="100%" height="40" viewBox="0 0 400 40">
-                                <path d="M 380 0 C 380 30, 20 30, 20 40" stroke="hsl(var(--border))" strokeWidth="2" fill="transparent" strokeDasharray="4 4" />
+                                <path 
+                                    d="M 380 5 C 380 35, 20 35, 20 5" 
+                                    stroke="hsl(var(--border))" 
+                                    strokeWidth="2" 
+                                    fill="transparent" 
+                                    strokeDasharray="5 5" 
+                                    markerStart="url(#arrow-start)"
+                                />
+                                <defs>
+                                    <marker id="arrow-start" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="4" markerHeight="4" orient="auto-start-reverse">
+                                        <path d="M 0 0 L 10 5 L 0 10 z" fill="hsl(var(--border))" />
+                                    </marker>
+                                </defs>
                             </svg>
+                            <p className="text-xs text-muted-foreground text-center -mt-4">Observation</p>
                         </motion.div>
                     )}
                     </AnimatePresence>
                     
+                    {/* Second part of the flow */}
                      <div className="flex items-center justify-center gap-4 w-full">
                         <FlowNode name="Agent" icon={<Bot />} status={getStatus(4, 5)} description="Agent reasons again with new data." result={descriptions.agent2} />
                         <FlowArrow active={step >= 5} />
