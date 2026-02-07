@@ -394,7 +394,7 @@ const Index = () => {
                     <div id="lg-installation" className="pt-8 space-y-4">
                         <h3 className="text-xl font-semibold text-foreground">Installation</h3>
                         <p className="text-muted-foreground">
-                           To build powerful agents, you first need the right tools. LangGraph is the core library for creating the agent's structure, and LangChain provides the essential building blocks like models and tool integrations.
+                           To build powerful agents, you first need the right tools. LangGraph is the core library for creating the agent's structure.
                         </p>
                         <Tabs defaultValue="pip" className="w-full">
                             <TabsList>
@@ -410,7 +410,7 @@ const Index = () => {
                         </Tabs>
 
                         <p className="text-muted-foreground">
-                            Next, install the core LangChain package to easily connect models and tools:
+                           While LangGraph can be used on its own, it works best with the rich ecosystem of model and tool integrations provided by the main LangChain library.
                         </p>
                         
                         <Tabs defaultValue="pip" className="w-full">
@@ -450,176 +450,11 @@ const Index = () => {
                   </AlertDescription>
                 </Alert>
 
-                <Tabs defaultValue="graph-api" className="w-full">
-                  <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="graph-api">Use the Graph API</TabsTrigger>
-                    <TabsTrigger value="functional-api">Use the Functional API</TabsTrigger>
-                  </TabsList>
-                  <TabsContent value="graph-api" className="pt-4">
-                    <div id="qs-graph-api" className="space-y-6">
-                      <div>
-                        <h4 className="text-xl font-semibold mb-2">1. Define tools and model</h4>
-                        <p className="text-muted-foreground text-sm mb-4">In this example, we'll use the Claude Sonnet 4.5 model and define tools for addition, multiplication, and division.</p>
-                        <CodeBlock code={`from langchain.tools import tool
-from langchain.chat_models import init_chat_model
-
-model = init_chat_model(
-    "claude-sonnet-4-5-20250929",
-    temperature=0
-)
-
-# Define tools
-@tool
-def multiply(a: int, b: int) -> int:
-    """Multiply \`a\` and \`b\`.
-
-    Args:
-        a: First int
-        b: Second int
-    """
-    return a * b
-
-@tool
-def add(a: int, b: int) -> int:
-    """Adds \`a\` and \`b\`.
-
-    Args:
-        a: First int
-        b: Second int
-    """
-    return a + b
-
-@tool
-def divide(a: int, b: int) -> float:
-    """Divide \`a\` and \`b\`.
-
-    Args:
-        a: First int
-        b: Second int
-    """
-    return a / b
-
-# Augment the LLM with tools
-tools = [add, multiply, divide]
-tools_by_name = {tool.name: tool for tool in tools}
-model_with_tools = model.bind_tools(tools)`} />
-                      </div>
-
-                      <div>
-                        <h4 className="text-xl font-semibold mb-2">2. Define state</h4>
-                        <p className="text-muted-foreground text-sm mb-4">The graph's state is used to store the messages and the number of LLM calls.</p>
-                        <Alert>
-                          <Lightbulb className="h-4 w-4" />
-                          <AlertTitle>Tip</AlertTitle>
-                          <AlertDescription>State in LangGraph persists throughout the agent's execution. The <code>Annotated</code> type with <code>operator.add</code> ensures that new messages are appended to the existing list rather than replacing it.</AlertDescription>
-                        </Alert>
-                        <CodeBlock code={`from langchain.messages import AnyMessage
-from typing_extensions import TypedDict, Annotated
-import operator
-
-class MessagesState(TypedDict):
-    messages: Annotated[list[AnyMessage], operator.add]
-    llm_calls: int`} />
-                      </div>
-                      
-                      <div>
-                        <h4 className="text-xl font-semibold mb-2">3. Define model node</h4>
-                        <p className="text-muted-foreground text-sm mb-4">The model node is used to call the LLM and decide whether to call a tool or not.</p>
-                        <CodeBlock code={`from langchain.messages import SystemMessage
-
-def llm_call(state: dict):
-    """LLM decides whether to call a tool or not"""
-
-    return {
-        "messages": [
-            model_with_tools.invoke(
-                [
-                    SystemMessage(
-                        content="You are a helpful assistant tasked with performing arithmetic on a set of inputs."
-                    )
-                ]
-                + state["messages"]
-            )
-        ],
-        "llm_calls": state.get('llm_calls', 0) + 1
-    }`} />
-                      </div>
-
-                      <div>
-                        <h4 className="text-xl font-semibold mb-2">4. Define tool node</h4>
-                        <p className="text-muted-foreground text-sm mb-4">The tool node is used to call the tools and return the results.</p>
-                        <CodeBlock code={`from langchain.messages import ToolMessage
-
-def tool_node(state: dict):
-    """Performs the tool call"""
-
-    result = []
-    for tool_call in state["messages"][-1].tool_calls:
-        tool = tools_by_name[tool_call["name"]]
-        observation = tool.invoke(tool_call["args"])
-        result.append(ToolMessage(content=observation, tool_call_id=tool_call["id"]))
-    return {"messages": result}`} />
-                      </div>
-
-                      <div>
-                        <h4 className="text-xl font-semibold mb-2">5. Define end logic</h4>
-                        <p className="text-muted-foreground text-sm mb-4">The conditional edge function is used to route to the tool node or end based upon whether the LLM made a tool call.</p>
-                        <CodeBlock code={`from typing import Literal
-from langgraph.graph import StateGraph, START, END
-
-def should_continue(state: MessagesState) -> Literal["tool_node", END]:
-    """Decide if we should continue the loop or stop based upon whether the LLM made a tool call"""
-
-    messages = state["messages"]
-    last_message = messages[-1]
-
-    # If the LLM makes a tool call, then perform an action
-    if last_message.tool_calls:
-        return "tool_node"
-
-    # Otherwise, we stop (reply to the user)
-    return END`} />
-                      </div>
-
-                      <div>
-                        <h4 className="text-xl font-semibold mb-2">6. Build and compile the agent</h4>
-                        <p className="text-muted-foreground text-sm mb-4">The agent is built using the <code>StateGraph</code> class and compiled using the <code>compile</code> method. After compiling, you can visualize the graph structure.</p>
-                        <CodeBlock code={`# Build workflow
-agent_builder = StateGraph(MessagesState)
-
-# Add nodes
-agent_builder.add_node("llm_call", llm_call)
-agent_builder.add_node("tool_node", tool_node)
-
-# Add edges to connect nodes
-agent_builder.add_edge(START, "llm_call")
-agent_builder.add_conditional_edges(
-    "llm_call",
-    should_continue,
-    ["tool_node", END]
-)
-agent_builder.add_edge("tool_node", "llm_call")
-
-# Compile the agent
-agent = agent_builder.compile()
-
-# Show the agent's graph
-from IPython.display import Image, display
-display(Image(agent.get_graph(xray=True).draw_mermaid_png()))
-
-# Invoke
-from langchain.messages import HumanMessage
-messages = [HumanMessage(content="Add 3 and 4.")]
-messages = agent.invoke({"messages": messages})
-for m in messages["messages"]:
-    m.pretty_print()`} />
-                      </div>
-
-                      <Accordion type="single" collapsible className="w-full">
-                        <AccordionItem value="item-1">
-                          <AccordionTrigger>Full code example</AccordionTrigger>
-                          <AccordionContent>
-                            <CodeBlock code={`from langchain.tools import tool
+                <Accordion type="single" collapsible className="w-full">
+                  <AccordionItem value="item-1">
+                    <AccordionTrigger>Full code example</AccordionTrigger>
+                    <AccordionContent>
+                      <CodeBlock code={`from langchain.tools import tool
 from langchain.chat_models import init_chat_model
 from langchain.messages import AnyMessage, SystemMessage, ToolMessage, HumanMessage
 from typing_extensions import TypedDict, Annotated
@@ -695,163 +530,9 @@ agent = agent_builder.compile()
 messages = [HumanMessage(content="Add 3 and 4.")]
 result = agent.invoke({"messages": messages})
 print(result)`}/>
-                          </AccordionContent>
-                        </AccordionItem>
-                      </Accordion>
-                    </div>
-                  </TabsContent>
-                  <TabsContent value="functional-api" className="pt-4">
-                     <div id="qs-functional-api" className="space-y-6">
-                        <div>
-                            <h4 className="text-xl font-semibold mb-2">1. Define tools and model</h4>
-                            <p className="text-muted-foreground text-sm mb-4">The setup is the same as the Graph API: we define our tools and bind them to the model.</p>
-                            <CodeBlock code={`from langchain.tools import tool
-from langchain.chat_models import init_chat_model
-from langgraph.graph import add_messages
-from langchain.messages import SystemMessage, HumanMessage, ToolCall
-from langchain_core.messages import BaseMessage
-from langgraph.func import entrypoint, task
-
-model = init_chat_model("claude-sonnet-4-5-20250929", temperature=0)
-
-# Define tools
-@tool
-def multiply(a: int, b: int) -> int:
-    """Multiply \`a\` and \`b\`."""
-    return a * b
-
-@tool
-def add(a: int, b: int) -> int:
-    """Adds \`a\` and \`b\`."""
-    return a + b
-
-@tool
-def divide(a: int, b: int) -> float:
-    """Divide \`a\` and \`b\`."""
-    return a / b
-
-tools = [add, multiply, divide]
-tools_by_name = {tool.name: tool for tool in tools}
-model_with_tools = model.bind_tools(tools)`} />
-                        </div>
-                        <div>
-                            <h4 className="text-xl font-semibold mb-2">2. Define model node</h4>
-                            <p className="text-muted-foreground text-sm mb-4">The <code>@task</code> decorator marks a function as an executable part of the agent.</p>
-                            <CodeBlock code={`@task
-def call_llm(messages: list[BaseMessage]):
-    """LLM decides whether to call a tool or not"""
-    return model_with_tools.invoke(
-        [
-            SystemMessage(content="You are a helpful assistant tasked with performing arithmetic on a set of inputs.")
-        ]
-        + messages
-    )`} />
-                        </div>
-                        <div>
-                            <h4 className="text-xl font-semibold mb-2">3. Define tool node</h4>
-                            <p className="text-muted-foreground text-sm mb-4">This task executes a tool call and returns the result.</p>
-                            <CodeBlock code={`@task
-def call_tool(tool_call: ToolCall):
-    """Performs the tool call"""
-    tool = tools_by_name[tool_call["name"]]
-    return tool.invoke(tool_call["args"])`} />
-                        </div>
-                        <div>
-                            <h4 className="text-xl font-semibold mb-2">4. Define agent</h4>
-                            <p className="text-muted-foreground text-sm mb-4">The <code>@entrypoint</code> decorator defines the main function. Instead of nodes and edges, you can use standard control flow (like a <code>while</code> loop).</p>
-                            <CodeBlock code={`@entrypoint
-def agent(messages: list[BaseMessage]):
-    model_response = call_llm(messages).result()
-
-    while True:
-        if not model_response.tool_calls:
-            break
-
-        # Execute tools
-        tool_result_futures = [
-            call_tool(tool_call) for tool_call in model_response.tool_calls
-        ]
-        tool_results = [fut.result() for fut in tool_result_futures]
-        messages = add_messages(messages, [model_response, *tool_results])
-        model_response = call_llm(messages).result()
-
-    messages = add_messages(messages, model_response)
-    return messages
-
-# Invoke
-messages = [HumanMessage(content="Add 3 and 4.")]
-for chunk in agent.stream(messages, stream_mode="updates"):
-    print(chunk)
-    print("\\n")`} />
-                        </div>
-                        <Accordion type="single" collapsible className="w-full">
-                        <AccordionItem value="item-1">
-                          <AccordionTrigger>Full code example</AccordionTrigger>
-                          <AccordionContent>
-                            <CodeBlock code={`from langchain.tools import tool
-from langchain.chat_models import init_chat_model
-from langgraph.graph import add_messages
-from langchain.messages import SystemMessage, HumanMessage, ToolCall
-from langchain_core.messages import BaseMessage
-from langgraph.func import entrypoint, task
-
-# 1. Define tools and model
-model = init_chat_model("claude-sonnet-4-5-20250929", temperature=0)
-
-@tool
-def multiply(a: int, b: int) -> int:
-    """Multiply \`a\` and \`b\`."""
-    return a * b
-
-@tool
-def add(a: int, b: int) -> int:
-    """Adds \`a\` and \`b\`."""
-    return a + b
-
-@tool
-def divide(a: int, b: int) -> float:
-    """Divide \`a\` and \`b\`."""
-    return a / b
-
-tools = [add, multiply, divide]
-tools_by_name = {tool.name: tool for tool in tools}
-model_with_tools = model.bind_tools(tools)
-
-# 2. Define model node
-@task
-def call_llm(messages: list[BaseMessage]):
-    return model_with_tools.invoke([SystemMessage(content="...")] + messages)
-
-# 3. Define tool node
-@task
-def call_tool(tool_call: ToolCall):
-    tool = tools_by_name[tool_call["name"]]
-    return tool.invoke(tool_call["args"])
-
-# 4. Define agent
-@entrypoint
-def agent(messages: list[BaseMessage]):
-    model_response = call_llm(messages).result()
-    while True:
-        if not model_response.tool_calls:
-            break
-        tool_result_futures = [call_tool(tc) for tc in model_response.tool_calls]
-        tool_results = [fut.result() for fut in tool_result_futures]
-        messages = add_messages(messages, [model_response, *tool_results])
-        model_response = call_llm(messages).result()
-    messages = add_messages(messages, model_response)
-    return messages
-
-# Invoke
-messages = [HumanMessage(content="Add 3 and 4.")]
-for chunk in agent.stream(messages, stream_mode="updates"):
-    print(chunk)`} />
-                          </AccordionContent>
-                        </AccordionItem>
-                      </Accordion>
-                     </div>
-                  </TabsContent>
-                </Tabs>
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
               </div>
             </Section>
 
