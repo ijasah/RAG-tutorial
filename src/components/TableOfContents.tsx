@@ -1,8 +1,7 @@
-
 "use client";
 
 import { cn } from '@/lib/utils';
-import { Bot, BrainCircuit, Users, ChevronRight } from 'lucide-react';
+import { Bot, BrainCircuit, Users, GitBranch, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const sections = [
@@ -36,6 +35,16 @@ const sections = [
         { id: 'multi-challenges', title: 'Challenges' },
     ]
   },
+  {
+    id: 'langgraph-overview',
+    title: 'LangGraph Overview',
+    icon: <GitBranch className="w-4 h-4" />,
+    subsections: [
+        { id: 'lg-core-components', title: 'Core Components' },
+        { id: 'lg-invocation', title: 'Invocation' },
+        { id: 'lg-advanced', title: 'Advanced Concepts' },
+    ]
+  }
 ];
 
 interface TableOfContentsProps {

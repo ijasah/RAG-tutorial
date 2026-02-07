@@ -9,6 +9,7 @@ import { AgentCoreComponents } from '@/components/AgentCoreComponents';
 import { ReActSimulator } from '@/components/ReActSimulator';
 import { MultiAgentSimulator } from '@/components/MultiAgentSimulator';
 import { AgentFrameworks } from '@/components/AgentFrameworks';
+import { LangGraphSimulator } from '@/components/LangGraphSimulator';
 
 
 import {
@@ -26,12 +27,21 @@ import {
   Sparkles,
   Rocket,
   ArrowRight,
-  ArrowLeft
+  ArrowLeft,
+  GitBranch,
+  Download,
+  Server,
+  Link as LinkIcon,
+  LineChart
 } from 'lucide-react';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { CodeBlock } from '@/components/ui/code-block';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const sections = [
   { 
@@ -64,6 +74,16 @@ const sections = [
         { id: 'multi-challenges', title: 'Challenges' },
     ]
   },
+  { 
+    id: 'langgraph-overview', 
+    title: 'LangGraph Agents', 
+    icon: <GitBranch className="h-8 w-8 text-primary" />,
+    subsections: [
+        { id: 'lg-core-components', title: 'Core Components' },
+        { id: 'lg-invocation', title: 'Invocation' },
+        { id: 'lg-advanced', title: 'Advanced Concepts' },
+    ]
+  },
 ];
 
 const allSectionIds = sections.flatMap(s => [s.id, ...(s.subsections ? s.subsections.map(sub => sub.id) : [])]);
@@ -78,6 +98,24 @@ agent = initialize_agent(tools, llm, agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION
 # Run query
 result = agent.run("What is the average age of a cat? Multiply by 4.")
 `;
+
+const EcosystemCard = ({ title, icon, href, children }: { title: string, icon: React.ReactNode, href: string, children: React.ReactNode }) => (
+    <a href={href} target="_blank" rel="noopener noreferrer" className="block group">
+        <Card className="h-full transition-all duration-300 group-hover:border-primary group-hover:shadow-lg group-hover:-translate-y-1">
+            <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                    {icon}
+                    {title}
+                    <ArrowRight className="w-4 h-4 text-muted-foreground transition-transform group-hover:translate-x-1" />
+                </CardTitle>
+            </CardHeader>
+            <CardContent>
+                <p className="text-sm text-muted-foreground">{children}</p>
+            </CardContent>
+        </Card>
+    </a>
+);
+
 
 const Index = () => {
   const [activeSection, setActiveSection] = useState(sections[0].id);
@@ -290,6 +328,44 @@ const Index = () => {
                   </div>
               </div>
             </Section>
+
+            <Section id="langgraph-overview" title="LangGraph Overview" icon={<GitBranch className="h-8 w-8 text-primary" />}>
+                 <div className="space-y-6">
+                    <p className="text-muted-foreground text-lg">
+                        Trusted by companies shaping the future of agents, LangGraph is a low-level orchestration framework and runtime for building, managing, and deploying long-running, stateful agents.
+                    </p>
+                    <LangGraphSimulator/>
+                     <div className="space-y-4">
+                        <h3 className="text-xl font-semibold text-foreground">Core Benefits</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                           <Card className="bg-muted/30"><CardHeader><CardTitle className="text-base">Durable Execution</CardTitle></CardHeader><CardContent><p className="text-sm text-muted-foreground">Build agents that persist through failures and can run for extended periods, resuming from where they left off.</p></CardContent></Card>
+                           <Card className="bg-muted/30"><CardHeader><CardTitle className="text-base">Human-in-the-loop</CardTitle></CardHeader><CardContent><p className="text-sm text-muted-foreground">Incorporate human oversight by inspecting and modifying agent state at any point.</p></CardContent></Card>
+                           <Card className="bg-muted/30"><CardHeader><CardTitle className="text-base">Comprehensive Memory</CardTitle></CardHeader><CardContent><p className="text-sm text-muted-foreground">Create stateful agents with both short-term working memory and long-term memory across sessions.</p></CardContent></Card>
+                           <Card className="bg-muted/30"><CardHeader><CardTitle className="text-base">Debugging with LangSmith</CardTitle></CardHeader><CardContent><p className="text-sm text-muted-foreground">Gain deep visibility into complex agent behavior with visualization tools that trace execution paths.</p></CardContent></Card>
+                        </div>
+                    </div>
+                    
+                    <div className="space-y-4">
+                        <h3 className="text-xl font-semibold text-foreground">LangGraph Ecosystem</h3>
+                        <div className="space-y-4">
+                            <EcosystemCard title="LangSmith" icon={<LineChart />} href="http://www.langchain.com/langsmith">
+                                Trace requests, evaluate outputs, and monitor deployments in one place.
+                            </EcosystemCard>
+                             <EcosystemCard title="LangSmith Agent Server" icon={<Server />} href="https://docs.langchain.com/langsmith/agent-server">
+                                Deploy and scale agents effortlessly with a purpose-built deployment platform for long running, stateful workflows.
+                            </EcosystemCard>
+                             <EcosystemCard title="LangChain" icon={<LinkIcon />} href="https://docs.langchain.com/oss/python/langchain/overview">
+                                Provides integrations and composable components to streamline LLM application development.
+                            </EcosystemCard>
+                        </div>
+                    </div>
+
+                    <p className="text-xs text-muted-foreground text-center pt-8">
+                        LangGraph is inspired by Pregel and Apache Beam, and its interface draws inspiration from NetworkX.
+                    </p>
+                 </div>
+            </Section>
+
           </main>
         </div>
       </div>
