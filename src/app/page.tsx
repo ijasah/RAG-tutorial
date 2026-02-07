@@ -394,7 +394,7 @@ const Index = () => {
                     <div id="lg-installation" className="pt-8 space-y-4">
                         <h3 className="text-xl font-semibold text-foreground">Installation</h3>
                         <p className="text-muted-foreground">
-                           While LangGraph can be used on its own, it is often used with LangChain to easily access a wide variety of models and tools. For the examples in this tutorial, we will use LangChain to provide these components.
+                           To build powerful agents, you first need the right tools. LangGraph is the core library for creating the agent's structure, and LangChain provides the essential building blocks like models and tool integrations.
                         </p>
                         <Tabs defaultValue="pip" className="w-full">
                             <TabsList>
@@ -410,7 +410,7 @@ const Index = () => {
                         </Tabs>
 
                         <p className="text-muted-foreground">
-                            To get started, you can install the core LangChain package:
+                            Next, install the core LangChain package to easily connect models and tools:
                         </p>
                         
                         <Tabs defaultValue="pip" className="w-full">
