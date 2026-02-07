@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from '@/lib/utils';
-import { Bot, BrainCircuit, Users, GitBranch, ChevronRight, Rocket } from 'lucide-react';
+import { Bot, BrainCircuit, Users, GitBranch, ChevronRight, Rocket, Server } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const sections = [
@@ -54,7 +54,20 @@ const sections = [
         { id: 'qs-graph-simulation', title: 'Graph API Simulation' },
         { id: 'qs-functional-api', title: 'Using the Functional API' },
     ]
-  }
+  },
+  { 
+    id: 'langgraph-server', 
+    title: 'Run a Local Server', 
+    icon: <Server className="w-4 h-4" />,
+    subsections: [
+        { id: 'server-install-cli', title: 'Install CLI' },
+        { id: 'server-create-app', title: 'Create App' },
+        { id: 'server-dependencies', title: 'Install Dependencies' },
+        { id: 'server-env', title: 'Configure Environment' },
+        { id: 'server-launch', title: 'Launch Server' },
+        { id: 'server-test', title: 'Test Application' },
+    ]
+  },
 ];
 
 interface TableOfContentsProps {

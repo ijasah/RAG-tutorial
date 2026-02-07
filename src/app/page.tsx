@@ -95,6 +95,19 @@ const sections = [
         { id: 'qs-functional-api', title: 'Using the Functional API' },
     ]
   },
+  { 
+    id: 'langgraph-server', 
+    title: 'Run a Local Server', 
+    icon: <Server className="h-8 w-8 text-primary" />,
+    subsections: [
+        { id: 'server-install-cli', title: 'Install CLI' },
+        { id: 'server-create-app', title: 'Create App' },
+        { id: 'server-dependencies', title: 'Install Dependencies' },
+        { id: 'server-env', title: 'Configure Environment' },
+        { id: 'server-launch', title: 'Launch Server' },
+        { id: 'server-test', title: 'Test Application' },
+    ]
+  },
 ];
 
 const allSectionIds = sections.flatMap(s => [s.id, ...(s.subsections ? s.subsections.map(sub => sub.id) : [])]);
@@ -539,6 +552,81 @@ for chunk in agent.stream(messages, stream_mode="updates"):
                     </Accordion>
                 </div>
 
+              </div>
+            </Section>
+
+            <Section id="langgraph-server" title="Run a Local Server" icon={<Server className="h-8 w-8 text-primary" />}>
+              <div className="space-y-6">
+                  <p className="text-muted-foreground text-lg">
+                      This guide shows you how to run a LangGraph application locally using the `langgraph-cli`.
+                  </p>
+                  
+                  <div id="server-install-cli" className="pt-8">
+                      <h3 className="text-xl font-semibold mb-2">1. Install the LangGraph CLI</h3>
+                      <p className="text-muted-foreground mb-4">First, install the command-line interface. Python 3.11 or higher is required.</p>
+                      <CodeBlock code={'pip install -U "langgraph-cli[inmem]"'} />
+                  </div>
+
+                  <div id="server-create-app" className="pt-8">
+                      <h3 className="text-xl font-semibold mb-2">2. Create a New Application</h3>
+                      <p className="text-muted-foreground mb-4">Create a new project from a template. This command sets up a starter application for you.</p>
+                      <CodeBlock code={'langgraph new path/to/your/app'} />
+                  </div>
+
+                  <div id="server-dependencies" className="pt-8">
+                      <h3 className="text-xl font-semibold mb-2">3. Install Dependencies</h3>
+                      <p className="text-muted-foreground mb-4">Navigate into your new app's directory and install the required packages.</p>
+                      <CodeBlock code={'cd path/to/your/app\npip install -e .'} />
+                  </div>
+
+                  <div id="server-env" className="pt-8">
+                      <h3 className="text-xl font-semibold mb-2">4. Configure Environment</h3>
+                      <p className="text-muted-foreground mb-4">Create a `.env` file and add your LangSmith API key. You can get one for free from the LangSmith settings page.</p>
+                      <CodeBlock code={'LANGSMITH_API_KEY=lsv2...'} />
+                  </div>
+
+                  <div id="server-launch" className="pt-8">
+                      <h3 className="text-xl font-semibold mb-2">5. Launch the Development Server</h3>
+                      <p className="text-muted-foreground mb-4">Start the local agent server. This will host your LangGraph application.</p>
+                      <CodeBlock code={'langgraph dev'} />
+                      <p className="text-muted-foreground mt-4 mb-4">You will see output with links to the API and LangSmith Studio:</p>
+                      <CodeBlock code={
+`>    - 🚀 API: http://127.0.0.1:2024
+>    - 🎨 Studio UI: https://smith.langchain.com/studio/?baseUrl=http://127.0.0.1:2024
+>    - 📚 API Docs: http://127.0.0.1:2024/docs`
+                      } />
+                  </div>
+
+                  <div id="server-test" className="pt-8">
+                      <h3 className="text-xl font-semibold mb-2">6. Test Your Application</h3>
+                      <p className="text-muted-foreground mb-4">Use the LangSmith Studio UI link from the previous step to visualize, debug, and interact with your running agent.</p>
+                      <Card>
+                          <CardHeader>
+                              <CardTitle>Test with the Python SDK</CardTitle>
+                              <CardDescription>You can also interact with your local server programmatically.</CardDescription>
+                          </CardHeader>
+                          <CardContent>
+                              <CodeBlock code={
+`from langgraph_sdk import get_client
+import asyncio
+
+client = get_client(url="http://localhost:2024")
+
+async def main():
+    async for chunk in client.runs.stream(
+        None,  # Threadless run
+        "agent", # Assistant name
+        input={
+            "messages": [{"role": "human", "content": "What is LangGraph?"}],
+        },
+    ):
+        print(chunk.data)
+
+asyncio.run(main())`
+                              } />
+                          </CardContent>
+                      </Card>
+                  </div>
               </div>
             </Section>
 
