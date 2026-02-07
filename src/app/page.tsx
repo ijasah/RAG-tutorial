@@ -11,6 +11,7 @@ import { MultiAgentSimulator } from '@/components/MultiAgentSimulator';
 import { AgentFrameworks } from '@/components/AgentFrameworks';
 import { LangGraphQuickstartSimulator } from '@/components/LangGraphQuickstartSimulator';
 import { ThinkingInLangGraph } from '@/components/ThinkingInLangGraph';
+import { PersistenceSimulator } from '@/components/PersistenceSimulator';
 
 
 import {
@@ -35,7 +36,8 @@ import {
   Link as LinkIcon,
   LineChart,
   Lightbulb,
-  Workflow
+  Workflow,
+  Save,
 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -114,6 +116,11 @@ const sections = [
         { id: 'server-launch', title: 'Launch Server' },
         { id: 'server-test', title: 'Test Application' },
     ]
+  },
+    { 
+    id: 'langgraph-persistence', 
+    title: 'LangGraph Persistence', 
+    icon: <Save className="h-8 w-8 text-primary" />,
   },
 ];
 
@@ -647,6 +654,10 @@ asyncio.run(main())`
                     </div>
                   </div>
               </div>
+            </Section>
+
+            <Section id="langgraph-persistence" title="LangGraph Persistence" icon={<Save className="h-8 w-8 text-primary" />}>
+              <PersistenceSimulator />
             </Section>
 
           </main>

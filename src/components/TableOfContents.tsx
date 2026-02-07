@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from '@/lib/utils';
-import { Bot, BrainCircuit, Users, GitBranch, ChevronRight, Rocket, Server, Workflow } from 'lucide-react';
+import { Bot, BrainCircuit, Users, GitBranch, ChevronRight, Rocket, Server, Workflow, Save } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const sections = [
@@ -72,6 +72,11 @@ const sections = [
         { id: 'server-launch', title: 'Launch Server' },
         { id: 'server-test', title: 'Test Application' },
     ]
+  },
+  { 
+    id: 'langgraph-persistence', 
+    title: 'LangGraph Persistence', 
+    icon: <Save className="w-4 h-4" />,
   },
 ];
 
