@@ -14,6 +14,8 @@ import { ThinkingInLangGraph } from '@/components/ThinkingInLangGraph';
 import { PersistenceSimulator } from '@/components/PersistenceSimulator';
 import { SerializationVisual } from '@/components/SerializationVisual';
 import { DurableExecutionSimulator } from '@/components/DurableExecutionSimulator';
+import { StreamingSimulator } from '@/components/StreamingSimulator';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 
 import {
@@ -53,7 +55,8 @@ import {
   Layers,
   Zap,
   Shield,
-  Code
+  Code,
+  Broadcast,
 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -155,6 +158,15 @@ const sections = [
         { id: 'durable-modes', title: 'Durability Modes' },
     ]
   },
+  { 
+    id: 'streaming', 
+    title: 'Streaming in LangGraph', 
+    icon: <Broadcast className="h-8 w-8 text-primary" />,
+    subsections: [
+        { id: 'streaming-modes', title: 'Stream Modes Explained' },
+        { id: 'streaming-simulation', title: 'Live Simulation' },
+    ]
+  },
 ];
 
 const persistenceCode = `from langgraph.graph import StateGraph, START, END
@@ -222,6 +234,14 @@ const EcosystemCard = ({ title, icon, href, children }: { title: string, icon: R
         </Card>
     </a>
 );
+
+const streamModesData = [
+  { mode: '`values`', description: 'Streams the full value of the state after each step of the graph.' },
+  { mode: '`updates`', description: 'Streams only the updates to the state after each step of the graph.' },
+  { mode: '`messages`', description: 'Streams token-by-token output from LLMs within the graph.' },
+  { mode: '`custom`', description: 'Streams any custom data that you manually emit from within your nodes.' },
+  { mode: '`debug`', description: 'Streams as much information as possible for deep debugging.' },
+];
 
 
 const Index = () => {
@@ -1117,7 +1137,7 @@ graph.compile(checkpointer=checkpointer)`} />
                                 <CardContent>
                                   <CodeBlock code={`graph.stream(
     {"input": "test"},
-    config={"durability": "sync"}
+    {"durability": "sync"}
 )`} />
                                 </CardContent>
                             </Card>
@@ -1131,7 +1151,7 @@ graph.compile(checkpointer=checkpointer)`} />
                                 <CardContent>
                                   <CodeBlock code={`graph.stream(
     {"input": "test"},
-    config={"durability": "async"}
+    {"durability": "async"}
 )`} />
                                 </CardContent>
                              </Card>
@@ -1145,12 +1165,45 @@ graph.compile(checkpointer=checkpointer)`} />
                                 <CardContent>
                                   <CodeBlock code={`graph.stream(
     {"input": "test"},
-    config={"durability": "exit"}
+    {"durability": "exit"}
 )`} />
                                 </CardContent>
                             </Card>
                         </TabsContent>
                     </Tabs>
+                </div>
+              </div>
+            </Section>
+
+            <Section id="streaming" title="Streaming in LangGraph" icon={<Broadcast className="h-8 w-8 text-primary" />}>
+              <div className="space-y-8">
+                <p className="text-muted-foreground text-lg">
+                  LangGraph provides a powerful streaming system to surface real-time updates. By displaying output progressively, streaming significantly improves user experience, especially when dealing with LLM latency.
+                </p>
+                <div id="streaming-modes">
+                  <h3 className="text-xl font-semibold mb-4 text-foreground">Stream Modes Explained</h3>
+                   <Card>
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Mode</TableHead>
+                            <TableHead>Description</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {streamModesData.map((item) => (
+                            <TableRow key={item.mode}>
+                              <TableCell className="font-mono font-semibold">{item.mode}</TableCell>
+                              <TableCell>{item.description}</TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                   </Card>
+                </div>
+                <div id="streaming-simulation">
+                  <h3 className="text-xl font-semibold text-center my-6 text-foreground">Live Streaming Simulation</h3>
+                  <StreamingSimulator />
                 </div>
               </div>
             </Section>

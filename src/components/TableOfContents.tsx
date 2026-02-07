@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from '@/lib/utils';
-import { Bot, BrainCircuit, Users, GitBranch, ChevronRight, Rocket, Server, Workflow, Save, History, UserCheck, MemoryStick, ShieldCheck } from 'lucide-react';
+import { Bot, BrainCircuit, Users, GitBranch, ChevronRight, Rocket, Server, Workflow, Save, History, UserCheck, MemoryStick, ShieldCheck, Broadcast } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const sections = [
@@ -93,7 +93,15 @@ const sections = [
         { id: 'durable-what-is', title: 'What is Durability?' },
         { id: 'durable-simulation', title: 'Interactive Simulation' },
         { id: 'durable-modes', title: 'Durability Modes' },
-        { id: 'durable-tasks-in-nodes', title: 'Using @task in Nodes' },
+    ]
+  },
+  { 
+    id: 'streaming', 
+    title: 'Streaming in LangGraph', 
+    icon: <Broadcast className="w-4 h-4" />,
+    subsections: [
+        { id: 'streaming-modes', title: 'Stream Modes Explained' },
+        { id: 'streaming-simulation', title: 'Live Simulation' },
     ]
   },
 ];
