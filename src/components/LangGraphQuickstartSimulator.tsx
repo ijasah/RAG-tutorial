@@ -90,7 +90,7 @@ const steps = [
     { name: 'Run Conditional Edge (End)', highlight: { start: 23, end: 27 }, explanation: 'The `should_continue` function runs again. The last message has no tool calls, so the graph routes to `END`. The execution is complete.', graph: { init: true, agent: true, tools: true, start: true, conditional: true, loop: true }, execution: { agentToEnd: true, agent:true, loop: true, tools: true, agentToTools: true, start: true }, state: { messages: [{ role: 'user', content: 'What is 3 + 4?' }, { role: 'ai', tool_calls: [{ name: 'add', args: { a: 3, b: 4 } }] }, { role: 'tool', content: '7', tool_call_id: 'tool_call_123' }, { role: 'ai', content: 'The sum is 7.' }], llm_calls: 2 }, trace: [{ type: 'Info', content: 'Graph compiled successfully.' }, { type: 'Info', content: 'Invoking agent...' }, { type: 'Thought', content: 'The user is asking for addition. I should use the `add` tool.' }, { type: 'Action', content: 'Calling tool `add` with args `{\'a\': 3, \'b\': 4}`' }, { type: 'Observation', content: 'Tool returned: 7' }, { type: 'Thought', content: 'I have the result. I will now provide the final answer.' }, { type: 'Final Answer', content: 'The sum is 7.' }] },
 ];
 
-const GraphNode = ({ label, visible, executing, isEnd }: { label: string, visible?: boolean, executing?: boolean, isEnd?: boolean }) => (
+const GraphNode = ({ label, visible, executing, isEnd, className }: { label: string, visible?: boolean, executing?: boolean, isEnd?: boolean, className?: string }) => (
     <AnimatePresence>
         {visible && (
             <motion.div
@@ -100,7 +100,8 @@ const GraphNode = ({ label, visible, executing, isEnd }: { label: string, visibl
                     "bg-card",
                     executing && !isEnd && "bg-primary/20 border-primary shadow-lg",
                     executing && isEnd && "bg-green-500/20 border-green-500 shadow-lg",
-                    !executing && "border-border"
+                    !executing && "border-border",
+                    className
                 )}
             >
                 {label}
@@ -109,14 +110,15 @@ const GraphNode = ({ label, visible, executing, isEnd }: { label: string, visibl
     </AnimatePresence>
 );
 
-const GraphArrow = ({ visible, executing, children, className }: { visible?: boolean, executing?: boolean, children: React.ReactNode, className?: string }) => (
+const GraphArrow = ({ visible, executing, children, className, label, labelClassName }: { visible?: boolean, executing?: boolean, children: React.ReactNode, className?: string, label?: string, labelClassName?: string }) => (
     <AnimatePresence>
         {visible && (
             <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className={cn('transition-colors text-muted-foreground/50', executing ? 'text-primary' : 'text-muted-foreground/50', className)}
+                className={cn('flex flex-col items-center justify-center transition-colors text-muted-foreground/50', executing ? 'text-primary' : 'text-muted-foreground/50', className)}
             >
+                {label && <p className={cn("text-xs font-semibold", labelClassName)}>{label}</p>}
                 {children}
             </motion.div>
         )}
@@ -234,45 +236,40 @@ export const LangGraphQuickstartSimulator = () => {
 
                     <div className="flex flex-col gap-4">
                         {/* Graph Visualization */}
-                        <div className="h-48 bg-background rounded-lg border p-4 flex flex-col justify-center items-center relative">
-                             <div className="relative w-full h-full">
+                        <div className="h-48 bg-background rounded-lg border p-4 grid grid-cols-5 grid-rows-3 gap-y-1 items-center">
+                            {/* Row 1 */}
+                            <div className="col-start-3 flex justify-center">
+                                <GraphNode label="agent" visible={currentStepData.graph.agent} executing={currentStepData.execution.agent} />
+                            </div>
 
-                                {/* Nodes */}
-                                <div className="absolute top-1/2 -translate-y-1/2 left-[5%]">
-                                    <GraphNode label="START" visible={currentStepData.graph.start} executing={currentStepData.execution.start}/>
-                                </div>
-                                <div className="absolute top-[10%] left-1/2 -translate-x-1/2">
-                                     <GraphNode label="agent" visible={currentStepData.graph.agent} executing={currentStepData.execution.agent} />
-                                </div>
-                                <div className="absolute top-1/2 -translate-y-1/2 right-[5%]">
-                                    <GraphNode label="END" visible={currentStepData.graph.conditional} executing={currentStepData.execution.agentToEnd} isEnd/>
-                                </div>
-                                <div className="absolute top-[70%] left-1/2 -translate-x-1/2">
-                                     <GraphNode label="tools" visible={currentStepData.graph.tools} executing={currentStepData.execution.tools} />
-                                </div>
-
-                                {/* Edges */}
-                                <GraphArrow visible={currentStepData.graph.start} executing={currentStepData.execution.start} className="absolute left-[26%] top-[20%]">
-                                    <ArrowRight className="w-6 h-6"/>
-                                    <p className="absolute -top-5 left-1/2 -translate-x-1/2 text-xs font-semibold">agent</p>
-                                </GraphArrow>
-
-                                <GraphArrow visible={currentStepData.graph.conditional} executing={currentStepData.execution.agentToTools} className="absolute left-1/2 -translate-x-1/2 top-[32%]">
+                            {/* Row 2 */}
+                            <div className="col-start-1 flex justify-center">
+                               <GraphNode label="START" visible={currentStepData.graph.start} executing={currentStepData.execution.start}/>
+                            </div>
+                            <GraphArrow visible={currentStepData.graph.start} executing={currentStepData.execution.start} label="agent" labelClassName="mb-1">
+                                <ArrowRight className="w-6 h-6"/>
+                            </GraphArrow>
+                            <div className="flex flex-col items-center justify-center h-full">
+                                <GraphArrow visible={currentStepData.graph.conditional} executing={currentStepData.execution.agentToTools} label="tools" labelClassName="mb-1">
                                     <ArrowDown className="w-6 h-6"/>
-                                    <p className="absolute -right-2 top-1/2 -translate-y-1/2 text-xs font-semibold">tools</p>
                                 </GraphArrow>
-
-                                 <GraphArrow visible={currentStepData.graph.conditional} executing={currentStepData.execution.agentToEnd} className="absolute right-[26%] top-[20%]">
-                                     <ArrowRight className="w-6 h-6"/>
-                                     <p className="absolute -top-5 left-1/2 -translate-x-1/2 text-xs font-semibold">end</p>
-                                </GraphArrow>
-
-                                <GraphArrow visible={currentStepData.graph.loop} executing={currentStepData.execution.loop} className="absolute left-[40%] bottom-[35%]">
-                                    <CornerUpLeft className="w-6 h-6" />
-                                     <p className="absolute -left-8 top-0 text-xs font-semibold">agent</p>
+                                <GraphArrow visible={currentStepData.graph.loop} executing={currentStepData.execution.loop} label="agent" labelClassName="mt-1 order-2">
+                                    <CornerUpLeft className="w-6 h-6 order-1" />
                                 </GraphArrow>
                             </div>
+                            <GraphArrow visible={currentStepData.graph.conditional} executing={currentStepData.execution.agentToEnd} label="end" labelClassName="mb-1">
+                                <ArrowRight className="w-6 h-6"/>
+                            </GraphArrow>
+                             <div className="col-start-5 flex justify-center">
+                                <GraphNode label="END" visible={currentStepData.graph.conditional} executing={currentStepData.execution.agentToEnd} isEnd/>
+                            </div>
+
+                            {/* Row 3 */}
+                            <div className="col-start-3 flex justify-center">
+                                <GraphNode label="tools" visible={currentStepData.graph.tools} executing={currentStepData.execution.tools} />
+                            </div>
                         </div>
+
 
                          <div className="flex-grow grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="h-[280px] flex flex-col">
