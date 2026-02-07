@@ -464,8 +464,8 @@ const Index = () => {
             </Section>
 
             <Section id="thinking-in-langgraph" title="Thinking in LangGraph" icon={<Workflow className="h-8 w-8 text-primary" />}>
-                <p className="text-muted-foreground text-center">
-                    This interactive simulation walks you through the 5 core steps of building a stateful agent with LangGraph. Use the accordion on the right to navigate through the process and see how the agent's workflow diagram on the left changes.
+                <p className="text-muted-foreground text-center mb-8">
+                    This interactive simulation walks you through the 5 core steps of building a stateful agent with LangGraph. As you open each step in the accordion, the diagram on the left will highlight the relevant parts, and a concise explanation with key insights will appear. This walkthrough makes the core concepts of nodes, state, and wiring a graph incredibly clear and easy to understand.
                 </p>
                 <ThinkingInLangGraph />
             </Section>
@@ -657,6 +657,11 @@ asyncio.run(main())`
             </Section>
 
             <Section id="langgraph-persistence" title="LangGraph Persistence" icon={<Save className="h-8 w-8 text-primary" />}>
+              <p className="text-muted-foreground text-center mb-8">
+                LangGraph's persistence feature is what gives agents their power. It allows an agent to automatically save its work at each step. This is done through **Threads** (a single conversation) and **Checkpoints** (a snapshot of memory). This stateful nature enables powerful features like human-in-the-loop approvals, long-term memory, and resuming tasks after interruptions.
+                <br/><br/>
+                This simulation demonstrates how new threads are created for each run, and how checkpoints are saved along the way. Click on any checkpoint to inspect the agent's memory at that exact moment.
+              </p>
               <PersistenceSimulator />
             </Section>
 
@@ -688,3 +693,4 @@ asyncio.run(main())`
 };
 
 export default Index;
+ 
