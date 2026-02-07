@@ -13,6 +13,7 @@ import { LangGraphQuickstartSimulator } from '@/components/LangGraphQuickstartSi
 import { ThinkingInLangGraph } from '@/components/ThinkingInLangGraph';
 import { PersistenceSimulator } from '@/components/PersistenceSimulator';
 import { SerializationVisual } from '@/components/SerializationVisual';
+import { DurableExecutionSimulator } from '@/components/DurableExecutionSimulator';
 
 
 import {
@@ -50,6 +51,9 @@ import {
   Binary,
   ArrowDown,
   Layers,
+  Zap,
+  Shield,
+  Code
 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -139,6 +143,17 @@ const sections = [
         { id: 'persistence-memory-store', title: 'Memory Store' },
         { id: 'persistence-capabilities', title: 'Key Capabilities' },
         { id: 'persistence-implementation', title: 'Implementation' },
+    ]
+  },
+  {
+    id: 'durable-execution',
+    title: 'Durable Execution',
+    icon: <ShieldCheck className="h-8 w-8 text-primary" />,
+    subsections: [
+        { id: 'durable-what-is', title: 'What is Durability?' },
+        { id: 'durable-simulation', title: 'Interactive Simulation' },
+        { id: 'durable-modes', title: 'Durability Modes' },
+        { id: 'durable-tasks-in-nodes', title: 'Using @task in Nodes' },
     ]
   },
 ];
@@ -1062,6 +1077,99 @@ graph.compile(checkpointer=checkpointer)`} />
               </div>
             </Section>
 
+            <Section id="durable-execution" title="Durable Execution" icon={<ShieldCheck className="h-8 w-8 text-primary" />}>
+              <div className="space-y-8">
+                <div id="durable-what-is">
+                    <p className="text-muted-foreground text-lg">
+                        **Durable execution** allows a workflow to save its progress, so it can be paused and resumed later. This is essential for long-running tasks or workflows that require human approval. If a process crashes, you can restart it from the last saved step without re-running everything.
+                    </p>
+                    <Alert className="mt-4">
+                        <Shield className="h-4 w-4" />
+                        <AlertTitle>Already Enabled!</AlertTitle>
+                        <AlertDescription>
+                        If you're using a checkpointer, you already have durable execution enabled. The key is to design your workflow correctly to take advantage of it.
+                        </AlertDescription>
+                    </Alert>
+                </div>
+
+                <div id="durable-simulation">
+                    <h3 className="text-xl font-semibold text-foreground text-center">Interactive Simulation: Consistent Replay</h3>
+                     <p className="text-muted-foreground text-center mb-4">
+                        This simulation shows why you must wrap operations with side-effects (like API calls) in a `@task`. When a workflow resumes, LangGraph **replays** the steps. Without `@task`, the API call runs again, leading to inconsistent results. With `@task`, the result from the first run is loaded from the checkpoint, ensuring consistency.
+                    </p>
+                    <DurableExecutionSimulator />
+                </div>
+                
+                <div id="durable-modes">
+                    <h3 className="text-xl font-semibold text-foreground mb-4">Durability Modes</h3>
+                    <p className="text-muted-foreground mb-4">You can choose how often to save progress, balancing performance and safety.</p>
+                    <Tabs defaultValue="sync">
+                        <TabsList className="grid grid-cols-3 w-full">
+                            <TabsTrigger value="sync">Sync</TabsTrigger>
+                            <TabsTrigger value="async">Async</TabsTrigger>
+                            <TabsTrigger value="exit">Exit</TabsTrigger>
+                        </TabsList>
+                        <TabsContent value="sync">
+                             <Card className="bg-muted/30">
+                                <CardHeader>
+                                    <CardTitle>sync</CardTitle>
+                                    <CardDescription>Saves state before each step. Safest, but slowest.</CardDescription>
+                                </CardHeader>
+                            </Card>
+                        </TabsContent>
+                        <TabsContent value="async">
+                             <Card className="bg-muted/30">
+                                <CardHeader>
+                                    <CardTitle>async</CardTitle>
+                                    <CardDescription>Saves state in the background. Good balance of safety and speed.</CardDescription>
+                                </CardHeader>
+                            </Card>
+                        </TabsContent>
+                        <TabsContent value="exit">
+                             <Card className="bg-muted/30">
+                                <CardHeader>
+                                    <CardTitle>exit</CardTitle>
+                                    <CardDescription>Only saves at the very end. Fastest, but no recovery from mid-run crashes.</CardDescription>
+                                </CardHeader>
+                            </Card>
+                        </TabsContent>
+                    </Tabs>
+                </div>
+
+                <div id="durable-tasks-in-nodes">
+                    <h3 className="text-xl font-semibold text-foreground mb-4">Using @task in Nodes</h3>
+                    <p className="text-muted-foreground mb-4">If a node performs multiple actions with side effects, wrap each one in a `@task` to ensure they are not re-executed on resume.</p>
+                    <Tabs defaultValue="before">
+                        <TabsList className="grid grid-cols-2 w-full">
+                            <TabsTrigger value="before">Before</TabsTrigger>
+                            <TabsTrigger value="after">After (with @task)</TabsTrigger>
+                        </TabsList>
+                        <TabsContent value="before">
+                           <CodeBlock code={`# The API call is a side-effect inside the node
+def call_api(state: State):
+    # This will be re-run on resume
+    result = requests.get(state['url']).text
+    return {"result": result}`} />
+                        </TabsContent>
+                        <TabsContent value="after">
+                           <CodeBlock code={`# The side-effect is wrapped in a @task
+@task
+def _make_request(url: str):
+    return requests.get(url).text
+
+def call_api(state: State):
+    # On resume, the result of _make_request
+    # is loaded from the checkpoint instead of re-running.
+    request = _make_request(state['url'])
+    result = request.result()
+    return {"result": result}`} />
+                        </TabsContent>
+                    </Tabs>
+                </div>
+
+              </div>
+            </Section>
+
           </main>
         </div>
       </div>
@@ -1093,3 +1201,4 @@ export default Index;
  
 
     
+

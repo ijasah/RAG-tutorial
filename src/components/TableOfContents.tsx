@@ -85,6 +85,17 @@ const sections = [
         { id: 'persistence-implementation', title: 'Implementation' },
     ]
   },
+  {
+    id: 'durable-execution',
+    title: 'Durable Execution',
+    icon: <ShieldCheck className="w-4 h-4" />,
+    subsections: [
+        { id: 'durable-what-is', title: 'What is Durability?' },
+        { id: 'durable-simulation', title: 'Interactive Simulation' },
+        { id: 'durable-modes', title: 'Durability Modes' },
+        { id: 'durable-tasks-in-nodes', title: 'Using @task in Nodes' },
+    ]
+  },
 ];
 
 interface TableOfContentsProps {
