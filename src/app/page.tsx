@@ -42,6 +42,13 @@ import {
   UserCheck,
   History,
   ShieldCheck,
+  Database,
+  Wrench,
+  Key,
+  Lock,
+  Binary,
+  ArrowDown,
+  Layers,
 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -125,6 +132,13 @@ const sections = [
     id: 'langgraph-persistence', 
     title: 'LangGraph Persistence', 
     icon: <Save className="h-8 w-8 text-primary" />,
+    subsections: [
+        { id: 'persistence-simulation', title: 'Live Simulation' },
+        { id: 'persistence-history', title: 'State History API' },
+        { id: 'persistence-memory-store', title: 'Memory Store' },
+        { id: 'persistence-capabilities', title: 'Key Capabilities' },
+        { id: 'persistence-implementation', title: 'Implementation' },
+    ]
   },
 ];
 
@@ -721,25 +735,132 @@ asyncio.run(main())`
                   </CardContent>
                 </Card>
 
-                <div>
-                    <h3 className="text-xl font-semibold text-foreground mb-2 text-center">Live Simulation</h3>
+                <div id="persistence-simulation">
+                    <h3 className="text-xl font-semibold text-foreground mb-2 text-center">Live Simulation: Visualizing Checkpoints</h3>
                     <p className="text-muted-foreground text-center mb-4">
                        This simulation demonstrates these concepts in action. Each time you "Run New Thread," you are creating a new, independent conversation. Watch as checkpoints are saved along the way. **Click on any checkpoint to inspect the agent's memory at that exact moment.**
                     </p>
                     <PersistenceSimulator />
                 </div>
                 
-                <Accordion type="single" collapsible className="w-full">
-                    <AccordionItem value="item-1">
-                        <AccordionTrigger>Show me the code</AccordionTrigger>
-                        <AccordionContent>
-                           <p className="text-sm text-muted-foreground mb-2">Implementing persistence is straightforward. You compile your graph with a `checkpointer` (like the `MemorySaver` for in-memory storage) and then pass a unique `thread_id` in the config when you invoke it.</p>
-                           <CodeBlock code={persistenceCode} />
-                        </AccordionContent>
-                    </AccordionItem>
-                </Accordion>
+                <div id="persistence-history">
+                    <h3 className="text-xl font-semibold text-foreground mb-4">Interacting with Agent History</h3>
+                     <Accordion type="single" collapsible className="w-full space-y-2">
+                        <AccordionItem value="get-state" className="border-b-0">
+                            <AccordionTrigger className="p-4 bg-muted/30 hover:bg-muted/50 rounded-lg text-left">1. Get State: View the latest snapshot</AccordionTrigger>
+                            <AccordionContent className="pt-4 px-2">
+                               <p className="text-sm text-muted-foreground mb-4">You can retrieve the most recent state of any thread using `get_state`. This is useful for checking the final result of a run or inspecting its current status if it's paused.</p>
+                               <CodeBlock code={`# Get the latest state snapshot for thread "1"
+config = {"configurable": {"thread_id": "1"}}
+latest_snapshot = graph.get_state(config)
 
-                <div>
+# You can also get a specific snapshot by its ID
+config_specific = {"configurable": {"thread_id": "1", "checkpoint_id": "some_checkpoint_id"}}
+specific_snapshot = graph.get_state(config_specific)`} />
+                            </AccordionContent>
+                        </AccordionItem>
+                        <AccordionItem value="get-history" className="border-b-0">
+                            <AccordionTrigger className="p-4 bg-muted/30 hover:bg-muted/50 rounded-lg text-left">2. Get State History: See every step</AccordionTrigger>
+                            <AccordionContent className="pt-4 px-2">
+                               <p className="text-sm text-muted-foreground mb-4">To see the entire journey of an agent, use `get_state_history`. This returns a full list of all checkpoints, letting you trace the agent's path from start to finish.</p>
+                               <CodeBlock code={`# Get the full history for thread "1"
+config = {"configurable": {"thread_id": "1"}}
+history = graph.get_state_history(config)`} />
+                            </AccordionContent>
+                        </AccordionItem>
+                         <AccordionItem value="replay" className="border-b-0">
+                            <AccordionTrigger className="p-4 bg-muted/30 hover:bg-muted/50 rounded-lg text-left">3. Replay / Time Travel: Rerun from a past state</AccordionTrigger>
+                            <AccordionContent className="pt-4 px-2">
+                               <p className="text-sm text-muted-foreground mb-4">LangGraph's "time travel" lets you resume execution from any point in the past by invoking the graph with a specific `checkpoint_id`. This is incredibly powerful for debugging or exploring different outcomes from a specific decision point.</p>
+                               <CodeBlock code={`# Re-run the graph from a specific checkpoint
+config = {"configurable": {"thread_id": "1", "checkpoint_id": "some_checkpoint_id"}}
+graph.invoke(None, config=config)`} />
+                            </AccordionContent>
+                        </AccordionItem>
+                        <AccordionItem value="update-state" className="border-b-0">
+                            <AccordionTrigger className="p-4 bg-muted/30 hover:bg-muted/50 rounded-lg text-left">4. Update State: Manually edit the agent's memory</AccordionTrigger>
+                            <AccordionContent className="pt-4 px-2">
+                               <p className="text-sm text-muted-foreground mb-4">You can manually modify an agent's memory at any point using `update_state`. This is the core mechanism for human-in-the-loop workflows, where a person can correct or approve an agent's work before it continues.</p>
+                               <CodeBlock code={`# Manually change the value of 'foo' in the state for thread "1"
+config = {"configurable": {"thread_id": "1"}}
+graph.update_state(config, {"foo": "a new value"})
+
+# This can also be used to fork the graph from a previous point with new values
+config_fork = {"configurable": {"thread_id": "1", "checkpoint_id": "some_checkpoint_id"}}
+graph.update_state(config_fork, {"foo": "a different path"})`} />
+                            </AccordionContent>
+                        </AccordionItem>
+                    </Accordion>
+                </div>
+                
+                 <div id="persistence-memory-store">
+                    <h3 className="text-xl font-semibold text-foreground my-8">The Memory Store: Sharing State Across Conversations</h3>
+                    <p className="text-muted-foreground mb-4">
+                        While Checkpoints save the history for a single conversation (thread), the **Memory Store** allows an agent to remember information about a user *across multiple conversations*. This is how an agent can remember your name or preferences from one day to the next.
+                    </p>
+                    {/* Static Diagram */}
+                    <div className="flex flex-col items-center space-y-4 my-6">
+                        <Card className="p-4 bg-purple-500/10 border-purple-500/30 w-full max-w-md">
+                             <CardTitle className="text-base flex items-center gap-2 text-purple-300"><Database /> Shared Memory Store (User ID: "user_123")</CardTitle>
+                             <CardContent className="pt-2">
+                                <p className="text-sm p-2 bg-background/50 rounded border">{"{ food_preference: 'I like pizza' }"}</p>
+                             </CardContent>
+                        </Card>
+                        <div className="flex justify-around w-full max-w-2xl">
+                           <ArrowDown className="text-muted-foreground" />
+                           <ArrowDown className="text-muted-foreground" />
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-2xl">
+                             <Card className="p-3">
+                                <CardTitle className="text-sm flex items-center gap-2"><Layers/> Thread 1</CardTitle>
+                                <CardContent className="pt-2">
+                                    <p className="text-xs p-2 bg-muted rounded border">User: "What's a good place for dinner?"<br/>Agent: "Since you like pizza, how about Tony's Pizzeria?"</p>
+                                </CardContent>
+                             </Card>
+                             <Card className="p-3">
+                                <CardTitle className="text-sm flex items-center gap-2"><Layers/> Thread 2 (a day later)</CardTitle>
+                                 <CardContent className="pt-2">
+                                    <p className="text-xs p-2 bg-muted rounded border">User: "Any other ideas?"<br/>Agent: "Of course. Besides pizza, what other foods do you enjoy?"</p>
+                                </CardContent>
+                             </Card>
+                        </div>
+                    </div>
+                    <Accordion type="single" collapsible className="w-full space-y-2">
+                        <AccordionItem value="memory-store-basic" className="border-b-0">
+                            <AccordionTrigger className="p-4 bg-muted/30 hover:bg-muted/50 rounded-lg text-left">Basic Usage: Storing & Retrieving Memories</AccordionTrigger>
+                            <AccordionContent className="pt-4 px-2">
+                               <p className="text-sm text-muted-foreground mb-4">You can `put` memories into the store, namespaced by a user ID, and `search` for them later. This is done inside your agent's nodes.</p>
+                               <CodeBlock code={`from langgraph.store.memory import InMemoryStore
+
+# In reality, this would be a persistent store like Postgres
+store = InMemoryStore()
+user_id = "user_123"
+namespace = (user_id, "memories")
+
+# Store a memory
+store.put(namespace, "memory_id_1", {"food_preference" : "I like pizza"})
+
+# Retrieve all memories for that user
+memories = store.search(namespace)`} />
+                            </AccordionContent>
+                        </AccordionItem>
+                        <AccordionItem value="memory-store-semantic" className="border-b-0">
+                            <AccordionTrigger className="p-4 bg-muted/30 hover:bg-muted/50 rounded-lg text-left">Semantic Search: Finding Relevant Memories</AccordionTrigger>
+                            <AccordionContent className="pt-4 px-2">
+                               <p className="text-sm text-muted-foreground mb-4">The store can also perform semantic search, using vector embeddings to find memories that are conceptually similar to a query, not just exact matches.</p>
+                               <CodeBlock code={`# Find memories related to the user's query
+memories = store.search(
+    namespace,
+    query="What does the user like to eat?",
+    limit=3  # Return top 3 matches
+)`} />
+                            </AccordionContent>
+                        </AccordionItem>
+                    </Accordion>
+                </div>
+
+
+                <div id="persistence-capabilities">
                     <h3 className="text-xl font-semibold text-foreground mb-4">What This Enables</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                          <Card className="bg-muted/30">
@@ -768,6 +889,62 @@ asyncio.run(main())`
                         </Card>
                     </div>
                 </div>
+                
+                 <div id="persistence-implementation">
+                    <h3 className="text-xl font-semibold text-foreground my-8">Checkpointer Implementation Details</h3>
+                     <Accordion type="single" collapsible className="w-full space-y-2">
+                        <AccordionItem value="checkpointer-libs" className="border-b-0">
+                            <AccordionTrigger className="p-4 bg-muted/30 hover:bg-muted/50 rounded-lg text-left">
+                                <div className="flex items-center gap-3"><Database className="w-4 h-4"/> Checkpointer Libraries</div>
+                            </AccordionTrigger>
+                            <AccordionContent className="pt-4 px-2">
+                               <p className="text-sm text-muted-foreground mb-4">LangGraph provides several libraries for storing checkpoints, from simple in-memory storage for testing to robust production-ready solutions.</p>
+                               <ul className="list-disc pl-5 text-sm text-muted-foreground space-y-2">
+                                   <li>`InMemorySaver`: For quick experiments, no persistence.</li>
+                                   <li>`SqliteSaver`: For local development and simple file-based persistence.</li>
+                                   <li>`PostgresSaver`: For production applications requiring a robust, scalable database.</li>
+                                   <li>`CosmosDBSaver`: For production applications on Microsoft Azure.</li>
+                               </ul>
+                            </AccordionContent>
+                        </AccordionItem>
+                        <AccordionItem value="serializer" className="border-b-0">
+                            <AccordionTrigger className="p-4 bg-muted/30 hover:bg-muted/50 rounded-lg text-left">
+                               <div className="flex items-center gap-3"><Binary className="w-4 h-4"/> Serialization</div>
+                            </AccordionTrigger>
+                            <AccordionContent className="pt-4 px-2">
+                               <p className="text-sm text-muted-foreground mb-4">When a checkpointer saves the state, it needs to serialize the data. LangGraph's default `JsonPlusSerializer` handles most common data types, but you can extend it.</p>
+                               <CodeBlock code={`from langgraph.checkpoint.memory import InMemorySaver
+from langgraph.checkpoint.serde.jsonplus import JsonPlusSerializer
+
+# If you need to save complex objects like Pandas DataFrames,
+# you can enable pickle as a fallback.
+# WARNING: Unpickling data from an untrusted source is insecure.
+graph.compile(
+    checkpointer=InMemorySaver(
+        serde=JsonPlusSerializer(pickle_fallback=True)
+    )
+)`} />
+                            </AccordionContent>
+                        </AccordionItem>
+                         <AccordionItem value="encryption" className="border-b-0">
+                            <AccordionTrigger className="p-4 bg-muted/30 hover:bg-muted/50 rounded-lg text-left">
+                               <div className="flex items-center gap-3"><Lock className="w-4 h-4"/> Encryption</div>
+                            </AccordionTrigger>
+                            <AccordionContent className="pt-4 px-2">
+                               <p className="text-sm text-muted-foreground mb-4">For security, you can encrypt the state before it's saved. LangGraph provides an `EncryptedSerializer` that works with any checkpointer.</p>
+                               <CodeBlock code={`# The key is read from the LANGGRAPH_AES_KEY environment variable
+from langgraph.checkpoint.serde.encrypted import EncryptedSerializer
+from langgraph.checkpoint.sqlite import SqliteSaver
+import sqlite3
+
+serde = EncryptedSerializer.from_pycryptodome_aes()
+checkpointer = SqliteSaver(sqlite3.connect("checkpoint.db"), serde=serde)
+graph.compile(checkpointer=checkpointer)`} />
+                            </AccordionContent>
+                        </AccordionItem>
+                    </Accordion>
+                </div>
+
 
               </div>
             </Section>

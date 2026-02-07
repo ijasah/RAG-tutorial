@@ -77,6 +77,13 @@ const sections = [
     id: 'langgraph-persistence', 
     title: 'LangGraph Persistence', 
     icon: <Save className="w-4 h-4" />,
+    subsections: [
+        { id: 'persistence-simulation', title: 'Live Simulation' },
+        { id: 'persistence-history', title: 'State History API' },
+        { id: 'persistence-memory-store', title: 'Memory Store' },
+        { id: 'persistence-capabilities', title: 'Key Capabilities' },
+        { id: 'persistence-implementation', title: 'Implementation' },
+    ]
   },
 ];
 
