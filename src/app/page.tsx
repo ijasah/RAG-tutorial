@@ -9,6 +9,7 @@ import { AgentCoreComponents } from '@/components/AgentCoreComponents';
 import { ReActSimulator } from '@/components/ReActSimulator';
 import { MultiAgentSimulator } from '@/components/MultiAgentSimulator';
 import { AgentFrameworks } from '@/components/AgentFrameworks';
+import { LangGraphQuickstartSimulator } from '@/components/LangGraphQuickstartSimulator';
 
 
 import {
@@ -342,7 +343,7 @@ const Index = () => {
             <Section id="langgraph-overview" title="LangGraph Overview" icon={<GitBranch className="h-8 w-8 text-primary" />}>
                  <div className="space-y-6">
                     <p className="text-muted-foreground text-lg">
-                        LangGraph is a powerful library for building agents that can reliably handle complex tasks. It gives you full control by letting you define an agent's workflow as a graph—a series of connected steps. LangGraph is very low-level, giving you precise control over the agent's orchestration.
+                        LangGraph is a powerful library for building agents that can reliably handle complex tasks. It gives you full control by letting you define an agent's workflow as a graph—a series of connected steps. While LangGraph is a low-level tool focused on orchestration, it is often used with LangChain to easily access a rich ecosystem of models and tools.
                     </p>
                     <div id="lg-key-concepts">
                         <Card className="bg-muted/40">
@@ -438,8 +439,9 @@ const Index = () => {
             <Section id="langgraph-quickstart" title="LangGraph Quickstart" icon={<Rocket className="h-8 w-8 text-primary" />}>
               <div className="space-y-6">
                 <p className="text-muted-foreground text-lg">
-                    This quickstart demonstrates how to build a calculator agent using the LangGraph Graph API or the Functional API.
+                    This quickstart demonstrates how to build a calculator agent. The simulation below visualizes the agent's step-by-step execution, showing how it uses tools to arrive at the final answer.
                 </p>
+                <LangGraphQuickstartSimulator />
                 <Alert>
                   <FileWarning className="h-4 w-4" />
                   <AlertTitle>API Key Required</AlertTitle>
