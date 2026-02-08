@@ -104,6 +104,16 @@ const sections = [
         { id: 'streaming-simulation', title: 'Live Simulation' },
     ]
   },
+  {
+    id: 'interrupts',
+    title: 'Human-in-the-loop: Interrupts',
+    icon: <UserCheck className="w-4 h-4" />,
+    subsections: [
+        { id: 'interrupts-simulation', title: 'Interactive Simulation' },
+        { id: 'interrupts-patterns', title: 'Common Patterns' },
+        { id: 'interrupts-rules', title: 'Rules of Interrupts' },
+    ]
+  },
 ];
 
 interface TableOfContentsProps {

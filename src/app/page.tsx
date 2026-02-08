@@ -16,6 +16,7 @@ import { SerializationVisual } from '@/components/SerializationVisual';
 import { DurableExecutionSimulator } from '@/components/DurableExecutionSimulator';
 import { StreamingSimulator } from '@/components/StreamingSimulator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { InterruptsSimulator } from '@/components/InterruptsSimulator';
 
 
 import {
@@ -57,6 +58,9 @@ import {
   Shield,
   Code,
   Radio,
+  Hand,
+  FileJson,
+  AlertTriangle,
 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -165,6 +169,16 @@ const sections = [
     subsections: [
         { id: 'streaming-modes', title: 'Stream Modes Explained' },
         { id: 'streaming-simulation', title: 'Live Simulation' },
+    ]
+  },
+  {
+    id: 'interrupts',
+    title: 'Human-in-the-loop: Interrupts',
+    icon: <UserCheck className="h-8 w-8 text-primary" />,
+    subsections: [
+        { id: 'interrupts-simulation', title: 'Interactive Simulation' },
+        { id: 'interrupts-patterns', title: 'Common Patterns' },
+        { id: 'interrupts-rules', title: 'Rules of Interrupts' },
     ]
   },
 ];
@@ -1205,6 +1219,104 @@ graph.compile(checkpointer=checkpointer)`} />
                   <h3 className="text-xl font-semibold text-center my-6 text-foreground">Live Streaming Simulation</h3>
                   <StreamingSimulator />
                 </div>
+              </div>
+            </Section>
+
+            <Section id="interrupts" title="Human-in-the-loop: Interrupts" icon={<UserCheck className="h-8 w-8 text-primary" />}>
+              <div className="space-y-8">
+                  <p className="text-muted-foreground text-lg">
+                      Interrupts allow you to pause graph execution at specific points and wait for external input before continuing. This enables human-in-the-loop patterns where you need external input to proceed. When an interrupt is triggered, LangGraph saves the graph state and waits indefinitely until you resume execution.
+                  </p>
+
+                  <div id="interrupts-simulation">
+                      <InterruptsSimulator />
+                  </div>
+
+                  <div id="interrupts-patterns">
+                      <h3 className="text-xl font-semibold text-foreground mb-4">Common Patterns</h3>
+                      <Accordion type="single" collapsible className="w-full space-y-2">
+                          <AccordionItem value="approve-reject" className="border-b-0">
+                              <AccordionTrigger className="p-4 bg-muted/30 hover:bg-muted/50 rounded-lg text-left">Approve or Reject Actions</AccordionTrigger>
+                              <AccordionContent className="pt-4 px-2">
+                                  <p className="text-sm text-muted-foreground mb-4">Pause before executing critical actions like API calls or database changes to get human approval.</p>
+                                  <CodeBlock code={`from langgraph.types import interrupt
+
+def approval_node(state: State):
+    # Pause execution and wait for a boolean response
+    is_approved = interrupt({
+        "question": "Do you want to proceed?",
+        "details": state["action_details"]
+    })
+
+    # When resumed, the value of 'is_approved' will be
+    # whatever was passed to Command(resume=...)
+    if is_approved:
+        return Command(goto="proceed")
+    else:
+        return Command(goto="cancel")`} />
+                              </AccordionContent>
+                          </AccordionItem>
+                          <AccordionItem value="review-edit" className="border-b-0">
+                              <AccordionTrigger className="p-4 bg-muted/30 hover:bg-muted/50 rounded-lg text-left">Review and Edit State</AccordionTrigger>
+                              <AccordionContent className="pt-4 px-2">
+                                  <p className="text-sm text-muted-foreground mb-4">Let humans review and modify LLM outputs or other parts of the state before the graph continues.</p>
+                                  <CodeBlock code={`from langgraph.types import interrupt
+
+def review_node(state: State):
+    # Pause and show the current content for review
+    edited_content = interrupt({
+        "instruction": "Review and edit this text",
+        "content": state["generated_text"]
+    })
+
+    # Update the state with the (potentially) edited version
+    return {"generated_text": edited_content}`} />
+                              </AccordionContent>
+                          </AccordionItem>
+                          <AccordionItem value="validate-input" className="border-b-0">
+                              <AccordionTrigger className="p-4 bg-muted/30 hover:bg-muted/50 rounded-lg text-left">Validate Human Input</AccordionTrigger>
+                              <AccordionContent className="pt-4 px-2">
+                                  <p className="text-sm text-muted-foreground mb-4">Use a loop with an interrupt to validate input and re-prompt the user if it's invalid.</p>
+                                  <CodeBlock code={`def get_age_node(state: State):
+    prompt = "What is your age?"
+    while True:
+        answer = interrupt(prompt)
+        if isinstance(answer, int) and answer > 0:
+            break # Valid input, exit loop
+        else:
+            prompt = f"'{answer}' is not a valid age. Please enter a positive number."
+    return {"age": answer}`} />
+                              </AccordionContent>
+                          </AccordionItem>
+                      </Accordion>
+                  </div>
+
+                  <div id="interrupts-rules">
+                      <h3 className="text-xl font-semibold text-foreground mb-4">Rules of Interrupts</h3>
+                      <div className="space-y-4">
+                           <Alert variant="destructive">
+                              <AlertTriangle className="h-4 w-4" />
+                              <AlertTitle>Do NOT wrap `interrupt()` in a generic `try/except` block.</AlertTitle>
+                              <AlertDescription>
+                                 Interrupts work by raising a special exception. A broad `except Exception:` will catch it and prevent the graph from pausing.
+                              </AlertDescription>
+                          </Alert>
+                           <Alert variant="destructive">
+                              <AlertTriangle className="h-4 w-4" />
+                              <AlertTitle>Side effects before an `interrupt()` must be idempotent.</AlertTitle>
+                              <AlertDescription>
+                                When you resume, the node re-runs from the beginning. If you have a non-idempotent action (like `db.create_record()`) before the interrupt, it will run again, creating duplicates. Place such actions *after* the interrupt.
+                              </AlertDescription>
+                          </Alert>
+                          <Alert variant="destructive">
+                              <AlertTriangle className="h-4 w-4" />
+                              <AlertTitle>Do not conditionally skip `interrupt()` calls.</AlertTitle>
+                              <AlertDescription>
+                                The resume mechanism relies on a consistent order of interrupts. If a condition causes an `interrupt()` to be skipped on one run but not another, it will lead to an index mismatch and errors.
+                              </AlertDescription>
+                          </Alert>
+                      </div>
+                  </div>
               </div>
             </Section>
 
