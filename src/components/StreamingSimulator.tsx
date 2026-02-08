@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,22 +9,69 @@ import { CodeBlock } from '@/components/ui/code-block';
 import { Play, RefreshCw, Bot, Code, MessageCircle, Settings } from 'lucide-react';
 import { useTypewriter } from '@/hooks/use-typewriter';
 
-const graphCode = `
-class State(TypedDict):
-    topic: str
-    joke: str
+const codeSnippets = {
+    updates: `# The graph is already defined...
 
-def refine_topic(state: State):
-    # writer.send({"progress": "Refining topic..."})
-    return {"topic": state["topic"] + " and cats"}
+# stream_mode="updates" streams the state *changes* at each step.
+for chunk in graph.stream(
+  {"topic": "ice cream"},
+  stream_mode="updates", 
+):
+    print(chunk)
 
+# OUTPUT:
+# {'refine_topic': {'topic': 'ice cream and cats'}}
+# {'generate_joke': {'joke': '...'}}`,
+    values: `# The graph is already defined...
+
+# stream_mode="values" streams the *entire state* after each step.
+for chunk in graph.stream(
+  {"topic": "ice cream"},
+  stream_mode="values", 
+):
+    print(chunk)
+
+# OUTPUT:
+# {'topic': 'ice cream and cats', 'joke': ''}
+# {'topic': 'ice cream and cats', 'joke': '...'}`,
+    messages: `# Graph node now uses a streaming LLM
 def generate_joke(state: State):
-    # writer.send({"progress": "Generating joke..."})
-    # stream llm tokens...
-    return {"joke": "Why don't cats play poker in the jungle? Too many cheetahs."}
+    # response = model.stream(...)
+    # ...
+    return {"joke": response_content}
 
-graph.stream({"topic": "ice cream"}, stream_mode=...)
-`;
+# stream_mode="messages" streams token-by-token from any LLM.
+for chunk, metadata in graph.stream(
+  {"topic": "ice cream"},
+  stream_mode="messages",
+):
+    if chunk.content:
+        print(chunk.content, end="")
+
+# OUTPUT:
+# Why| don't| cats| play| poker...|`,
+    custom: `from langgraph.config import get_stream_writer
+
+# A node can use a writer to send custom events.
+def generate_joke(state: State):
+    writer = get_stream_writer()
+    writer.put({"progress": "Generating joke..."})
+    # ...
+    writer.put({"status": "Done"})
+    return {"joke": "..."}
+
+# stream_mode="custom" listens for these events.
+for chunk in graph.stream(
+  {"topic": "ice cream"},
+  stream_mode="custom",
+):
+    print(chunk)
+
+# OUTPUT:
+# {'progress': 'Generating joke...'}
+# {'status': 'Done'}`
+};
+
 
 const simulationData = {
     updates: [
@@ -35,7 +82,7 @@ const simulationData = {
         { 'topic': 'ice cream and cats', 'joke': '' },
         { 'topic': 'ice cream and cats', 'joke': "Why don't cats play poker in the jungle? Too many cheetahs." }
     ],
-    messages: "Why don't cats play poker in the jungle? Too many cheetahs.".split(''),
+    messages: "Why don't cats play poker in the jungle? Too many cheetahs.".match(/(\w+\s*|\W)/g) || [],
     custom: [
         { "progress": "Refining topic..." },
         { "progress": "Generating joke..." },
@@ -97,8 +144,8 @@ export const StreamingSimulator = () => {
         <Card className="w-full bg-muted/30 shadow-inner">
             <CardContent className="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-4">
-                    <h3 className="font-semibold">Graph Definition</h3>
-                    <CodeBlock code={graphCode} className="h-full" />
+                    <h3 className="font-semibold">Graph Definition & Invocation</h3>
+                    <CodeBlock code={codeSnippets[activeTab as keyof typeof codeSnippets]} className="h-full" />
                 </div>
                 <div className="space-y-4">
                      <h3 className="font-semibold">Live Output</h3>
