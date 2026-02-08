@@ -946,7 +946,7 @@ graph.update_state(config, {"foo": "a new value"})`} />
                     </Accordion>
                 </div>
                 
-                 <div id="persistence-memory-store">
+                <div id="persistence-memory-store">
                     <h3 className="text-xl font-semibold text-foreground my-8">The Memory Store: Sharing State Across Conversations</h3>
                     <p className="text-muted-foreground mb-4">
                         While Checkpoints save the history for a single conversation (thread), the **Memory Store** allows an agent to remember information about a user *across multiple conversations*. This is how an agent can remember your name or preferences from one day to the next.
