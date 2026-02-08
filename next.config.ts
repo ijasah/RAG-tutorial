@@ -39,6 +39,12 @@ const nextConfig: NextConfig = {
         hostname: 'bigdataanalyticsnews.com',
         port: '',
         pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'mintcdn.com',
+        port: '',
+        pathname: '/**',
       }
     ],
   },

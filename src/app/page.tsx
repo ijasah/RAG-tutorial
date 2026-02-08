@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { Hero } from '@/components/Hero';
 import { TableOfContents } from '@/components/TableOfContents';
@@ -148,6 +149,7 @@ const sections = [
         { id: 'persistence-simulation', title: 'Live Simulation' },
         { id: 'persistence-history', title: 'State History API' },
         { id: 'persistence-memory-store', title: 'Memory Store' },
+        { id: 'persistence-context-window', title: 'Context Window Management' },
         { id: 'persistence-capabilities', title: 'Key Capabilities' },
         { id: 'persistence-implementation', title: 'Implementation' },
     ]
@@ -880,7 +882,7 @@ latest_snapshot = graph.get_state(config)`} />
                                         <p className="text-sm text-muted-foreground mb-4">To see the entire journey of an agent, use `get_state_history`. This returns a full list of all checkpoints, letting you trace the agent's path from start to finish.</p>
                                         <CodeBlock code={`# Get the full history for thread "1"
 config = {"configurable": {"thread_id": "1"}}
-history = graph.get_state_history(config)`} />
+history = list(graph.get_state_history(config))`} />
                                     </div>
                                     <Card className="p-4 bg-background">
                                         <p className="text-xs text-muted-foreground text-center mb-2">Result: A list of all StateSnapshots</p>
@@ -895,7 +897,7 @@ history = graph.get_state_history(config)`} />
                             </AccordionContent>
                         </AccordionItem>
                          <AccordionItem value="replay" className="border-b-0">
-                            <AccordionTrigger className="p-4 bg-muted/30 hover:bg-muted/50 rounded-lg text-left">3. Replay / Time Travel: Rerun from a past state</AccordionTrigger>
+                            <AccordionTrigger className="p-4 bg-muted/30 hover:bg-muted/50 rounded-lg text-left">3. Time Travel: Rerun from a past state</AccordionTrigger>
                             <AccordionContent className="pt-4 px-2">
                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
                                     <div>
@@ -968,7 +970,7 @@ graph.update_state(config, {"foo": "a new value"})`} />
                                 <CardTitle className="text-sm flex items-center gap-2"><Layers/> Thread 1</CardTitle>
                                 <CardContent className="pt-2">
                                     <p className="text-xs p-2 bg-muted rounded border">User: "What's a good place for dinner?"<br/>Agent: "Since you like pizza, how about Tony's Pizzeria?"</p>
-                                </CardContent>
+                                 </CardContent>
                              </Card>
                              <Card className="p-3">
                                 <CardTitle className="text-sm flex items-center gap-2"><Layers/> Thread 2 (a day later)</CardTitle>
@@ -1011,7 +1013,7 @@ memories = store.search(
                         </AccordionItem>
                          <AccordionItem value="production-stores" className="border-b-0">
                             <AccordionTrigger className="p-4 bg-muted/30 hover:bg-muted/50 rounded-lg text-left">Production Stores</AccordionTrigger>
-                            <AccordionContent className="pt-4 px-2">
+                             <AccordionContent className="pt-4 px-2">
                                 <p className="text-sm text-muted-foreground mb-4">For production, use a store backed by a persistent database like Postgres or Redis.</p>
                                 <Tabs defaultValue="postgres">
                                     <TabsList>
@@ -1033,6 +1035,92 @@ with RedisStore.from_conn_string(DB_URI) as store:
     graph = builder.compile(store=store)`} />
                                     </TabsContent>
                                 </Tabs>
+                            </AccordionContent>
+                        </AccordionItem>
+                    </Accordion>
+                </div>
+
+                <div id="persistence-context-window">
+                    <h3 className="text-xl font-semibold text-foreground my-8">Context Window Management</h3>
+                    <p className="text-muted-foreground mb-4">
+                        With short-term memory enabled, long conversations can exceed the LLM’s context window. Here are common solutions to manage the conversation history.
+                    </p>
+                    <Accordion type="single" collapsible className="w-full space-y-2">
+                        <AccordionItem value="trim-messages"  className="border-b-0">
+                            <AccordionTrigger className="p-4 bg-muted/30 hover:bg-muted/50 rounded-lg text-left">Trimming Messages</AccordionTrigger>
+                            <AccordionContent className="pt-4 px-2">
+                                <p className="text-sm text-muted-foreground mb-4">Use the `trim_messages` utility to keep only a specific number of recent tokens, ensuring the conversation history doesn't exceed the model's context limit.</p>
+                                <CodeBlock code={`from langchain_core.messages.utils import (
+    trim_messages,
+    count_tokens_approximately
+)
+
+def call_model(state: MessagesState):
+    messages = trim_messages(
+        state["messages"],
+        strategy="last",
+        token_counter=count_tokens_approximately,
+        max_tokens=128,
+        start_on="human",
+        end_on=("human", "tool"),
+    )
+    response = model.invoke(messages)
+    return {"messages": [response]}`}/>
+                            </AccordionContent>
+                        </AccordionItem>
+                        <AccordionItem value="delete-messages"  className="border-b-0">
+                            <AccordionTrigger className="p-4 bg-muted/30 hover:bg-muted/50 rounded-lg text-left">Deleting Messages</AccordionTrigger>
+                            <AccordionContent className="pt-4 px-2">
+                                <p className="text-sm text-muted-foreground mb-2">You can permanently remove specific messages or clear the entire history using `RemoveMessage`.</p>
+                                <p className="text-sm font-semibold text-foreground mb-2">To remove specific messages:</p>
+                                <CodeBlock code={`from langchain.messages import RemoveMessage
+
+def delete_messages(state):
+    messages = state["messages"]
+    if len(messages) > 2:
+        # remove the earliest two messages
+        return {"messages": [RemoveMessage(id=m.id) for m in messages[:2]]}`} />
+                                <p className="text-sm font-semibold text-foreground mt-4 mb-2">To remove all messages:</p>
+                                <CodeBlock code={`from langgraph.graph.message import REMOVE_ALL_MESSAGES
+
+def delete_messages(state):
+    return {"messages": [RemoveMessage(id=REMOVE_ALL_MESSAGES)]}`} />
+                                <Alert variant="destructive" className="mt-4">
+                                    <AlertTriangle className="h-4 w-4" />
+                                    <AlertTitle>Warning</AlertTitle>
+                                    <AlertDescription>
+                                        When deleting messages, ensure the resulting history is valid. Some providers require history to start with a `user` message or that `tool` messages follow `assistant` tool calls.
+                                    </AlertDescription>
+                                </Alert>
+                            </AccordionContent>
+                        </AccordionItem>
+                        <AccordionItem value="summarize-messages"  className="border-b-0">
+                            <AccordionTrigger className="p-4 bg-muted/30 hover:bg-muted/50 rounded-lg text-left">Summarizing Messages</AccordionTrigger>
+                            <AccordionContent className="pt-4 px-2">
+                                <p className="text-sm text-muted-foreground mb-4">To avoid losing information, you can summarize older parts of the conversation. This maintains context while keeping the token count low.</p>
+                                <div className="my-4 flex justify-center">
+                                    <Image src="https://mintcdn.com/langchain-5e9cc07a/ybiAaBfoBvFquMDz/oss/images/summary.png?fit=max&auto=format&n=ybiAaBfoBvFquMDz&q=85&s=c8ed3facdccd4ef5c7e52902c72ba938" alt="Summarization Diagram" width={609} height={242} className="rounded-lg border bg-background" />
+                                </div>
+                                <p className="text-sm text-muted-foreground mb-4">You can extend your state to include a `summary` and create a node to update it periodically.</p>
+                                 <CodeBlock code={`from langgraph.graph import MessagesState
+from langchain.messages import HumanMessage, RemoveMessage
+
+class State(MessagesState):
+    summary: str
+
+def summarize_conversation(state: State):
+    summary = state.get("summary", "")
+    summary_message = (
+        f"This is a summary of the conversation to date: {summary}\\n\\n"
+        "Extend the summary by taking into account the new messages above:"
+    ) if summary else "Create a summary of the conversation above:"
+
+    messages = state["messages"] + [HumanMessage(content=summary_message)]
+    response = model.invoke(messages)
+
+    # Delete all but the 2 most recent messages
+    delete_messages = [RemoveMessage(id=m.id) for m in state["messages"][:-2]]
+    return {"summary": response.content, "messages": delete_messages}`} />
                             </AccordionContent>
                         </AccordionItem>
                     </Accordion>
