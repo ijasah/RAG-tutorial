@@ -105,9 +105,9 @@ const sections = [
         { id: 'multi-challenges', title: 'Challenges' },
     ]
   },
-  { 
-    id: 'langgraph-overview', 
-    title: 'LangGraph Overview', 
+  {
+    id: 'langgraph-overview',
+    title: 'LangGraph Overview',
     icon: <GitBranch className="h-8 w-8 text-primary" />,
     subsections: [
         { id: 'lg-key-concepts', title: 'Key Concepts' },
@@ -191,6 +191,8 @@ const sections = [
     subsections: [
         { id: 'mcp-what-is', title: 'What is MCP?' },
         { id: 'mcp-simulation', title: 'Interactive Simulation' },
+        { id: 'mcp-transports', title: 'Transports' },
+        { id: 'mcp-advanced', title: 'Advanced Features' },
     ]
   },
 ];
@@ -805,64 +807,6 @@ asyncio.run(main())`
                 </div>
                 
                  <div id="persistence-history">
-                    <Card className="mb-8 bg-blue-500/10 border-blue-500/30">
-                        <CardHeader>
-                            <CardTitle className="text-lg flex items-center gap-2"><Key className="text-primary"/>Where do I get the IDs?</CardTitle>
-                        </CardHeader>
-                        <CardContent className="text-sm space-y-4">
-                            <div>
-                                <h4 className="font-semibold text-foreground">`thread_id`: You create this.</h4>
-                                <p className="text-muted-foreground">Think of the `thread_id` as a unique name for a conversation (e.g., a customer's session ID). You provide this string when you first invoke the graph. All steps in that conversation are saved under this ID.</p>
-                                <CodeBlock code={`# You define the thread_id to start or resume a conversation
-config = {"configurable": {"thread_id": "customer-session-123"}}`} className="mt-2" />
-                            </div>
-                            <div>
-                                <h4 className="font-semibold text-foreground">`checkpoint_id`: LangGraph gives you this.</h4>
-                                <p className="text-muted-foreground">A `checkpoint_id` is the unique ID for each *step* within a thread. You find it by looking at the state history. This complete example shows how:</p>
-                                <CodeBlock code={`from typing import Annotated
-from typing_extensions import TypedDict
-from operator import add
-from langgraph.graph import StateGraph, START, END
-from langgraph.checkpoint.memory import InMemorySaver
-from langchain_core.runnables import RunnableConfig
-
-# A more complete example graph
-class State(TypedDict):
-    foo: str
-    bar: Annotated[list[str], add]
-
-def node_a(state: State):
-    return {"foo": "a", "bar": ["a"]}
-
-def node_b(state: State):
-    return {"foo": "b", "bar": ["b"]}
-
-workflow = StateGraph(State)
-workflow.add_node("node_a", node_a)
-workflow.add_node("node_b", node_b)
-workflow.add_edge(START, "node_a")
-workflow.add_edge("node_a", "node_b")
-workflow.add_edge("node_b", END)
-
-# Compile the graph with a checkpointer
-checkpointer = InMemorySaver()
-graph = workflow.compile(checkpointer=checkpointer)
-
-# 1. Invoke the graph to create a history for a specific thread_id
-config: RunnableConfig = {"configurable": {"thread_id": "my-thread-1"}}
-graph.invoke({"foo": "", "bar": []}, config)
-
-# 2. Get the history for that thread
-history = graph.get_state_history(config)
-
-# 3. Extract the checkpoint_id from the latest snapshot in the history
-# The history is a list of snapshots, most recent first.
-latest_checkpoint_id = history[0].config["configurable"]["checkpoint_id"]
-
-print(f"The latest checkpoint ID is: {latest_checkpoint_id}")`} className="mt-2" />
-                            </div>
-                        </CardContent>
-                    </Card>
                     <h3 className="text-xl font-semibold text-foreground mb-4">Interacting with Agent History</h3>
                      <Accordion type="single" collapsible className="w-full space-y-2">
                         <AccordionItem value="get-state" className="border-b-0">
@@ -871,9 +815,22 @@ print(f"The latest checkpoint ID is: {latest_checkpoint_id}")`} className="mt-2"
                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
                                     <div>
                                         <p className="text-sm text-muted-foreground mb-4">You can retrieve the most recent state of any thread using `get_state`. This is useful for checking the final result of a run or inspecting its current status if it's paused.</p>
-                                        <CodeBlock code={`# Get the latest state snapshot for thread "1"
+                                        <Tabs defaultValue="graph-api">
+                                          <TabsList>
+                                            <TabsTrigger value="graph-api">Graph API</TabsTrigger>
+                                            <TabsTrigger value="checkpointer-api">Checkpointer API</TabsTrigger>
+                                          </TabsList>
+                                          <TabsContent value="graph-api">
+                                            <CodeBlock code={`# Get the latest state snapshot for thread "1"
 config = {"configurable": {"thread_id": "1"}}
 latest_snapshot = graph.get_state(config)`} />
+                                          </TabsContent>
+                                          <TabsContent value="checkpointer-api">
+                                            <CodeBlock code={`# Get the latest checkpoint tuple for thread "1"
+config = {"configurable": {"thread_id": "1"}}
+latest_checkpoint = checkpointer.get_tuple(config)`} />
+                                          </TabsContent>
+                                        </Tabs>
                                     </div>
                                     <Card className="p-4 bg-background">
                                         <p className="text-xs text-muted-foreground text-center mb-2">Result: The latest StateSnapshot</p>
@@ -891,9 +848,22 @@ latest_snapshot = graph.get_state(config)`} />
                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
                                     <div>
                                         <p className="text-sm text-muted-foreground mb-4">To see the entire journey of an agent, use `get_state_history`. This returns a full list of all checkpoints, letting you trace the agent's path from start to finish.</p>
-                                        <CodeBlock code={`# Get the full history for thread "1"
+                                        <Tabs defaultValue="graph-api">
+                                          <TabsList>
+                                            <TabsTrigger value="graph-api">Graph API</TabsTrigger>
+                                            <TabsTrigger value="checkpointer-api">Checkpointer API</TabsTrigger>
+                                          </TabsList>
+                                          <TabsContent value="graph-api">
+                                            <CodeBlock code={`# Get the full history for thread "1"
 config = {"configurable": {"thread_id": "1"}}
 history = list(graph.get_state_history(config))`} />
+                                          </TabsContent>
+                                          <TabsContent value="checkpointer-api">
+                                             <CodeBlock code={`# Get the full history for thread "1"
+config = {"configurable": {"thread_id": "1"}}
+history = list(checkpointer.list(config))`} />
+                                          </TabsContent>
+                                        </Tabs>
                                     </div>
                                     <Card className="p-4 bg-background">
                                         <p className="text-xs text-muted-foreground text-center mb-2">Result: A list of all StateSnapshots</p>
@@ -913,10 +883,14 @@ history = list(graph.get_state_history(config))`} />
                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
                                     <div>
                                         <p className="text-sm text-muted-foreground mb-4">LangGraph's "time travel" lets you resume execution from any point in the past by invoking the graph with a specific `checkpoint_id`. This is incredibly powerful for debugging or exploring different outcomes from a specific decision point.</p>
-                                        <CodeBlock code={`# Re-run the graph from a specific checkpoint
+                                        <CodeBlock code={`# First, find a checkpoint_id from the history
+history = graph.get_state_history(config)
+checkpoint_id_to_resume = history[2].config['configurable']['checkpoint_id']
+
+# Re-run the graph from that specific checkpoint
 config = {"configurable": {
     "thread_id": "1",
-    "checkpoint_id": "some_checkpoint_id"
+    "checkpoint_id": checkpoint_id_to_resume
 }}
 graph.invoke(None, config=config)`} />
                                     </div>
@@ -939,7 +913,7 @@ graph.invoke(None, config=config)`} />
                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
                                     <div>
                                        <p className="text-sm text-muted-foreground mb-4">You can manually modify an agent's memory at any point using `update_state`. This is the core mechanism for human-in-the-loop workflows, where a person can correct or approve an agent's work before it continues.</p>
-                                       <CodeBlock code={`# Manually change the value of 'foo'
+                                       <CodeBlock code={`# Manually change the value of 'foo' at the latest state
 config = {"configurable": {"thread_id": "1"}}
 graph.update_state(config, {"foo": "a new value"})`} />
                                     </div>
@@ -1605,7 +1579,7 @@ print(final["age"]) # -> 30`} />
             <Section id="mcp" title="Model Context Protocol (MCP)" icon={<ToyBrick className="h-8 w-8 text-primary"/>}>
                 <div id="mcp-what-is" className='space-y-4'>
                     <p className="text-muted-foreground text-lg">
-                        Think of MCP as a universal adapter for your AI. It’s a standardized way for an AI model to discover and communicate with external tools, like weather APIs, calculators, or internal business systems. Instead of being hardcoded, tools are exposed as independent services.
+                        Model Context Protocol (MCP) is an open protocol that standardizes how applications provide tools and context to LLMs. Think of it as a universal bridge between your AI agent and external tools, like weather APIs, calculators, or internal business systems. Instead of being hardcoded, tools are exposed as independent, plug-and-play services.
                     </p>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <Card className="bg-muted/30">
@@ -1632,6 +1606,98 @@ print(final["age"]) # -> 30`} />
 
                 <div id="mcp-simulation" className="pt-8">
                      <MCPSimulator />
+                </div>
+                <div id="mcp-transports" className="pt-8">
+                    <h3 className="text-xl font-semibold my-4 text-foreground">Transports</h3>
+                    <p className="text-muted-foreground mb-4">
+                        MCP supports different mechanisms for client-server communication. The two main types are `stdio` for local tools and `http` for remote services.
+                    </p>
+                    <Tabs defaultValue="stdio" className="w-full">
+                        <TabsList className="grid w-full grid-cols-2">
+                            <TabsTrigger value="stdio">STDIO</TabsTrigger>
+                            <TabsTrigger value="http">HTTP</TabsTrigger>
+                        </TabsList>
+                        <TabsContent value="stdio">
+                            <Card className="mt-2">
+                                <CardHeader><CardTitle className="text-base">STDIO Transport</CardTitle></CardHeader>
+                                <CardContent>
+                                    <p className="text-sm text-muted-foreground mb-2">The client launches the server as a local subprocess and communicates via its standard input/output. This is best for local tools and simple setups.</p>
+                                    <CodeBlock code={`client = MultiServerMCPClient({
+    "math": {
+        "transport": "stdio",
+        "command": "python",
+        "args": ["/path/to/math_server.py"],
+    }
+})`} />
+                                </CardContent>
+                            </Card>
+                        </TabsContent>
+                        <TabsContent value="http">
+                                <Card className="mt-2">
+                                <CardHeader><CardTitle className="text-base">HTTP Transport</CardTitle></CardHeader>
+                                <CardContent>
+                                    <p className="text-sm text-muted-foreground mb-2">Uses standard HTTP requests for communication, allowing you to connect to remote MCP servers. You can also pass custom headers for authentication.</p>
+                                    <CodeBlock code={`client = MultiServerMCPClient({
+    "weather": {
+        "transport": "http",
+        "url": "http://localhost:8000/mcp",
+        "headers": {
+            "Authorization": "Bearer YOUR_TOKEN",
+        },
+    }
+})`} />
+                                </CardContent>
+                            </Card>
+                        </TabsContent>
+                    </Tabs>
+                </div>
+
+                <div id="mcp-advanced" className="pt-8">
+                    <h3 className="text-xl font-semibold my-4 text-foreground">Advanced Features</h3>
+                    <Accordion type="single" collapsible className="w-full space-y-2">
+                        <AccordionItem value="stateful-sessions" className="border-b-0">
+                            <AccordionTrigger className="p-4 bg-muted/30 hover:bg-muted/50 rounded-lg text-left">Stateful Sessions</AccordionTrigger>
+                            <AccordionContent className="pt-4 px-2">
+                                <p className="text-sm text-muted-foreground mb-4">By default, tool calls are stateless. If you need to maintain context across multiple calls to the same server (e.g., for a stateful tool), you can create a persistent `ClientSession`.</p>
+                                <CodeBlock code={`async with client.session("server_name") as session:
+    tools = await load_mcp_tools(session)
+    # ... use tools within this persistent session ...`} />
+                            </AccordionContent>
+                        </AccordionItem>
+                        <AccordionItem value="tool-interceptors" className="border-b-0">
+                            <AccordionTrigger className="p-4 bg-muted/30 hover:bg-muted/50 rounded-lg text-left">Tool Interceptors</AccordionTrigger>
+                            <AccordionContent className="pt-4 px-2">
+                                <p className="text-sm text-muted-foreground mb-4">Interceptors are powerful middleware functions that wrap tool execution. They can modify requests, add dynamic authentication, handle errors, or implement retry logic.</p>
+                                <CodeBlock code={`async def logging_interceptor(request, handler):
+    print(f"Calling tool: {request.name}")
+    result = await handler(request)
+    print(f"Tool returned: {result}")
+    return result
+
+client = MultiServerMCPClient(
+    {...},
+    tool_interceptors=[logging_interceptor],
+)`} />
+                            </AccordionContent>
+                        </AccordionItem>
+                        <AccordionItem value="elicitation" className="border-b-0">
+                            <AccordionTrigger className="p-4 bg-muted/30 hover:bg-muted/50 rounded-lg text-left">Elicitation</AccordionTrigger>
+                            <AccordionContent className="pt-4 px-2">
+                                <p className="text-sm text-muted-foreground mb-4">Elicitation allows an MCP server to interactively ask the user for more information during a tool call, instead of requiring all arguments upfront. This is useful for building conversational forms or clarifying ambiguous requests.</p>
+                                <CodeBlock code={`# Server-side tool
+async def create_profile(name: str, ctx: Context) -> str:
+    # Elicit more details from the user
+    result = await ctx.elicit(
+        message=f"Please provide details for {name}:",
+        schema=UserDetails, # Pydantic model for email, age etc.
+    )
+    if result.action == "accept":
+        # ... process result.data ...
+        return "Profile created."
+    return "Profile creation cancelled."`} />
+                            </AccordionContent>
+                        </AccordionItem>
+                    </Accordion>
                 </div>
             </Section>
 
