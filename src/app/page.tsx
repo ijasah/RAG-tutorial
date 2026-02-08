@@ -1168,7 +1168,7 @@ graph.compile(checkpointer=checkpointer)`} />
     {"durability": "exit"}
 )`} />
                                 </CardContent>
-                            </Card>
+                             </Card>
                         </TabsContent>
                     </Tabs>
                 </div>
