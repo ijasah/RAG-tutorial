@@ -52,24 +52,25 @@ for chunk, metadata in graph.stream(
 # Why| don't| cats| play| poker...|`,
     custom: `from langgraph.config import get_stream_writer
 
-# A node can use a writer to send custom events.
-def generate_joke(state: State):
+def call_arbitrary_model(state):
+    """Example node that calls an arbitrary model and streams the output"""
+    # Get the stream writer to send custom data
     writer = get_stream_writer()
-    writer.put({"progress": "Generating joke..."})
-    # ...
-    writer.put({"status": "Done"})
-    return {"joke": "..."}
+    # Assume you have a streaming client that yields chunks
+    # Generate LLM tokens using your custom streaming client
+    for chunk in your_custom_streaming_client(state["topic"]):
+        # Use the writer to send custom data to the stream
+        writer({"custom_llm_chunk": chunk})
+    return {"result": "completed"}
 
-# stream_mode="custom" listens for these events.
+# graph = ... (Graph is compiled with the node above)
+# Set stream_mode="custom" to receive the custom data
 for chunk in graph.stream(
-  {"topic": "ice cream"},
-  stream_mode="custom",
+    {"topic": "cats"},
+    stream_mode="custom",
 ):
-    print(chunk)
-
-# OUTPUT:
-# {'progress': 'Generating joke...'}
-# {'status': 'Done'}`
+    # The chunk will contain the custom data streamed from the llm
+    print(chunk)`
 };
 
 
@@ -84,9 +85,12 @@ const simulationData = {
     ],
     messages: "Why don't cats play poker in the jungle? Too many cheetahs.".match(/(\w+\s*|\W)/g) || [],
     custom: [
-        { "progress": "Refining topic..." },
-        { "progress": "Generating joke..." },
-        { "status": "Done" }
+        { "custom_llm_chunk": "Here's" },
+        { "custom_llm_chunk": " a" },
+        { "custom_llm_chunk": " stream" },
+        { "custom_llm_chunk": " from" },
+        { "custom_llm_chunk": " any" },
+        { "custom_llm_chunk": " LLM!" }
     ]
 };
 
