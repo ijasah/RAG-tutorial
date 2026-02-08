@@ -1009,6 +1009,32 @@ memories = store.search(
 )`} />
                             </AccordionContent>
                         </AccordionItem>
+                         <AccordionItem value="production-stores" className="border-b-0">
+                            <AccordionTrigger className="p-4 bg-muted/30 hover:bg-muted/50 rounded-lg text-left">Production Stores</AccordionTrigger>
+                            <AccordionContent className="pt-4 px-2">
+                                <p className="text-sm text-muted-foreground mb-4">For production, use a store backed by a persistent database like Postgres or Redis.</p>
+                                <Tabs defaultValue="postgres">
+                                    <TabsList>
+                                        <TabsTrigger value="postgres">Postgres</TabsTrigger>
+                                        <TabsTrigger value="redis">Redis</TabsTrigger>
+                                    </TabsList>
+                                    <TabsContent value="postgres">
+                                        <CodeBlock code={`from langgraph.store.postgres import PostgresStore
+
+DB_URI = "postgresql://user:pass@host:port/db"
+with PostgresStore.from_conn_string(DB_URI) as store:
+    graph = builder.compile(store=store)`} />
+                                    </TabsContent>
+                                    <TabsContent value="redis">
+                                        <CodeBlock code={`from langgraph.store.redis import RedisStore
+
+DB_URI = "redis://user:pass@host:port"
+with RedisStore.from_conn_string(DB_URI) as store:
+    graph = builder.compile(store=store)`} />
+                                    </TabsContent>
+                                </Tabs>
+                            </AccordionContent>
+                        </AccordionItem>
                     </Accordion>
                 </div>
 
@@ -1051,13 +1077,39 @@ memories = store.search(
                                 <div className="flex items-center gap-3"><Database className="w-4 h-4"/> Checkpointer Libraries</div>
                             </AccordionTrigger>
                             <AccordionContent className="pt-4 px-2">
-                               <p className="text-sm text-muted-foreground mb-4">LangGraph provides several libraries for storing checkpoints, from simple in-memory storage for testing to robust production-ready solutions.</p>
-                               <ul className="list-disc pl-5 text-sm text-muted-foreground space-y-2">
-                                   <li>`InMemorySaver`: For quick experiments, no persistence.</li>
-                                   <li>`SqliteSaver`: For local development and simple file-based persistence.</li>
-                                   <li>`PostgresSaver`: For production applications requiring a robust, scalable database.</li>
-                                   <li>`CosmosDBSaver`: For production applications on Microsoft Azure.</li>
-                               </ul>
+                               <p className="text-sm text-muted-foreground mb-4">For production, it's essential to use a durable checkpointer backed by a persistent database. LangGraph offers several integrations.</p>
+                                <Tabs defaultValue="postgres" className="w-full">
+                                    <TabsList>
+                                        <TabsTrigger value="postgres">Postgres</TabsTrigger>
+                                        <TabsTrigger value="mongodb">MongoDB</TabsTrigger>
+                                        <TabsTrigger value="redis">Redis</TabsTrigger>
+                                        <TabsTrigger value="sqlite">Sqlite</TabsTrigger>
+                                    </TabsList>
+                                    <TabsContent value="postgres">
+                                        <CodeBlock code={`from langgraph.checkpoint.postgres import PostgresSaver
+
+DB_URI = "postgresql://user:pass@host:port/db"
+checkpointer = PostgresSaver.from_conn_string(DB_URI)`} />
+                                    </TabsContent>
+                                    <TabsContent value="mongodb">
+                                         <CodeBlock code={`from langgraph.checkpoint.mongodb import MongoDBSaver
+
+DB_URI = "mongodb://user:pass@host:port/"
+checkpointer = MongoDBSaver.from_conn_string(DB_URI)`} />
+                                    </TabsContent>
+                                    <TabsContent value="redis">
+                                         <CodeBlock code={`from langgraph.checkpoint.redis import RedisSaver
+
+DB_URI = "redis://user:pass@host:port"
+checkpointer = RedisSaver.from_conn_string(DB_URI)`} />
+                                    </TabsContent>
+                                     <TabsContent value="sqlite">
+                                         <CodeBlock code={`from langgraph.checkpoint.sqlite import SqliteSaver
+import sqlite3
+
+checkpointer = SqliteSaver(conn=sqlite3.connect("checkpoints.db"))`} />
+                                    </TabsContent>
+                                </Tabs>
                             </AccordionContent>
                         </AccordionItem>
                         <AccordionItem value="serializer" className="border-b-0">
@@ -1075,7 +1127,7 @@ memories = store.search(
                                <p className="text-sm text-muted-foreground mb-4">
                                 LangGraph's default `JsonPlusSerializer` handles most common data types. However, if you need to save complex objects that aren't standard JSON (like Pandas DataFrames), you can enable a `pickle` fallback.
                                </p>
-                               <CodeBlock code={`from langgraph.checkpoint.memory import InMemorySaver
+                                <CodeBlock code={`from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.checkpoint.serde.jsonplus import JsonPlusSerializer
 
 # WARNING: Unpickling data from an untrusted source is insecure.
