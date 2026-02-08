@@ -865,7 +865,7 @@ latest_snapshot = graph.get_state(config)`} />
                                     <Card className="p-4 bg-background">
                                         <p className="text-xs text-muted-foreground text-center mb-2">Result: The latest StateSnapshot</p>
                                         <div className="p-3 border-2 border-primary bg-primary/10 rounded-lg text-xs">
-                                            <p><span className="font-semibold text-foreground">values:</span> {`{'foo': 'b', 'bar': ['a', 'b']}`}</p>
+                                            <p><span className="font-semibold text-foreground">values:</span> {'{\'foo\': \'b\', \'bar\': [\'a\', \'b\']}'}</p>
                                             <p><span className="font-semibold text-foreground">next:</span> ()</p>
                                         </div>
                                     </Card>
@@ -934,10 +934,10 @@ graph.update_state(config, {"foo": "a new value"})`} />
                                         <p className="text-xs text-muted-foreground text-center mb-2">State Change</p>
                                         <div className="space-y-2 text-xs">
                                             <p className="font-semibold text-foreground">Before:</p>
-                                            <div className="p-2 border rounded-lg bg-muted/50">{`{'foo': 'old value', 'bar': [...]}`}</div>
+                                            <div className="p-2 border rounded-lg bg-muted/50">{'{\'foo\': \'old value\', \'bar\': [...]}'}</div>
                                             <div className="flex justify-center text-muted-foreground"><ArrowDown size={16}/></div>
                                             <p className="font-semibold text-foreground">After:</p>
-                                            <div className="p-2 border rounded-lg bg-primary/10 border-primary">{`{'foo': 'a new value', 'bar': [...]}`}</div>
+                                            <div className="p-2 border rounded-lg bg-primary/10 border-primary">{'{\'foo\': \'a new value\', \'bar\': [...]}'}</div>
                                         </div>
                                     </Card>
                                 </div>

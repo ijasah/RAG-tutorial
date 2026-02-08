@@ -74,13 +74,7 @@ export const PersistenceSimulator = () => {
 
     return (
         <Card className="bg-card/50 transition-all hover:shadow-lg hover:-translate-y-1">
-            <CardHeader>
-                <CardTitle>Persistence Simulation: Threads & Checkpoints</CardTitle>
-                <CardDescription>
-                    Visualize how LangGraph persists agent state. Each "Thread" is a separate conversation. Each "Checkpoint" is a snapshot of the agent's memory, enabling features like human-in-the-loop, time travel, and memory.
-                </CardDescription>
-            </CardHeader>
-            <CardContent>
+            <CardContent className="pt-6">
                 <div className="flex gap-4 justify-center p-4 border-b mb-4">
                     <Button onClick={handleAddThread}>
                         <Play className="mr-2" /> Run New Thread
@@ -102,7 +96,7 @@ export const PersistenceSimulator = () => {
                             >
                                 <Card>
                                     <CardHeader>
-                                        <CardTitle className="flex items-center gap-2 text-base">
+                                        <CardTitle className="text-base flex items-center gap-2">
                                             <Layers className="text-primary"/>
                                             Thread ID: {thread.id}
                                         </CardTitle>
