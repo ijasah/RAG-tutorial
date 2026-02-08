@@ -111,7 +111,6 @@ const sections = [
     subsections: [
         { id: 'interrupts-simulation', title: 'Interactive Simulation' },
         { id: 'interrupts-patterns', title: 'Common Patterns' },
-        { id: 'interrupts-rules', title: 'Rules of Interrupts' },
     ]
   },
 ];

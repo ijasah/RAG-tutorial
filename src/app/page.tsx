@@ -178,7 +178,6 @@ const sections = [
     subsections: [
         { id: 'interrupts-simulation', title: 'Interactive Simulation' },
         { id: 'interrupts-patterns', title: 'Common Patterns' },
-        { id: 'interrupts-rules', title: 'Rules of Interrupts' },
     ]
   },
 ];
@@ -1449,36 +1448,6 @@ print(final["age"]) # -> 30`} />
                           </AccordionItem>
                       </Accordion>
                   </div>
-
-                  <div id="interrupts-rules">
-                      <h3 className="text-xl font-semibold text-foreground mb-4">Rules of Interrupts</h3>
-                      <p className="text-muted-foreground text-sm">
-                          Interrupts work by raising a special exception that pauses the graph. When resumed, the entire node is re-run from the beginning. This means you must follow a few important rules to avoid unexpected behavior.
-                      </p>
-                      <div className="space-y-4 mt-4">
-                           <Alert variant="destructive">
-                              <AlertTriangle className="h-4 w-4" />
-                              <AlertTitle>Do NOT wrap `interrupt()` in a generic `try/except` block.</AlertTitle>
-                              <AlertDescription>
-                                 A broad `except Exception:` will catch the special exception that `interrupt()` raises, preventing the graph from actually pausing.
-                              </AlertDescription>
-                          </Alert>
-                           <Alert variant="destructive">
-                              <AlertTriangle className="h-4 w-4" />
-                              <AlertTitle>Side effects before an `interrupt()` must be idempotent.</AlertTitle>
-                              <AlertDescription>
-                                Because the node re-runs on resume, any action before the interrupt (like a database write) will happen again. Ensure these actions can be safely repeated without causing issues like duplicate entries.
-                              </AlertDescription>
-                          </Alert>
-                          <Alert variant="destructive">
-                              <AlertTriangle className="h-4 w-4" />
-                              <AlertTitle>Do not conditionally skip `interrupt()` calls.</AlertTitle>
-                              <AlertDescription>
-                                LangGraph matches resume values to interrupts based on their order. If a condition causes an `interrupt()` to be skipped on one run but not another, it will lead to an index mismatch and errors. The order of interrupts must be consistent.
-                              </AlertDescription>
-                          </Alert>
-                      </div>
-                  </div>
               </div>
             </Section>
 
@@ -1510,5 +1479,3 @@ print(final["age"]) # -> 30`} />
 };
 
 export default Index;
-
-    
