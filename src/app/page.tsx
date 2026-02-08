@@ -1225,67 +1225,223 @@ graph.compile(checkpointer=checkpointer)`} />
             <Section id="interrupts" title="Human-in-the-loop: Interrupts" icon={<UserCheck className="h-8 w-8 text-primary" />}>
               <div className="space-y-8">
                   <p className="text-muted-foreground text-lg">
-                      Interrupts allow you to pause graph execution at specific points and wait for external input before continuing. This enables human-in-the-loop patterns where you need external input to proceed. When an interrupt is triggered, LangGraph saves the graph state and waits indefinitely until you resume execution.
+                      Interrupts allow you to pause graph execution at specific points and wait for external input before continuing. This enables powerful human-in-the-loop patterns. When an interrupt is triggered, LangGraph saves the graph's state and waits indefinitely until you resume execution.
                   </p>
+                  <ul className="text-sm text-muted-foreground list-disc pl-5 space-y-1">
+                      <li><strong className="text-foreground">Checkpointing keeps your place:</strong> The checkpointer writes the exact graph state so you can resume later.</li>
+                      <li><strong className="text-foreground">`thread_id` is your pointer:</strong> This tells the checkpointer which conversation state to load.</li>
+                      <li><strong className="text-foreground">Interrupt payloads are returned:</strong> The data you pass to `interrupt()` is returned to your application, so you know what the graph is waiting for.</li>
+                  </ul>
 
                   <div id="interrupts-simulation">
+                      <h3 className="text-xl font-semibold text-foreground text-center mb-4">Interactive Simulation: Approve/Reject</h3>
+                      <p className="text-muted-foreground text-center mb-4">
+                          This simulation demonstrates the core interrupt workflow. Run the graph to see it pause for approval. Your choice (Approve/Reject) will be sent back to the graph to determine the next step.
+                      </p>
                       <InterruptsSimulator />
                   </div>
 
                   <div id="interrupts-patterns">
-                      <h3 className="text-xl font-semibold text-foreground mb-4">Common Patterns</h3>
+                      <h3 className="text-xl font-semibold text-foreground mb-4">Common Patterns & Full Code Examples</h3>
                       <Accordion type="single" collapsible className="w-full space-y-2">
                           <AccordionItem value="approve-reject" className="border-b-0">
                               <AccordionTrigger className="p-4 bg-muted/30 hover:bg-muted/50 rounded-lg text-left">Approve or Reject Actions</AccordionTrigger>
                               <AccordionContent className="pt-4 px-2">
-                                  <p className="text-sm text-muted-foreground mb-4">Pause before executing critical actions like API calls or database changes to get human approval.</p>
-                                  <CodeBlock code={`from langgraph.types import interrupt
+                                  <p className="text-sm text-muted-foreground mb-4">Pause before executing critical actions like API calls or database changes to get human approval. The value passed to `Command(resume=...)` is returned by the `interrupt()` call.</p>
+                                  <CodeBlock code={`from typing import Literal, Optional, TypedDict
+from langgraph.checkpoint.memory import MemorySaver
+from langgraph.graph import StateGraph, START, END
+from langgraph.types import Command, interrupt
 
-def approval_node(state: State):
-    # Pause execution and wait for a boolean response
-    is_approved = interrupt({
-        "question": "Do you want to proceed?",
-        "details": state["action_details"]
+class ApprovalState(TypedDict):
+    action_details: str
+    status: Optional[Literal["pending", "approved", "rejected"]]
+
+def approval_node(state: ApprovalState) -> Command[Literal["proceed", "cancel"]]:
+    # Expose details so the caller can render them in a UI
+    decision = interrupt({
+        "question": "Approve this action?",
+        "details": state["action_details"],
     })
+    # Route to the appropriate node after resume
+    return Command(goto="proceed" if decision else "cancel")
 
-    # When resumed, the value of 'is_approved' will be
-    # whatever was passed to Command(resume=...)
-    if is_approved:
-        return Command(goto="proceed")
-    else:
-        return Command(goto="cancel")`} />
+def proceed_node(state: ApprovalState):
+    return {"status": "approved"}
+
+def cancel_node(state: ApprovalState):
+    return {"status": "rejected"}
+
+builder = StateGraph(ApprovalState)
+builder.add_node("approval", approval_node)
+builder.add_node("proceed", proceed_node)
+builder.add_node("cancel", cancel_node)
+builder.add_edge(START, "approval")
+builder.add_edge("proceed", END)
+builder.add_edge("cancel", END)
+
+# Use a more durable checkpointer in production
+checkpointer = MemorySaver()
+graph = builder.compile(checkpointer=checkpointer)
+
+config = {"configurable": {"thread_id": "approval-123"}}
+initial = graph.invoke(
+    {"action_details": "Transfer $500", "status": "pending"},
+    config=config,
+)
+print(initial["__interrupt__"])
+
+# Resume with the decision; True routes to proceed, False to cancel
+resumed = graph.invoke(Command(resume=True), config=config)
+print(resumed["status"]) # -> "approved"`} />
                               </AccordionContent>
                           </AccordionItem>
+
                           <AccordionItem value="review-edit" className="border-b-0">
                               <AccordionTrigger className="p-4 bg-muted/30 hover:bg-muted/50 rounded-lg text-left">Review and Edit State</AccordionTrigger>
                               <AccordionContent className="pt-4 px-2">
                                   <p className="text-sm text-muted-foreground mb-4">Let humans review and modify LLM outputs or other parts of the state before the graph continues.</p>
-                                  <CodeBlock code={`from langgraph.types import interrupt
+                                  <CodeBlock code={`import sqlite3
+from typing import TypedDict
+from langgraph.checkpoint.memory import MemorySaver
+from langgraph.graph import StateGraph, START, END
+from langgraph.types import Command, interrupt
 
-def review_node(state: State):
-    # Pause and show the current content for review
-    edited_content = interrupt({
-        "instruction": "Review and edit this text",
-        "content": state["generated_text"]
+class ReviewState(TypedDict):
+    generated_text: str
+
+def review_node(state: ReviewState):
+    # Ask a reviewer to edit the generated content
+    updated = interrupt({
+        "instruction": "Review and edit this content",
+        "content": state["generated_text"],
     })
+    return {"generated_text": updated}
 
-    # Update the state with the (potentially) edited version
-    return {"generated_text": edited_content}`} />
+builder = StateGraph(ReviewState)
+builder.add_node("review", review_node)
+builder.add_edge(START, "review")
+builder.add_edge("review", END)
+
+checkpointer = MemorySaver()
+graph = builder.compile(checkpointer=checkpointer)
+
+config = {"configurable": {"thread_id": "review-42"}}
+initial = graph.invoke({"generated_text": "Initial draft"}, config=config)
+print(initial["__interrupt__"])
+
+# Resume with the edited text from the reviewer
+final_state = graph.invoke(
+    Command(resume="Improved draft after review"),
+    config=config,
+)
+print(final_state["generated_text"]) # -> "Improved draft after review"`} />
                               </AccordionContent>
                           </AccordionItem>
+
+                          <AccordionItem value="interrupt-tools" className="border-b-0">
+                              <AccordionTrigger className="p-4 bg-muted/30 hover:bg-muted/50 rounded-lg text-left">Interrupts within Tools</AccordionTrigger>
+                              <AccordionContent className="pt-4 px-2">
+                                  <p className="text-sm text-muted-foreground mb-4">You can place interrupts directly inside tool functions. This makes the tool itself pause for approval whenever it's called.</p>
+                                  <CodeBlock code={`import sqlite3
+from typing import TypedDict
+from langchain.tools import tool
+from langchain_anthropic import ChatAnthropic
+from langgraph.checkpoint.sqlite import SqliteSaver
+from langgraph.graph import StateGraph, START, END
+from langgraph.types import Command, interrupt
+
+class AgentState(TypedDict):
+    messages: list[dict]
+
+@tool
+def send_email(to: str, subject: str, body: str):
+    """Send an email to a recipient."""
+    response = interrupt({
+        "action": "send_email",
+        "to": to,
+        "subject": subject,
+        "body": body,
+        "message": "Approve sending this email?",
+    })
+    if response.get("action") == "approve":
+        final_to = response.get("to", to)
+        final_subject = response.get("subject", subject)
+        final_body = response.get("body", body)
+        print(f"[send_email] to={final_to} subject={final_subject} body={final_body}")
+        return f"Email sent to {final_to}"
+    return "Email cancelled by user"
+
+model = ChatAnthropic(model="claude-3-sonnet-20240229").bind_tools([send_email])
+
+def agent_node(state: AgentState):
+    result = model.invoke(state["messages"])
+    return {"messages": state["messages"] + [result]}
+
+builder = StateGraph(AgentState)
+builder.add_node("agent", agent_node)
+builder.add_edge(START, "agent")
+builder.add_edge("agent", END)
+
+checkpointer = SqliteSaver(sqlite3.connect("tool-approval.db"))
+graph = builder.compile(checkpointer=checkpointer)
+
+config = {"configurable": {"thread_id": "email-workflow"}}
+initial = graph.invoke(
+    {"messages": [{"role": "user", "content": "Send an email to alice@example.com about the meeting"}]},
+    config=config,
+)
+print(initial["__interrupt__"])
+
+# Resume with approval and optionally edited arguments
+resumed = graph.invoke(
+    Command(resume={"action": "approve", "subject": "Updated subject"}),
+    config=config,
+)
+print(resumed["messages"][-1])`} />
+                              </AccordionContent>
+                          </AccordionItem>
+
                           <AccordionItem value="validate-input" className="border-b-0">
                               <AccordionTrigger className="p-4 bg-muted/30 hover:bg-muted/50 rounded-lg text-left">Validate Human Input</AccordionTrigger>
                               <AccordionContent className="pt-4 px-2">
                                   <p className="text-sm text-muted-foreground mb-4">Use a loop with an interrupt to validate input and re-prompt the user if it's invalid.</p>
-                                  <CodeBlock code={`def get_age_node(state: State):
+                                  <CodeBlock code={`import sqlite3
+from typing import TypedDict
+from langgraph.checkpoint.sqlite import SqliteSaver
+from langgraph.graph import StateGraph, START, END
+from langgraph.types import Command, interrupt
+
+class FormState(TypedDict):
+    age: int | None
+
+def get_age_node(state: FormState):
     prompt = "What is your age?"
     while True:
         answer = interrupt(prompt)
         if isinstance(answer, int) and answer > 0:
-            break # Valid input, exit loop
-        else:
-            prompt = f"'{answer}' is not a valid age. Please enter a positive number."
-    return {"age": answer}`} />
+            return {"age": answer}
+        prompt = f"'{answer}' is not a valid age. Please enter a positive number."
+
+builder = StateGraph(FormState)
+builder.add_node("collect_age", get_age_node)
+builder.add_edge(START, "collect_age")
+builder.add_edge("collect_age", END)
+
+checkpointer = SqliteSaver(sqlite3.connect("forms.db"))
+graph = builder.compile(checkpointer=checkpointer)
+
+config = {"configurable": {"thread_id": "form-1"}}
+first = graph.invoke({"age": None}, config=config)
+print(first["__interrupt__"])
+
+# Provide invalid data; the node re-prompts
+retry = graph.invoke(Command(resume="thirty"), config=config)
+print(retry["__interrupt__"])
+
+# Provide valid data; loop exits and state updates
+final = graph.invoke(Command(resume=30), config=config)
+print(final["age"]) # -> 30`} />
                               </AccordionContent>
                           </AccordionItem>
                       </Accordion>
@@ -1293,26 +1449,29 @@ def review_node(state: State):
 
                   <div id="interrupts-rules">
                       <h3 className="text-xl font-semibold text-foreground mb-4">Rules of Interrupts</h3>
-                      <div className="space-y-4">
+                      <p className="text-muted-foreground text-sm">
+                          Interrupts work by raising a special exception that pauses the graph. When resumed, the entire node is re-run from the beginning. This means you must follow a few important rules to avoid unexpected behavior.
+                      </p>
+                      <div className="space-y-4 mt-4">
                            <Alert variant="destructive">
                               <AlertTriangle className="h-4 w-4" />
                               <AlertTitle>Do NOT wrap `interrupt()` in a generic `try/except` block.</AlertTitle>
                               <AlertDescription>
-                                 Interrupts work by raising a special exception. A broad `except Exception:` will catch it and prevent the graph from pausing.
+                                 A broad `except Exception:` will catch the special exception that `interrupt()` raises, preventing the graph from actually pausing.
                               </AlertDescription>
                           </Alert>
                            <Alert variant="destructive">
                               <AlertTriangle className="h-4 w-4" />
                               <AlertTitle>Side effects before an `interrupt()` must be idempotent.</AlertTitle>
                               <AlertDescription>
-                                When you resume, the node re-runs from the beginning. If you have a non-idempotent action (like `db.create_record()`) before the interrupt, it will run again, creating duplicates. Place such actions *after* the interrupt.
+                                Because the node re-runs on resume, any action before the interrupt (like a database write) will happen again. Ensure these actions can be safely repeated without causing issues like duplicate entries.
                               </AlertDescription>
                           </Alert>
                           <Alert variant="destructive">
                               <AlertTriangle className="h-4 w-4" />
                               <AlertTitle>Do not conditionally skip `interrupt()` calls.</AlertTitle>
                               <AlertDescription>
-                                The resume mechanism relies on a consistent order of interrupts. If a condition causes an `interrupt()` to be skipped on one run but not another, it will lead to an index mismatch and errors.
+                                LangGraph matches resume values to interrupts based on their order. If a condition causes an `interrupt()` to be skipped on one run but not another, it will lead to an index mismatch and errors. The order of interrupts must be consistent.
                               </AlertDescription>
                           </Alert>
                       </div>

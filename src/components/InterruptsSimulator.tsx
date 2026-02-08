@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { CodeBlock } from '@/components/ui/code-block';
 import { Play, RefreshCw, UserCheck, ArrowRight, Hand, X, Check, FileJson } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Badge } from './ui/badge';
+import { Badge } from '@/components/ui/badge';
 
 const GraphNode = ({ label, active, approved, rejected, className }: { label: string; active?: boolean; approved?: boolean; rejected?: boolean, className?: string; }) => (
     <motion.div
@@ -57,21 +57,17 @@ export const InterruptsSimulator = () => {
     const interruptPayload = `{
   "__interrupt__": [
     {
-      "question": "Do you approve?",
-      "details": "Transfer $500"
+      "value": {
+        "question": "Do you approve this action?",
+        "details": "Transfer $500"
+      }
     }
   ]
 }`;
 
     return (
         <Card className="bg-card/50 transition-all hover:shadow-lg hover:-translate-y-1">
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2"><UserCheck /> Interrupts Simulation</CardTitle>
-                <CardDescription>
-                    See how `interrupt()` pauses the graph to wait for human input, then resumes based on the response.
-                </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="pt-6 space-y-6">
                 <div className="flex gap-2 justify-center">
                     <Button onClick={handleRun} disabled={step > 0}>
                         <Play className="mr-2" /> Run Graph
@@ -116,7 +112,7 @@ export const InterruptsSimulator = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                        <h4 className="font-semibold text-sm">Graph Output</h4>
+                        <h4 className="font-semibold text-sm flex items-center gap-2"><FileJson className="text-primary"/> Graph Output</h4>
                          <AnimatePresence mode="wait">
                             <motion.div
                                 key={step}
@@ -128,7 +124,7 @@ export const InterruptsSimulator = () => {
                                 {step === 2 && (
                                     <div className="h-full">
                                         <p className="text-sm text-muted-foreground mb-2">Graph has paused. The payload from `interrupt()` is returned.</p>
-                                        <CodeBlock code={interruptPayload} className="h-full" />
+                                        <CodeBlock code={interruptPayload} className="h-full text-xs" />
                                     </div>
                                 )}
                                  {step > 2 && step < 5 && (
@@ -149,7 +145,7 @@ export const InterruptsSimulator = () => {
                         </AnimatePresence>
                     </div>
                     <div className="space-y-2">
-                        <h4 className="font-semibold text-sm">Human Input</h4>
+                        <h4 className="font-semibold text-sm flex items-center gap-2"><UserCheck className="text-primary"/> Human Input</h4>
                         <div className={cn("flex gap-2 p-4 h-48 border rounded-lg justify-center items-center", step !== 2 && "bg-muted/40")}>
                             {step === 2 ? (
                                 <>
