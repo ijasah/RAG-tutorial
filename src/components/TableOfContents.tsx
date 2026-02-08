@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from '@/lib/utils';
-import { Bot, BrainCircuit, Users, GitBranch, ChevronRight, Rocket, Server, Workflow, Save, History, UserCheck, MemoryStick, ShieldCheck, Radio, ToyBrick } from 'lucide-react';
+import { Bot, BrainCircuit, Users, GitBranch, ChevronRight, Rocket, Server, Workflow, Save, History, UserCheck, MemoryStick, ShieldCheck, Radio, ToyBrick, BookCopy } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const sections = [
@@ -121,7 +121,14 @@ const sections = [
     subsections: [
         { id: 'mcp-what-is', title: 'What is MCP?' },
         { id: 'mcp-simulation', title: 'Interactive Simulation' },
+        { id: 'mcp-transports', title: 'Transports' },
+        { id: 'mcp-advanced', title: 'Advanced Features' },
     ]
+  },
+  {
+    id: 'references',
+    title: 'References',
+    icon: <BookCopy className="w-4 h-4" />,
   },
 ];
 

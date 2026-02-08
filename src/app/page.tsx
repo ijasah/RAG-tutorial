@@ -195,6 +195,11 @@ const sections = [
         { id: 'mcp-advanced', title: 'Advanced Features' },
     ]
   },
+  {
+    id: 'references',
+    title: 'References',
+    icon: <BookCopy className="h-8 w-8 text-primary" />,
+  },
 ];
 
 const persistenceCode = `from langgraph.graph import StateGraph, START, END
@@ -1699,6 +1704,22 @@ async def create_profile(name: str, ctx: Context) -> str:
                         </AccordionItem>
                     </Accordion>
                 </div>
+            </Section>
+
+            <Section id="references" title="References" icon={<BookCopy className="h-8 w-8 text-primary"/>}>
+              <p className="text-muted-foreground mb-6">
+                This interactive guide was built upon the excellent and comprehensive documentation provided by LangChain. For a deeper dive into any of these topics, please consult the official source materials.
+              </p>
+              <ul className="list-disc list-inside space-y-3">
+                <li><a href="https://docs.langchain.com/oss/python/langgraph/overview" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">LangGraph Overview</a></li>
+                <li><a href="https://docs.langchain.com/oss/python/langgraph/thinking-in-langgraph" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">Thinking in LangGraph</a></li>
+                <li><a href="https://docs.langchain.com/oss/python/langgraph/quickstart" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">Quickstart</a></li>
+                <li><a href="https://docs.langchain.com/oss/python/langgraph/local-server" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">Running a Local Server</a></li>
+                <li><a href="https://docs.langchain.com/oss/python/langgraph/persistence" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">Persistence, Memory & Time-Travel</a></li>
+                <li><a href="https://docs.langchain.com/oss/python/langgraph/streaming" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">Streaming</a></li>
+                <li><a href="https://docs.langchain.com/oss/python/langgraph/interrupts" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">Interrupts (Human-in-the-loop)</a></li>
+                <li><a href="https://docs.langchain.com/oss/python/langchain/overview" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">Official LangChain Documentation</a></li>
+              </ul>
             </Section>
 
           </main>
