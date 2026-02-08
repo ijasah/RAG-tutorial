@@ -4,7 +4,7 @@ import { Toaster } from "@/components/ui/toaster"
 import { ThemeProvider } from "@/components/theme-provider";
 
 export const metadata: Metadata = {
-  title: 'Agentic AI: An Interactive Tutorial',
+  title: 'The World of Agentic AI & MCP',
   description: 'An interactive guide to the new frontier of AI agents, from core concepts to multi-agent systems.',
 };
 

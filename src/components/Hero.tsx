@@ -30,7 +30,7 @@ export const Hero = () => {
             <BrainCircuit className="w-16 h-16 text-primary animate-bounce [animation-delay:0.2s]" />
         </div>
         <h1 className="text-4xl md:text-6xl font-bold tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-primary to-foreground/80 mb-4">
-          The World of Agentic AI
+          The World of Agentic AI & MCP
         </h1>
         <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
             An interactive guide to the new frontier of autonomous AI agents.
