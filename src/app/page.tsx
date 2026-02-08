@@ -1151,7 +1151,8 @@ graph.compile(checkpointer=checkpointer)`} />
                                 <CardContent>
                                   <CodeBlock code={`graph.stream(
     {"input": "test"},
-    {"durability": "sync"}
+    stream_mode="updates",
+    config={"durability": "sync"}
 )`} />
                                 </CardContent>
                             </Card>
@@ -1165,7 +1166,8 @@ graph.compile(checkpointer=checkpointer)`} />
                                 <CardContent>
                                   <CodeBlock code={`graph.stream(
     {"input": "test"},
-    {"durability": "async"}
+    stream_mode="updates",
+    config={"durability": "async"}
 )`} />
                                 </CardContent>
                              </Card>
@@ -1179,7 +1181,8 @@ graph.compile(checkpointer=checkpointer)`} />
                                 <CardContent>
                                   <CodeBlock code={`graph.stream(
     {"input": "test"},
-    {"durability": "exit"}
+    stream_mode="updates",
+    config={"durability": "exit"}
 )`} />
                                 </CardContent>
                              </Card>
@@ -1507,3 +1510,5 @@ print(final["age"]) # -> 30`} />
 };
 
 export default Index;
+
+    
