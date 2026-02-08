@@ -18,6 +18,7 @@ import { DurableExecutionSimulator } from '@/components/DurableExecutionSimulato
 import { StreamingSimulator } from '@/components/StreamingSimulator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { InterruptsSimulator } from '@/components/InterruptsSimulator';
+import { MCPSimulator } from '@/components/MCPSimulator';
 
 
 import {
@@ -62,6 +63,7 @@ import {
   Hand,
   FileJson,
   AlertTriangle,
+  ToyBrick,
 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -149,7 +151,7 @@ const sections = [
         { id: 'persistence-simulation', title: 'Live Simulation' },
         { id: 'persistence-history', title: 'State History API' },
         { id: 'persistence-memory-store', title: 'Memory Store' },
-        { id: 'persistence-context-window', title: 'Context Window Management' },
+        { id: 'persistence-context-window', title: 'Context Window Management'},
         { id: 'persistence-capabilities', title: 'Key Capabilities' },
         { id: 'persistence-implementation', title: 'Implementation' },
     ]
@@ -180,6 +182,15 @@ const sections = [
     subsections: [
         { id: 'interrupts-simulation', title: 'Interactive Simulation' },
         { id: 'interrupts-patterns', title: 'Common Patterns' },
+    ]
+  },
+  {
+    id: 'mcp',
+    title: 'Model Context Protocol (MCP)',
+    icon: <ToyBrick className="h-8 w-8 text-primary" />,
+    subsections: [
+        { id: 'mcp-what-is', title: 'What is MCP?' },
+        { id: 'mcp-simulation', title: 'Interactive Simulation' },
     ]
   },
 ];
@@ -1589,6 +1600,39 @@ print(final["age"]) # -> 30`} />
                       </Accordion>
                   </div>
               </div>
+            </Section>
+
+            <Section id="mcp" title="Model Context Protocol (MCP)" icon={<ToyBrick className="h-8 w-8 text-primary"/>}>
+                <div id="mcp-what-is" className='space-y-4'>
+                    <p className="text-muted-foreground text-lg">
+                        Think of MCP as a universal adapter for your AI. It’s a standardized way for an AI model to discover and communicate with external tools, like weather APIs, calculators, or internal business systems. Instead of being hardcoded, tools are exposed as independent services.
+                    </p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <Card className="bg-muted/30">
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2 text-base"><Server className="text-primary"/> MCP Server</CardTitle>
+                            </CardHeader>
+                            <CardContent><p className="text-sm text-muted-foreground">Exposes functions (tools) that your agent can call.</p></CardContent>
+                        </Card>
+                         <Card className="bg-muted/30">
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2 text-base"><Zap className="text-primary"/> MCP Client</CardTitle>
+                            </CardHeader>
+                            <CardContent><p className="text-sm text-muted-foreground">Connects your LangGraph agent to the available tools.</p></CardContent>
+                        </Card>
+                    </div>
+                     <Alert>
+                        <Lightbulb className="h-4 w-4" />
+                        <AlertTitle>Why is MCP Powerful?</AlertTitle>
+                        <AlertDescription>
+                            MCP allows for a plug-and-play architecture. You can run your tools as separate microservices, and your agent can dynamically discover and use them as needed. This makes your system modular, scalable, and secure.
+                        </AlertDescription>
+                    </Alert>
+                </div>
+
+                <div id="mcp-simulation" className="pt-8">
+                     <MCPSimulator />
+                </div>
             </Section>
 
           </main>

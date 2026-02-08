@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from '@/lib/utils';
-import { Bot, BrainCircuit, Users, GitBranch, ChevronRight, Rocket, Server, Workflow, Save, History, UserCheck, MemoryStick, ShieldCheck, Radio } from 'lucide-react';
+import { Bot, BrainCircuit, Users, GitBranch, ChevronRight, Rocket, Server, Workflow, Save, History, UserCheck, MemoryStick, ShieldCheck, Radio, ToyBrick } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const sections = [
@@ -81,6 +81,7 @@ const sections = [
         { id: 'persistence-simulation', title: 'Live Simulation' },
         { id: 'persistence-history', title: 'State History API' },
         { id: 'persistence-memory-store', title: 'Memory Store' },
+        { id: 'persistence-context-window', title: 'Context Window Management'},
         { id: 'persistence-capabilities', title: 'Key Capabilities' },
         { id: 'persistence-implementation', title: 'Implementation' },
     ]
@@ -111,6 +112,15 @@ const sections = [
     subsections: [
         { id: 'interrupts-simulation', title: 'Interactive Simulation' },
         { id: 'interrupts-patterns', title: 'Common Patterns' },
+    ]
+  },
+  {
+    id: 'mcp',
+    title: 'Model Context Protocol (MCP)',
+    icon: <ToyBrick className="w-4 h-4" />,
+    subsections: [
+        { id: 'mcp-what-is', title: 'What is MCP?' },
+        { id: 'mcp-simulation', title: 'Interactive Simulation' },
     ]
   },
 ];
