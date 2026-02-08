@@ -5,8 +5,8 @@ const isProd = process.env.NODE_ENV === 'production'
 const nextConfig: NextConfig = {
   /* config options here */
   output: 'export',
-  assetPrefix: isProd ? '/RAG-tutorial/' : '',
-  basePath: isProd ? '/RAG-tutorial' : '',
+  assetPrefix: isProd ? '/agentic-ai/' : '',
+  basePath: isProd ? '/agentic-ai' : '',
   typescript: {
     ignoreBuildErrors: true,
   },
